@@ -1,4 +1,4 @@
-# MSFT Build of OpenJDK Docker Images
+# Microsoft Build of OpenJDK Docker Images
 
 This repository contains the Dockerfiles for the official Docker images of MSFT Build of OpenJDK. These images are made available in [Microsoft Container Registry (MCR)](https://github.com/microsoft/containerregistry).
 

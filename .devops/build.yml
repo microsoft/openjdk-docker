@@ -40,4 +40,4 @@ jobs:
           dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
           containerRegistry: "msopenjdk ACR"
           tags: |
-            $(version)-microsoft-$(distro)
+            $(version)-$(distro)

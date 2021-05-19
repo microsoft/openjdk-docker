@@ -1,0 +1,79 @@
+name: "$(Year:yyyy).$(Month).$(BuildID)"
+
+trigger:
+  # to make the ci build more efficient
+  # https://docs.microsoft.com/en-us/azure/devops/pipelines/repos/azure-repos-git?view=azure-devops&tabs=yaml#batching-ci-runs
+  batch: true
+  branches:
+    include:
+      - main
+  # for changes in the nightly, pr, release.yml, etc we will ignore them
+  # also ignore templates/release.yml since it is not used by ci.yml file
+  paths:
+    exclude:
+      # from .devops folder
+      - .devops/build.yml
+      # from docker folder
+      - docker
+
+pr: none
+
+jobs:
+  - job: build_internal
+    displayName: "build internal "
+    pool:
+      vmImage: ubuntu-20.04
+    strategy:
+      matrix:
+        cbld:
+          distro: cbld
+          version: 11
+        ubuntu:
+          distro: ubuntu
+          version: 11
+    steps:
+      - task: Docker@2
+        displayName: build and push image to container registry
+        inputs:
+          command: buildAndPush
+          repository: internal/private/openjdk/jdk
+          dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
+          containerRegistry: "msopenjdk ACR"
+          tags: |
+            $(version)-$(distro)
+
+  - job: wait_for_validation
+    dependsOn: build_internal
+    displayName: wait for validation
+    pool: server
+    steps:
+      - task: ManualValidation@0
+        # 3 days
+        timeoutInMinutes: 4320
+        inputs:
+          instructions: "please validate the build configuration, artifacts, tests, and resume"
+          onTimeout: "resume"
+
+  - job: build_public
+    displayName: "build public "
+    dependsOn: wait_for_validation
+    pool:
+      vmImage: ubuntu-20.04
+    strategy:
+      matrix:
+        cbld:
+          distro: cbld
+          version: 11
+        ubuntu:
+          distro: ubuntu
+          version: 11
+    steps:
+      - task: Docker@2
+        displayName: build and push image to container registry
+        inputs:
+          command: buildAndPush
+          repository: public/openjdk/jdk
+          dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
+          containerRegistry: "msopenjdk ACR"
+          tags: |
+            $(version)-$(distro)

@@ -7,14 +7,6 @@ trigger:
   branches:
     include:
       - main
-  # for changes in the nightly, pr, release.yml, etc we will ignore them
-  # also ignore templates/release.yml since it is not used by ci.yml file
-  paths:
-    exclude:
-      # from .devops folder
-      - .devops/build.yml
-      # from docker folder
-      - docker
 
 pr: none
 
@@ -25,12 +17,18 @@ jobs:
       vmImage: ubuntu-20.04
     strategy:
       matrix:
-        cbld:
+        cbld_11:
           distro: cbld
           version: 11
-        ubuntu:
+        ubuntu_11:
           distro: ubuntu
           version: 11
+        cbld_16:
+          distro: cbld
+          version: 16
+        ubuntu_16:
+          distro: ubuntu
+          version: 16
     steps:
       - task: Docker@2
         displayName: build and push image to container registry
@@ -61,12 +59,18 @@ jobs:
       vmImage: ubuntu-20.04
     strategy:
       matrix:
-        cbld:
+        cbld_11:
           distro: cbld
           version: 11
-        ubuntu:
+        ubuntu_11:
           distro: ubuntu
           version: 11
+        cbld_16:
+          distro: cbld
+          version: 16
+        ubuntu_16:
+          distro: ubuntu
+          version: 16
     steps:
       - task: Docker@2
         displayName: build and push image to container registry

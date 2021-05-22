@@ -4,22 +4,23 @@ trigger: none
 
 pr: none
 
-- name: jobs
-  type: object
-  # sample:
-  # cbld_11:
-  #   distro: cbld
-  #   version: 11
-  # ubuntu_11:
-  #   distro: ubuntu
-  #   version: 11
-  # cbld_16:
-  #   distro: cbld
-  #   version: 16
-  # ubuntu_16:
-  #   distro: ubuntu
-  #   version: 16
-  default: []
+parameters:
+  - name: jobs
+    type: object
+    # sample:
+    # cbld_11:
+    #   distro: cbld
+    #   version: 11
+    # ubuntu_11:
+    #   distro: ubuntu
+    #   version: 11
+    # cbld_16:
+    #   distro: cbld
+    #   version: 16
+    # ubuntu_16:
+    #   distro: ubuntu
+    #   version: 16
+    default: []
 
 jobs:
   - job: build_internal

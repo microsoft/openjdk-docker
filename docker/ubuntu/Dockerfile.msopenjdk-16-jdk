@@ -1,7 +1,7 @@
 FROM ubuntu:focal
 
 RUN apt-get -qq update && \
-    apt-get -qq -y install apt-transport-https wget && \
+    apt-get -qq -y install apt-transport-https binutils wget && \
     wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
     dpkg -i packages-microsoft-prod.deb && \
     apt-get -qq update && \

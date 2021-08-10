@@ -2,6 +2,6 @@ FROM cblmariner.azurecr.io/base/core:1.0
 
 RUN rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
     tdnf install -y mariner-repos-ui && \
-    tdnf install -y msopenjdk-11 --nogpgcheck
+    tdnf install -y msopenjdk-16 --nogpgcheck
 
-ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-11
+ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-16

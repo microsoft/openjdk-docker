@@ -9,9 +9,10 @@ cat << EOF
 Microsoft Build of OpenJDK - Docker Image Builder
 Copyright (c) 2021, Microsoft Corporation
 
-$ build.sh [distro] [version]
+$ build.sh [--all] | [distro] [version]
 
 Arguments:
+   --all: builds all base images and JDK versions defined in './jdk_versions'
    [distro]: the base image to build
        Any of: ${distros[*]}
    [version]: the JDK version to use

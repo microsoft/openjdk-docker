@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 jdkversions=(`cat jdk_versions | grep -v "# *"  | grep -v "^$"`)
 distros=(`ls -1 docker`)
@@ -26,6 +26,7 @@ exit 0
 build_image() {
   _distro=$1
   _jdk=$2
+  
   docker build \
         --build-arg JDK=$_jdk \
         -f docker/$_distro/Dockerfile \
@@ -33,6 +34,7 @@ build_image() {
 }
 
 build_all() {
+  echo "Building all distro images and JDK versions."
   for d in ${distros[*]}; do
     for j in ${jdkversions[*]}; do
       build_image $d $j
@@ -44,17 +46,18 @@ build_all() {
 build_single() {
   # Check if distro argument is valid
   if [[ ! ${distros[*]} =~ "$1" ]]; then
-    echo 'Base image not available'
+    echo "Base image '${1}' not available."
     exit 1
   fi
 
   # Check if jdk version argument is valid
   if [[ ! ${jdkversions[*]} =~ "$2" ]]; then
-    echo 'JDK version not available'
+    echo "JDK version '${2}' not available."
     exit 1
   fi
 
   # Build a single image
+  echo "Building single image 'distro=${1} jdk=${2}' ..."
   build_image $1 $2
 }
 
@@ -63,10 +66,9 @@ if [[ "$#" -eq 0 ]] || [[ "$#" -gt "2" ]]; then help; fi
 
 # Check if user wants to build all. Otherwise builds one, or show help message.
 if [[ "$#" -eq 1 ]] && [[ '--all' == "$1" ]]; then
-  echo "Building all base images and versions."
   build_all
 elif [[ "$#" -eq 1 ]]; then
-  echo "Invalid argument."
+  echo "Invalid argument: '${1}'"
   exit 1
 elif [ "$#" -eq 2 ]; then
   build_single $1 $2

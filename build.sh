@@ -2,6 +2,7 @@
 
 jdkversions=(`cat jdk_versions | grep -v "# *"  | grep -v "^$"`)
 distros=(`ls -1 docker`)
+image_prefix="mcr.microsoft.com/openjdk/jdk"
 
 help() {
 cat << EOF
@@ -26,11 +27,11 @@ exit 0
 build_image() {
   _distro=$1
   _jdk=$2
-  
+
   docker build \
         --build-arg JDK=$_jdk \
         -f docker/$_distro/Dockerfile \
-        -t $_jdk-$_distro docker/$_distro
+        -t $image_prefix:$_jdk-$_distro docker/$_distro
 }
 
 build_all() {

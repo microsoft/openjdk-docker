@@ -1,5 +1,7 @@
 FROM sbidprod.azurecr.io/quinault
 
+# Defaults to 11 so this Dockerfile is always buildable. 
+# Valid values are listed in 'jdk_versions' file.
 ARG JDK=11
 
 RUN apt-get -qq update && \

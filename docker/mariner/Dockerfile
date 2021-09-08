@@ -1,5 +1,7 @@
 FROM cblmariner.azurecr.io/base/core:1.0
 
+# Defaults to 11 so this Dockerfile is always buildable.
+# Valid values are listed in 'jdk_versions' file.
 ARG JDK=11
 
 RUN tdnf -y upgrade && \

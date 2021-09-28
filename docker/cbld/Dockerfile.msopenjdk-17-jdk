@@ -1,0 +1,12 @@
+FROM sbidprod.azurecr.io/quinault
+
+RUN apt-get update && \
+    apt-get -y install apt-transport-https binutils && \
+    echo "deb https://packages.microsoft.com/repos/cbl-d quinault-universe main" >> /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get -y install msopenjdk-17 && \
+    apt-get -y purge apt-transport-https && \
+    apt -y autoremove --purge && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-17-amd64

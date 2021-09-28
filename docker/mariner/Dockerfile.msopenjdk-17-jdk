@@ -1,0 +1,7 @@
+FROM cblmariner.azurecr.io/base/core:1.0
+
+RUN rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
+    tdnf install -y mariner-repos-ui && \
+    tdnf install -y msopenjdk-17 --nogpgcheck
+
+ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-17

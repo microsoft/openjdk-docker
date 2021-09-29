@@ -1,13 +1,29 @@
 FROM ubuntu:focal
 
-RUN apt-get -qq update && \
-    apt-get -qq -y install apt-transport-https binutils wget && \
-    wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
+MAINTAINER Microsoft OpenJDK Support <openjdk-support@microsoft.com>
+
+RUN DEBIAN_FRONTEND=noninteractive && \
+    apt-get -qq update && \
+    apt-get -qq upgrade && \
+    apt-get -qq install --no-install-recommends tzdata ca-certificates fontconfig locales apt-transport-https wget && \
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
+    locale-gen en_US.UTF-8 && \
+    rm -rf /var/lib/apt/lists/*
+
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+
+RUN wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
     dpkg -i packages-microsoft-prod.deb && \
     apt-get -qq update && \
-    apt-get -qq -y install msopenjdk-16 && \
-    apt-get -qq -y purge apt-transport-https wget && \
-    apt -y autoremove --purge && \
+    apt-get -qq install msopenjdk-16 && \
+    apt-get -qq purge apt-transport-https wget && \
+    apt-get -qq autoremove --purge && \
     rm -rf /var/lib/apt/lists/*
+
+RUN echo Verifying JDK install ... \
+    && echo javac --version && javac --version \
+    && echo java --version && java --version \
+    && echo java -Xshare:dump && java -Xshare:dump \
+    && echo Complete.
 
 ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-16-amd64

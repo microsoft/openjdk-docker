@@ -7,9 +7,8 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 RUN tdnf -y update && \
     tdnf -y upgrade && \
 	tdnf install -y tzdata ca-certificates freetype fontconfig && \
-	rm -rf /var/cache/tdnf
-
-RUN rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
+	rm -rf /var/cache/tdnf && \
+    rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
     tdnf install -y mariner-repos-ui && \
     tdnf install -y msopenjdk-16 --nogpgcheck
 

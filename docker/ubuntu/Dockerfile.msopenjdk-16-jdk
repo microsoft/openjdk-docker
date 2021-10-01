@@ -1,6 +1,8 @@
 FROM ubuntu:focal
 
 MAINTAINER Microsoft OpenJDK Support <openjdk-support@microsoft.com>
+LABEL "Author"="Microsoft"
+LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
 RUN DEBIAN_FRONTEND=noninteractive && \
     apt-get -qq update && \
@@ -18,11 +20,5 @@ RUN DEBIAN_FRONTEND=noninteractive && \
     rm -rf /var/lib/apt/lists/*
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
-
-RUN echo Verifying JDK install ... \
-    && echo javac --version && javac --version \
-    && echo java --version && java --version \
-    && echo java -Xshare:dump && java -Xshare:dump \
-    && echo Complete.
 
 ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-16-amd64

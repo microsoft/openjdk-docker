@@ -1,0 +1,119 @@
+# Workflow to build an verify that the docker images are correct and similar enough to past
+# releases.
+#
+# Idea:
+# 1. Download last release images from docker for comparisons later.
+# 1. Build latest locally (See code sample below)
+# 1. Gather all downloaded packages and list them and their source URL/sha256sum/other identifying information in a report file.
+#   - consider just listing all packages on the container we build? `dpkg-query -l` gives us that information.
+#   - Also consider obtaining the source of each package, `apt-cache policy libgtk-3-bin` for instance will show where it came from.
+#   - Also capture the logs for when the container was created, we can grep those for true sources later.
+#   - include container scanning functionality from 1ES: https://docs.opensource.microsoft.com/tools/cg/features/containers/
+# 1. Test that the Java versions are correct in the latest local built containers. (See code sample below)
+# 1. Check labels for correctness (should be same as prior image, or issue a log statement stating they've changed)
+# 1. Check number of layers for same value (if the last release image has 2 layers, this release should have 2)
+# 1. Check size of image hasn't increased past some threshold (threshold per OS-container? How to specify? What makes sense? Maybe just issue a warning if size increases over ~5%?)
+
+name: OpenJDK-Docker-PR
+
+on:
+  # schedule:
+  #   - cron: '30 16 * * *'
+  # push:
+  #   branches: [ main ]
+  #   # Publish semver tags as releases.
+  #   tags: [ 'v*.*.*' ]
+  pull_request:
+    branches: [ main ]
+
+# env:
+#   # Use docker.io for Docker Hub if empty
+#   REGISTRY: ghcr.io
+#   # github.repository as <account>/<repo>
+#   IMAGE_NAME: ${{ github.repository }}
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # # Login against a Docker registry except on PR <== we don't need this at all
+      # # https://github.com/docker/login-action
+      # - name: Log into registry ${{ env.REGISTRY }}
+      #   if: github.event_name != 'pull_request'
+      #   uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+      #   with:
+      #     registry: ${{ env.REGISTRY }}
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+
+      # # Extract metadata (tags, labels) for Docker
+      # # https://github.com/docker/metadata-action
+      # - name: Extract Docker metadata
+      #   id: meta
+      #   uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+      #   with:
+      #     images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      # # Build and push Docker image with Buildx (don't push on PR) <== We will never push from this action
+      # # https://github.com/docker/build-push-action
+      # - name: Build and push Docker image
+      #   uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+      #   with:
+      #     context: .
+      #     push: ${{ github.event_name != 'pull_request' }}
+      #     tags: ${{ steps.meta.outputs.tags }}
+      #     labels: ${{ steps.meta.outputs.labels }}
+
+
+## Code for checking images (written in pwsh for now - TODO change to Python)
+
+# Build all docker images.
+Get-ChildItem -Path . -Directory | ForEach-Object {
+  $subdir_name = $PSItem.Name
+  Get-ChildItem -Path $PSItem -File | ForEach-Object { 
+    $dockerfile = $(Join-Path -Path $subdir_name -ChildPath $PSItem.Name)
+    $tag = "mcr.microsoft.com/openjdk/jdk:$(($PSItem.Name -split '-')[1])-$subdir_name-tst-2"
+    Write-Host -ForegroundColor Blue -NoNewline "Building $dockerfile with tag "
+    Write-Host -ForegroundColor Green """$tag"""
+    docker build . --tag $tag -f $dockerfile 
+  }
+}
+
+# Check all versions of Java are correct after building all images.
+
+# Versions per image (TODO: How to specify these in a PR-meaningful way?)
+$check_ver = @{
+  "11"=".*Microsoft-25199.*";
+  "16"=".*Microsoft-25298.*";
+  "17"=".*Microsoft-26987.*"
+}
+
+Get-ChildItem -Path . -Directory | ForEach-Object {
+  $subdir_name = $PSItem.Name
+  Get-ChildItem -Path $PSItem -File | ForEach-Object {
+    $dockerfile = $(Join-Path -Path $subdir_name -ChildPath $PSItem.Name)
+    $svc = "mcr.microsoft.com/openjdk/jdk"
+    $java_ver = "$(($PSItem.Name -split '-')[1])"
+    $tag = "$java_ver-$subdir_name-tst"
+    Write-Host -ForegroundColor Blue -NoNewline "Testing $dockerfile with tag "
+    Write-Host -ForegroundColor Green """$($svc):$($tag)"""
+    $dev_null = & docker rm $tag 2>&1
+    $out = & docker run --name $tag "$($svc):$($tag)" java -version 2>&1
+    if (($out -join "") -match $check_ver[$java_ver]) {
+      Write-Host -ForegroundColor Green "PASSED" 
+    } else { 
+      Write-Host -ForegroundColor Red "FAILED!"
+    }
+    Write-Host -ForegroundColor Yellow $out
+    docker rm $tag | Out-Null
+  }
+}

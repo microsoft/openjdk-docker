@@ -2,7 +2,7 @@
 # releases.
 #
 # Idea:
-# 1. Download last release images from docker for comparisons later.
+# 1. Download last release images from docker for comparisons later. (See code sample below)
 # 1. Build latest locally (See code sample below)
 # 1. Gather all downloaded packages and list them and their source URL/sha256sum/other identifying information in a report file.
 #   - consider just listing all packages on the container we build? `dpkg-query -l` gives us that information.
@@ -75,6 +75,23 @@ jobs:
 
 
 ## Code for checking images (written in pwsh for now - TODO change to Python)
+
+# Download last released images to get them local for comparison
+
+$job_names = @()
+@("11", "16", "17") | ForEach-Object {
+  $ver = $PSItem
+  @("cbld", "mariner", "ubuntu") | ForEach-Object {
+    # start all downloads in parallel
+    $distro = $PSItem
+    $job_names += "$ver$distro"
+    Start-Job -Name "$ver$distro" -ScriptBlock { Write-Host "Get container 'mcr.microsoft.com/openjdk/jdk:$($args[0])-$($args[1])'"; & docker pull "mcr.microsoft.com/openjdk/jdk:$($args[0])-$($args[1])" } -ArgumentList $ver,$distro }
+  }
+  $job_names | ForEach-Object {
+    # wait for all downloads to complete in serial (ideally we'd poll the list of jobs until none were left, but this works fine too)
+    Receive-Job -Name $PSItem -AutoRemoveJob -Wait
+  }
+}
 
 # Build all docker images.
 Get-ChildItem -Path . -Directory | ForEach-Object {

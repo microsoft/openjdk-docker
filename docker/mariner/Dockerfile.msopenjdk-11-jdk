@@ -12,6 +12,8 @@ RUN tdnf -y update && \
     rm -rf /var/cache/tdnf && \
     rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
     tdnf install -y mariner-repos-ui && \
-    tdnf install -y msopenjdk-11 --nogpgcheck
+    tdnf install -y msopenjdk-11 --nogpgcheck && \
+    echo java -Xshare:dump && \
+    java -Xshare:dump 
 
 ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-11

@@ -29,7 +29,7 @@ build_image() {
   _jdk=$2
 
   docker build \
-        --build-arg JDK=$_jdk \
+        --build-arg JDK_VERSION=$_jdk \
         -f docker/$_distro/Dockerfile \
         -t $image_prefix:$_jdk-$_distro docker/$_distro
 }

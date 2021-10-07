@@ -22,7 +22,8 @@ RUN DEBIAN_FRONTEND=noninteractive && \
     apt-get -qq install msopenjdk-$JDK_VERSION && \
     apt-get -qq purge apt-transport-https && \
     apt-get -qq autoremove --purge && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    if [ "$JDK_VERSION" = "11" ]; then java -Xshare:dump; fi
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 

@@ -1,12 +1,21 @@
 FROM cblmariner.azurecr.io/base/core:1.0
 
-# Defaults to 11 so this Dockerfile is always buildable.
-# Valid values are listed in 'jdk_versions' file.
-ARG JDK=11
+MAINTAINER Microsoft OpenJDK Support <openjdk-support@microsoft.com>
+LABEL "Author"="Microsoft"
+LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
-RUN tdnf -y upgrade && \
+# Defaults to 17 so this Dockerfile is always buildable.
+# Valid values are listed in 'jdk_versions' file.
+ARG JDK_VERSION=17
+
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+
+RUN tdnf -y update && \
+    tdnf -y upgrade && \
+    tdnf install -y tzdata ca-certificates freetype fontconfig && \
+    rm -rf /var/cache/tdnf && \
     rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
     tdnf install -y mariner-repos-ui && \
-    tdnf install -y msopenjdk-$JDK --nogpgcheck
+    tdnf install -y msopenjdk-$JDK_VERSION --nogpgcheck
 
-ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-$JDK
+ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-$JDK_VERSION

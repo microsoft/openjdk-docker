@@ -1,7 +1,7 @@
 #!/bin/bash
 
 jdkversions=(`cat jdk_versions | grep -v "# *"  | grep -v "^$"`)
-distros=(`ls -1 docker`)
+distros=(`ls -1 docker/`)
 image_prefix="mcr.microsoft.com/openjdk/jdk"
 
 help() {

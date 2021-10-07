@@ -14,12 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy: 
       matrix:
-        jdkversion: [11, 16, 17]
-        linuxdistro: ["cbld", "mariner", "ubuntu"]
+        jdk_version: [11, 16, 17]
+        linux_distro: ["cbld", "mariner", "ubuntu"]
 
     steps:
       - uses: actions/checkout@v2
 
       # Runs a single command using the runners shell
       - name: Build the image
-        run: ./build.sh ${{ linuxdistro }} ${{ jdkversion }}
+        run: ./build.sh ${{ matrix.linux_distro }} ${{ matrix.jdk_version }}

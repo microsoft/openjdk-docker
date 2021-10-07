@@ -1,0 +1,25 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Docker Images CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy: 
+      matrix:
+        jdk_version: [8, 11, 17]
+        linux_distro: [cbld, mariner, ubuntu]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Runs a single command using the runners shell
+      - name: Build the image
+        run: ./build.sh ${{ linux_distro }} ${{ jdk_version }}

@@ -1,4 +1,8 @@
-FROM sbidprod.azurecr.io/quinault
+FROM ubuntu:focal
+
+# Defaults to 17 so this Dockerfile is always buildable.
+# Valid values are listed in 'jdk_versions' file.
+ARG JDK_VERSION=17
 
 MAINTAINER Microsoft OpenJDK Support <openjdk-support@microsoft.com>
 LABEL "Author"="Microsoft"
@@ -13,13 +17,13 @@ RUN DEBIAN_FRONTEND=noninteractive && \
     rm -rf /var/lib/apt/lists/* && \
     wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
     dpkg -i packages-microsoft-prod.deb && \
-    echo "deb https://packages.microsoft.com/repos/cbl-d quinault-universe main" >> /etc/apt/sources.list && \
     apt-get -qq update && \
-    apt-get -qq install msopenjdk-17 && \
-    apt-get -qq purge apt-transport-https && \
+    apt-get -qq install msopenjdk-$JDK_VERSION && \
+    apt-get -qq purge apt-transport-https wget && \
     apt-get -qq autoremove --purge && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    if [ "$JDK_VERSION" = "11" ]; then java -Xshare:dump; fi
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-17-amd64
+ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-$JDK_VERSION-amd64

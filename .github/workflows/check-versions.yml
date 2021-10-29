@@ -1,0 +1,16 @@
+name: Check JDK Versions on Published MCR Images CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Runs a single command using the runners shell
+      - name: Run the validate-docker-images.sh script
+        run: ./validate-docker-images.sh
+

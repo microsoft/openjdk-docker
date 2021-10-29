@@ -14,12 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy: 
       matrix:
-        jdk_version: [11, 16, 17]
-        linux_distro: ["cbld", "mariner", "ubuntu"]
+        jdkversion: [11, 16, 17]
+        baseimage: ["cbld", "mariner", "ubuntu"]
 
     steps:
       - uses: actions/checkout@v2
 
       # Runs a single command using the runners shell
       - name: Build the image
-        run: docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdk_version }}-${{ matrix.linux_distro }} -f ./docker/${{ matrix.distro }}/Dockerfile.msopenjdk-${{ matrix.jdk_version }}-jdk ./docker/${{ matrix.distro }}/
+        run: docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion }}-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.msopenjdk-${{ matrix.jdkversion }}-jdk ./docker/${{ matrix.baseimage }}/

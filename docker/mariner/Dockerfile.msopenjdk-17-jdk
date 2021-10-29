@@ -12,7 +12,8 @@ RUN tdnf -y update && \
     rm -rf /var/cache/tdnf && \
     rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
     tdnf install -y mariner-repos-ui && \
-    # Temporary fix for Oct 21 JDK Update (see issue #21)
+    # Temporary fix for Oct 21 JDK Update (see issue #21 for details)
     tdnf install -y msopenjdk-17-17.0.1+12_LTS-1 --nogpgcheck
+    # tdnf install -y msopenjdk-17 --nogpgcheck
 
 ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-17

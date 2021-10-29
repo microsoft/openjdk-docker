@@ -17,8 +17,9 @@ do
         image="${imagerepo}:${version}-${distro}"
         docker rmi --force $image
         docker pull $image
-        java_version=$(docker run -ti --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
-        java_version=${java_version//[$'\t\r\n']} && java_version=${java_version%%*( )}
+        java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
+        java_version=${java_version//[$'\t\r\n']}
+        java_version=${java_version%%*( )}
         echo "Image '${image}' contains JDK version: ${java_version}"
         if [[ "${java_version}" == 17* ]]; then
             if [[ "${java_version}" != "${jdk17}" ]]; then

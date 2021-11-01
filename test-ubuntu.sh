@@ -15,7 +15,7 @@ do
     for version in "${versions[@]}"
     do
         image="${imagerepo}:jdk-${version}-ubuntu-${distro}"
-        docker build --build-arg UBUNTU_VERSION=$distro --build-arg JAVA_VERSION=$version -t $image -f ./docker/test-only/Dockerfile.ubuntu
+        docker build --build-arg UBUNTU_VERSION="$distro" --build-arg JAVA_VERSION="$version" -t $image -f ./docker/test-only/Dockerfile.ubuntu
         java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
         java_version=${java_version//[$'\t\r\n']}
         java_version=${java_version%%*( )}

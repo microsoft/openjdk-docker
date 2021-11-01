@@ -14,3 +14,6 @@ jobs:
       - name: Run the validate-docker-images.sh script
         run: ./validate-docker-images.sh
 
+      # Tests other versions of Ubuntu
+      - name: Run test-ubuntu.sh script
+        run: ./test-ubuntu.sh

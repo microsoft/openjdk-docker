@@ -1,23 +1,30 @@
 #!/bin/bash
 
-set -xo
-
 # Adjust with the latest minor versions of Microsoft Build of OpenJDK
 jdk17="17.0.1"
 jdk16="16.0.2"
 jdk11="11.0.13"
 
-imagerepo="jdk"
+imagerepo="certify-jdk"
 
-ubuntu_versions=("18.04" "18.10" "19.04" "19.10" "20.04" "20.10" "21.04" "21.10")
-versions=("11" "16" "17")
+# LTS Versions only
+ubuntu_versions=("20.04" "18.04")
+java_versions=("11" "16" "17")
+certifiedimages=()
 
 for distro in "${ubuntu_versions[@]}" 
 do
-    for version in "${versions[@]}"
+    for version in "${java_versions[@]}"
     do
         image="${imagerepo}:jdk-${version}-ubuntu-${distro}"
-        docker build --progress=plain --build-arg UBUNTU_VERSION="$distro" --build-arg JAVA_VERSION="$version" -t $image -f ./docker/test-only/Dockerfile.ubuntu .
+        certifiedimages+=(${image})
+
+        docker build \
+            --build-arg UBUNTU_VERSION="$distro" \
+            --build-arg JAVA_VERSION="$version" \
+            -t $image \
+            -f ./docker/test-only/Dockerfile.ubuntu .
+
         java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
         java_version=${java_version//[$'\t\r\n']}
         java_version=${java_version%%*( )}
@@ -47,5 +54,14 @@ do
         fi
     done
 done
+
+echo "All images certified:"
+for ci in "${certifiedimages[@]}"
+do
+    echo " - ${ci}"
+done
+
+echo ""
+echo "Finished."
 
 exit 0

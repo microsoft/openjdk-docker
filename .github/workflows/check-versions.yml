@@ -10,10 +10,5 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
-      - name: Run the validate-docker-images.sh script
+      - name: Validate container images
         run: ./validate-docker-images.sh
-
-      # Certifies LTS versions of Ubuntu
-      - name: Certify Ubuntu LTS Versions
-        run: ./certify-ubuntu.sh

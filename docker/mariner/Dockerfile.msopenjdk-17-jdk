@@ -17,4 +17,4 @@ RUN tdnf -y update && \
     echo java -Xshare:dump && \
     java -Xshare:dump 
 
-ENV JAVA_HOME=/usr/lib/jvm/$package
+ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-17

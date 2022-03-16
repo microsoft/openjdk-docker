@@ -1,15 +1,11 @@
 #!/bin/bash
 
-# Adjust with the latest minor versions of Microsoft Build of OpenJDK
-jdk17="17.0.2"
-jdk16="16.0.2"
-jdk11="11.0.14.1"
+source jdk-versions.sh
 
 imagerepo="certify-jdk"
 
 # LTS Versions only
 ubuntu_versions=("20.04" "18.04")
-java_versions=("11" "16" "17")
 certifiedimages=()
 
 for distro in "${ubuntu_versions[@]}" 

@@ -85,7 +85,7 @@ do
             fi
         elif [[ "${java_version}" == 11* ]]; then
             if [[ "${java_version}" != "$jdk11" ]]; then
-                echo "ERROR with image '${image}'!"
+                echo "ERROR with image '${image}'!" | tee -a  $validationlog
                 echo "  \`- Expected: ${jdk11}. Found: ${java_version}" | tee -a  $validationlog
             fi
         else

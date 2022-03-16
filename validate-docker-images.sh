@@ -3,7 +3,7 @@
 # Adjust with the latest minor versions of Microsoft Build of OpenJDK
 jdk17="17.0.2"
 jdk16="16.0.2"
-jdk11="11.0.14"
+jdk11="11.0.14.1"
 
 java_versions=("11" "16" "17")
 
@@ -33,17 +33,17 @@ do
         if [[ "${java_version}" == 17* ]]; then
             if [[ "${java_version}" != "${jdk17}" ]]; then
                 echo "ERROR with image '${image}'!" | tee -a  $validationlog
-                echo "  \`- Expected: ${jdk17}\. Found: ${java_version}."  | tee -a  $validationlog
+                echo "  \`- Expected: ${jdk17}. Found: ${java_version}."  | tee -a  $validationlog
             fi
         elif [[ $java_version == 16* ]]; then
             if [[ "${java_version}" != "${jdk16}" ]]; then
                 echo "ERROR with image '${image}'!"  | tee -a  $validationlog
-                echo "  \`- Expected: ${jdk16}\. Found: ${java_version}."  | tee -a  $validationlog
+                echo "  \`- Expected: ${jdk16}. Found: ${java_version}."  | tee -a  $validationlog
             fi
         elif [[ "${java_version}" == 11* ]]; then
             if [[ "${java_version}" != "$jdk11" ]]; then
                 echo "ERROR with image '${image}'!"  | tee -a  $validationlog
-                echo "  \`- Expected: ${jdk11}\. Found: ${java_version}."  | tee -a  $validationlog
+                echo "  \`- Expected: ${jdk11}. Found: ${java_version}."  | tee -a  $validationlog
             fi
         else
             echo "Unknown version $java_version"  | tee -a  $validationlog
@@ -76,17 +76,17 @@ do
         if [[ "${java_version}" == 17* ]]; then
             if [[ "${java_version}" != "${jdk17}" ]]; then
                 echo "ERROR with image '${image}'!"  | tee -a  $validationlog
-                echo "  \`- Expected: ${jdk17}\. Found: ${java_version}." | tee -a  $validationlog
+                echo "  \`- Expected: ${jdk17}. Found: ${java_version}." | tee -a  $validationlog
             fi
         elif [[ $java_version == 16* ]]; then
             if [[ "${java_version}" != "${jdk16}" ]]; then
                 echo "ERROR with image '${image}'!" | tee -a  $validationlog
-                echo "  \`- Expected: ${jdk16}\. Found: ${java_version}." | tee -a  $validationlog
+                echo "  \`- Expected: ${jdk16}. Found: ${java_version}." | tee -a  $validationlog
             fi
         elif [[ "${java_version}" == 11* ]]; then
             if [[ "${java_version}" != "$jdk11" ]]; then
                 echo "ERROR with image '${image}'!"
-                echo "  \`- Expected: ${jdk11}\. Found: ${java_version}" | tee -a  $validationlog
+                echo "  \`- Expected: ${jdk11}. Found: ${java_version}" | tee -a  $validationlog
             fi
         else
             echo "ERROR: Unknown version $java_version" | tee -a  $validationlog
@@ -103,10 +103,13 @@ do
     echo " - ${ci}"
 done
 
+echo ""
+echo "Validation log:"
 cat $validationlog
 
-if grep -Fxq "ERROR" $validationlog
-then
+grep -q "ERROR" $validationlog
+
+if [[ $? == 0 ]]; then
     exit 1
 fi
 

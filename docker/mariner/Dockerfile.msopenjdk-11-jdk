@@ -5,6 +5,7 @@ LABEL "Author"="Microsoft"
 LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+ARG package=msopenjdk-11
 
 RUN tdnf -y update && \
     tdnf -y upgrade && \
@@ -12,8 +13,8 @@ RUN tdnf -y update && \
     rm -rf /var/cache/tdnf && \
     rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
     tdnf install -y mariner-repos-ui && \
-    tdnf install -y msopenjdk-11 --nogpgcheck && \
+    tdnf install -y $package --nogpgcheck && \
     echo java -Xshare:dump && \
     java -Xshare:dump 
 
-ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-11
+ENV JAVA_HOME=/usr/lib/jvm/$package

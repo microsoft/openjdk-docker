@@ -5,29 +5,40 @@ trigger:
   branches:
     include:
       - main
+  paths:
+    exclude:
+      - .devops
+      - .github/workflows
 pr: none
 
 parameters:
   - name: jobs
     type: object
-    # sample:
-    # cbld_11:
-    #   distro: cbld
-    #   version: 11
-    #   package: msopenjdk-11
-    # ubuntu_11:
-    #   distro: ubuntu
-    #   version: 11
-    #   package: msopenjdk-11
-    # cbld_16:
-    #   distro: cbld
-    #   version: 16
-    #   package: msopenjdk-16
-    # ubuntu_16:
-    #   distro: ubuntu
-    #   version: 16
-    #   package: msopenjdk-16
-    default: []
+    default:
+      cbld_11:
+        distro: cbld
+        version: 11
+        package: msopenjdk-11
+      ubuntu_11:
+        distro: ubuntu
+        version: 11
+        package: msopenjdk-11
+      mariner_11:
+        distro: mariner
+        version: 11
+        package: msopenjdk-11
+      cbld_17:
+        distro: cbld
+        version: 17
+        package: msopenjdk-17
+      ubuntu_17:
+        distro: ubuntu
+        version: 17
+        package: msopenjdk-17
+      mariner_17:
+        distro: mariner
+        version: 17
+        package: msopenjdk-17
 
 jobs:
   - job: build_internal
@@ -43,6 +54,7 @@ jobs:
           command: build
           repository: internal/private/openjdk/jdk
           dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
+          containerRegistry: "msopenjdk ACR"
           arguments: --build-arg package=$(package)
           tags: |
             $(version)-$(distro)
@@ -81,6 +93,7 @@ jobs:
           command: build
           repository: public/openjdk/jdk
           dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
+          containerRegistry: "msopenjdk ACR"
           arguments: --build-arg package=$(package)
           tags: |
             $(version)-$(distro)

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Adjust with the latest minor versions of Microsoft Build of OpenJDK
-jdk17="17.0.2"
+jdk17="17.0.3"
 jdk16="16.0.2"
 jdk11="11.0.14.1"
 

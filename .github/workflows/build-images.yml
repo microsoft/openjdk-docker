@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build_images:
     runs-on: ubuntu-latest
     strategy: 
       matrix:
@@ -23,7 +23,10 @@ jobs:
       # Runs a single command using the runners shell
       - name: Build the image
         run: docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion }}-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.msopenjdk-${{ matrix.jdkversion }}-jdk ./docker/${{ matrix.baseimage }}/
-      
+
+  validate_images:
+    runs-on: ubuntu-latest
+    steps:
       # Validate the images
       - name: Validate container images
         run: ./validate-docker-images.sh 

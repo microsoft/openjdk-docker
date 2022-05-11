@@ -29,4 +29,4 @@ jobs:
     steps:
       # Validate the images
       - name: Validate container images
-        run: ./validate-docker-images.sh -s
+        run: ./validate-docker-images.sh -s -u

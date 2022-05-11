@@ -1,5 +1,17 @@
 #!/bin/bash
 
+while getcmd "s" optname; do
+  case "$optname" in
+    "s")
+      SKIPDELETE=1
+      echo "Set- Skip deletion of images. Will use whatever is local"
+      ;;
+    *)
+      echo "Unknown parameter"
+      ;;
+  esac
+done
+
 # Adjust with the latest minor versions of Microsoft Build of OpenJDK
 jdk17="17.0.3"
 jdk16="16.0.2"
@@ -13,18 +25,27 @@ validatedimages=()
 
 validationlog="validation-latest-images.log"
 
+deleteAndPullImage() {
+    image=$1
+    if [ ! "$SKIPDELETE" -eq 1 ]; then
+        docker rmi --force $image
+        docker pull $image
+    else
+        echo "Skipped image deletion."
+    fi
+}
+
 # Validate the top-level supported images
 # Only latest LTS of JDK and latest LTS of the Linux distribution
-for distro in "${distros[@]}" 
+for distro in "${distros[@]}"
 do
     for version in "${java_versions[@]}"
     do
         image="${imagerepo}:${version}-${distro}"
         validatedimages+=(${image})
-
-        docker rmi --force $image
-        docker pull $image
         
+        deleteAndPullImage $image
+     
         java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
         java_version=${java_version//[$'\t\r\n']}
         java_version=${java_version%%*( )}

@@ -1,10 +1,14 @@
 #!/bin/bash
 
-while getcmd "s" optname; do
+while getcmd "su" optname; do
   case "$optname" in
     "s")
       SKIPDELETE=1
-      echo "Set- Skip deletion of images. Will use whatever is local"
+      echo "Set- Skip deletion of images. Will use whatever is local."
+      ;;
+    "u")
+      SKIPUBUNTU=1
+      echo "Set- Skip test of other Ubuntu images."
       ;;
     *)
       echo "Unknown parameter"
@@ -76,44 +80,46 @@ done
 # LTS Versions only
 ubuntu_versions=("20.04" "18.04")
 
-for distro in "${ubuntu_versions[@]}" 
-do
-    for version in "${java_versions[@]}"
+if if [ ! "$SKIPUBUNTU" -eq 1 ]; then
+    for distro in "${ubuntu_versions[@]}" 
     do
-        image="${imagerepo}:jdk-${version}-ubuntu-${distro}"
-        validatedimages+=(${image})
+        for version in "${java_versions[@]}"
+        do
+            image="${imagerepo}:jdk-${version}-ubuntu-${distro}"
+            validatedimages+=(${image})
 
-        docker build \
-            --build-arg UBUNTU_VERSION="$distro" \
-            --build-arg JAVA_VERSION="$version" \
-            -t $image \
-            -f ./docker/test-only/Dockerfile.ubuntu .
+            docker build \
+                --build-arg UBUNTU_VERSION="$distro" \
+                --build-arg JAVA_VERSION="$version" \
+                -t $image \
+                -f ./docker/test-only/Dockerfile.ubuntu .
 
-        java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
-        java_version=${java_version//[$'\t\r\n']}
-        java_version=${java_version%%*( )}
+            java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
+            java_version=${java_version//[$'\t\r\n']}
+            java_version=${java_version%%*( )}
 
-        echo "Image '${image}' contains JDK version: ${java_version}" | tee -a  $validationlog
-        if [[ "${java_version}" == 17* ]]; then
-            if [[ "${java_version}" != "${jdk17}" ]]; then
-                echo "ERROR with image '${image}'!"  | tee -a  $validationlog
-                echo "  \`- Expected: ${jdk17}. Found: ${java_version}." | tee -a  $validationlog
+            echo "Image '${image}' contains JDK version: ${java_version}" | tee -a  $validationlog
+            if [[ "${java_version}" == 17* ]]; then
+                if [[ "${java_version}" != "${jdk17}" ]]; then
+                    echo "ERROR with image '${image}'!"  | tee -a  $validationlog
+                    echo "  \`- Expected: ${jdk17}. Found: ${java_version}." | tee -a  $validationlog
+                fi
+            elif [[ $java_version == 16* ]]; then
+                if [[ "${java_version}" != "${jdk16}" ]]; then
+                    echo "ERROR with image '${image}'!" | tee -a  $validationlog
+                    echo "  \`- Expected: ${jdk16}. Found: ${java_version}." | tee -a  $validationlog
+                fi
+            elif [[ "${java_version}" == 11* ]]; then
+                if [[ "${java_version}" != "$jdk11" ]]; then
+                    echo "ERROR with image '${image}'!" | tee -a  $validationlog
+                    echo "  \`- Expected: ${jdk11}. Found: ${java_version}" | tee -a  $validationlog
+                fi
+            else
+                echo "ERROR: Unknown version $java_version" | tee -a  $validationlog
             fi
-        elif [[ $java_version == 16* ]]; then
-            if [[ "${java_version}" != "${jdk16}" ]]; then
-                echo "ERROR with image '${image}'!" | tee -a  $validationlog
-                echo "  \`- Expected: ${jdk16}. Found: ${java_version}." | tee -a  $validationlog
-            fi
-        elif [[ "${java_version}" == 11* ]]; then
-            if [[ "${java_version}" != "$jdk11" ]]; then
-                echo "ERROR with image '${image}'!" | tee -a  $validationlog
-                echo "  \`- Expected: ${jdk11}. Found: ${java_version}" | tee -a  $validationlog
-            fi
-        else
-            echo "ERROR: Unknown version $java_version" | tee -a  $validationlog
-        fi
+        done
     done
-done
+fi
 
 echo ""
 echo "Validation complete."

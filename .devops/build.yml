@@ -58,14 +58,6 @@ jobs:
           arguments: --build-arg package=$(package)
           tags: |
             $(version)-$(distro)
-      - task: Docker@2
-        displayName: push image to container registry
-        inputs:
-          command: push
-          repository: internal/private/openjdk/jdk
-          containerRegistry: "msopenjdk ACR"
-          tags: |
-            $(version)-$(distro)
 
   - job: wait_for_validation
     dependsOn: build_internal
@@ -95,13 +87,5 @@ jobs:
           dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
           containerRegistry: "msopenjdk ACR"
           arguments: --build-arg package=$(package)
-          tags: |
-            $(version)-$(distro)
-      - task: Docker@2
-        displayName: push image to container registry
-        inputs:
-          command: push
-          repository: public/openjdk/jdk
-          containerRegistry: "msopenjdk ACR"
           tags: |
             $(version)-$(distro)

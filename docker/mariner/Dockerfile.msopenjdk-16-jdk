@@ -1,4 +1,6 @@
-FROM cblmariner.azurecr.io/base/core:1.0
+ARG IMAGE
+ARG TAG
+FROM ${IMAGE}:${TAG}
 
 MAINTAINER Microsoft OpenJDK Support <openjdk-support@microsoft.com>
 LABEL "Author"="Microsoft"

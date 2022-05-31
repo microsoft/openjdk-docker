@@ -19,26 +19,38 @@ parameters:
         distro: cbld
         version: 11
         package: msopenjdk-11
+        image: sbidprod.azurecr.io/quinault
+        tag: latest
       ubuntu_11:
         distro: ubuntu
         version: 11
         package: msopenjdk-11
+        image: ubuntu
+        tag: "20.04"
       mariner_11:
         distro: mariner
         version: 11
         package: msopenjdk-11
+        image: cblmariner.azurecr.io/base/core
+        tag: '"1.0"'
       cbld_17:
         distro: cbld
         version: 17
         package: msopenjdk-17
+        image: sbidprod.azurecr.io/quinault
+        tag: latest
       ubuntu_17:
         distro: ubuntu
         version: 17
         package: msopenjdk-17
+        image: ubuntu
+        tag: "20.04"
       mariner_17:
         distro: mariner
         version: 17
         package: msopenjdk-17
+        image: cblmariner.azurecr.io/base/core
+        tag: '"1.0"'
 
 jobs:
   - job: build_internal
@@ -55,9 +67,18 @@ jobs:
           repository: internal/private/openjdk/jdk
           dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
           containerRegistry: "msopenjdk ACR"
-          arguments: --build-arg package=$(package)
+          arguments: --build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)
           tags: |
             $(version)-$(distro)
+      - task: Docker@2
+        displayName: push image to container registry
+        inputs:
+          command: push
+          repository: internal/private/openjdk/jdk
+          containerRegistry: "msopenjdk ACR"
+          tags: |
+            $(version)-$(distro)
+
 
   - job: wait_for_validation
     dependsOn: build_internal
@@ -86,6 +107,14 @@ jobs:
           repository: public/openjdk/jdk
           dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
           containerRegistry: "msopenjdk ACR"
-          arguments: --build-arg package=$(package)
+          arguments: --build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)
+          tags: |
+            $(version)-$(distro)
+      - task: Docker@2
+        displayName: push image to container registry
+        inputs:
+          command: push
+          repository: public/openjdk/jdk
+          containerRegistry: "msopenjdk ACR"
           tags: |
             $(version)-$(distro)

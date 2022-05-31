@@ -16,13 +16,20 @@ jobs:
       matrix:
         jdkversion: [11, 16, 17]
         baseimage: ["cbld", "mariner", "ubuntu"]
+        include:
+          - baseimage: "cbld"
+            tag: latest
+          - baseimage: "mariner"
+            tag: "'1.0'"
+          - baseimage: "ubuntu"
+            tag: "20.04"
 
     steps:
       - uses: actions/checkout@v2
 
       # Runs a single command using the runners shell
       - name: Build the image
-        run: docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion }}-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.msopenjdk-${{ matrix.jdkversion }}-jdk ./docker/${{ matrix.baseimage }}/
+        run: docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion }}-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.msopenjdk-${{ matrix.jdkversion }}-jdk ./docker/${{ matrix.baseimage }}/ --build-arg IMAGE=${{ matrix.baseimage }} --build-arg TAG=${{ matrix.tag }}
 
   validate_images:
     runs-on: ubuntu-latest

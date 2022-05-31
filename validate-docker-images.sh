@@ -80,7 +80,7 @@ done
 # LTS Versions only
 ubuntu_versions=("20.04" "18.04")
 
-if if [ ! "$SKIPUBUNTU" -eq 1 ]; then
+if [ ! "$SKIPUBUNTU" -eq 1 ]; then
     for distro in "${ubuntu_versions[@]}" 
     do
         for version in "${java_versions[@]}"

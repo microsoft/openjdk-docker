@@ -15,13 +15,16 @@ jobs:
     strategy: 
       matrix:
         jdkversion: [11, 16, 17]
-        baseimage: ["sbidprod.azurecr.io/quinault", "cblmariner.azurecr.io/base/core", "ubuntu"]
+        baseimage: ["cbld", "mariner", "ubuntu"]
         include:
-          - baseimage: "sbidprod.azurecr.io/quinault"
+          - baseimage: "cbld"
+            image: "sbidprod.azurecr.io/quinault"
             tag: latest
-          - baseimage: "cblmariner.azurecr.io/base/core"
+          - baseimage: "mariner"
+            image: "cblmariner.azurecr.io/base/core"
             tag: "'1.0'"
           - baseimage: "ubuntu"
+            image: "ubuntu"
             tag: "20.04"
 
     steps:
@@ -29,11 +32,13 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Build the image
-        run: docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion }}-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.msopenjdk-${{ matrix.jdkversion }}-jdk ./docker/${{ matrix.baseimage }}/ --build-arg IMAGE=${{ matrix.baseimage }} --build-arg TAG=${{ matrix.tag }}
+        run: docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion }}-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.msopenjdk-${{ matrix.jdkversion }}-jdk ./docker/${{ matrix.baseimage }}/ --build-arg IMAGE=${{ matrix.image }} --build-arg TAG=${{ matrix.tag }}
 
   validate_images:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       # Validate the images
       - name: Validate container images
         run: ./validate-docker-images.sh -s -u

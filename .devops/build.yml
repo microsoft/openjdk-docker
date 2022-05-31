@@ -1,3 +1,7 @@
+# build.yml Build pipeline to build JDK docker images. When running the pipeline
+# replace "image-repository" value with the location of your docker images (e.g. hub.docker.io/...)
+# replace the image tags as needed.
+
 name: "$(Year:yyyy).$(Month).$(BuildID)"
 
 trigger:
@@ -19,25 +23,25 @@ parameters:
         distro: cbld
         version: 11
         package: msopenjdk-11
-        image: sbidprod.azurecr.io/quinault
+        image: "image-repository"
         tag: latest
       ubuntu_11:
         distro: ubuntu
         version: 11
         package: msopenjdk-11
-        image: ubuntu
+        image: "image-repository"
         tag: "20.04"
       mariner_11:
         distro: mariner
         version: 11
         package: msopenjdk-11
-        image: cblmariner.azurecr.io/base/core
+        image: "image-repository"
         tag: '"1.0"'
       cbld_17:
         distro: cbld
         version: 17
         package: msopenjdk-17
-        image: sbidprod.azurecr.io/quinault
+        image: "image-repository"
         tag: latest
       ubuntu_17:
         distro: ubuntu
@@ -49,7 +53,7 @@ parameters:
         distro: mariner
         version: 17
         package: msopenjdk-17
-        image: cblmariner.azurecr.io/base/core
+        image: "image-repository"
         tag: '"1.0"'
 
 jobs:

@@ -15,11 +15,11 @@ jobs:
     strategy: 
       matrix:
         jdkversion: [11, 16, 17]
-        baseimage: ["cbld", "mariner", "ubuntu"]
+        baseimage: ["sbidprod.azurecr.io/quinault", "cblmariner.azurecr.io/base/core", "ubuntu"]
         include:
-          - baseimage: "cbld"
+          - baseimage: "sbidprod.azurecr.io/quinault"
             tag: latest
-          - baseimage: "mariner"
+          - baseimage: "cblmariner.azurecr.io/base/core"
             tag: "'1.0'"
           - baseimage: "ubuntu"
             tag: "20.04"

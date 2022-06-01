@@ -23,38 +23,38 @@ parameters:
         distro: cbld
         version: 11
         package: msopenjdk-11
-        image: "image-repository"
-        tag: latest
+        image: "image-repository" # set to image repo on pipeline run
+        tag: "image-tag" # set to image tag on pipeline run
       ubuntu_11:
         distro: ubuntu
         version: 11
         package: msopenjdk-11
         image: "image-repository"
-        tag: "20.04"
+        tag: "image-tag"
       mariner_11:
         distro: mariner
         version: 11
         package: msopenjdk-11
         image: "image-repository"
-        tag: '"1.0"'
+        tag: "image-tag"
       cbld_17:
         distro: cbld
         version: 17
         package: msopenjdk-17
         image: "image-repository"
-        tag: latest
+        tag: "image-tag"
       ubuntu_17:
         distro: ubuntu
         version: 17
         package: msopenjdk-17
-        image: ubuntu
-        tag: "20.04"
+        image: "image-repository"
+        tag: "image-tag"
       mariner_17:
         distro: mariner
         version: 17
         package: msopenjdk-17
         image: "image-repository"
-        tag: '"1.0"'
+        tag: 'image-tag'
 
 jobs:
   - job: build_internal

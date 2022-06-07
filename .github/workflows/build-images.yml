@@ -21,18 +21,29 @@ jobs:
             image: "sbidprod.azurecr.io/quinault"
             tag: latest
           - baseimage: "mariner"
-            image: "cblmariner.azurecr.io/base/core"
             tag: "'1.0'"
           - baseimage: "ubuntu"
-            image: "ubuntu"
             tag: "20.04"
 
     steps:
       - uses: actions/checkout@v2
 
+      # Note: Using secrets will not work with forked pull requests
+      - name: Set repo var cbld
+        if: ${{ matrix.baseimage == 'cbld' }}
+        run: "echo IMAGE=${{ secrets.CBLD_REPO }} >> $GITHUB_ENV"
+
+      - name: Set repo var mariner
+        if: ${{ matrix.baseimage == 'mariner' }}
+        run: "echo IMAGE=${{ secrets.MARINER_REPO }} >> $GITHUB_ENV"
+
+      - name: Set repo var ubuntu
+        if: ${{ matrix.baseimage == 'ubuntu' }}
+        run: "echo IMAGE=${{ secrets.UBUNTU_REPO }} >> $GITHUB_ENV"
+
       # Runs a single command using the runners shell
       - name: Build the image
-        run: docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion }}-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.msopenjdk-${{ matrix.jdkversion }}-jdk ./docker/${{ matrix.baseimage }}/ --build-arg IMAGE=${{ matrix.image }} --build-arg TAG=${{ matrix.tag }}
+        run: docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion }}-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.msopenjdk-${{ matrix.jdkversion }}-jdk ./docker/${{ matrix.baseimage }}/ --build-arg IMAGE=${{ env.IMAGE }} --build-arg TAG=${{ matrix.tag }}
 
   validate_images:
     runs-on: ubuntu-latest

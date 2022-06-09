@@ -18,7 +18,6 @@ jobs:
         baseimage: ["cbld", "mariner", "ubuntu"]
         include:
           - baseimage: "cbld"
-            image: "sbidprod.azurecr.io/quinault"
             tag: latest
           - baseimage: "mariner"
             tag: "'1.0'"

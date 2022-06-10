@@ -15,11 +15,13 @@ jobs:
     strategy: 
       matrix:
         jdkversion: [11, 16, 17]
-        baseimage: ["cbld", "mariner", "ubuntu"]
+        baseimage: ["cbld", "mariner", "mariner-cm1", "ubuntu"]
         include:
           - baseimage: "cbld"
             tag: latest
           - baseimage: "mariner"
+            tag: "'2.0'"
+          - baseimage: "mariner-cm1"
             tag: "'1.0'"
           - baseimage: "ubuntu"
             tag: "20.04"
@@ -28,15 +30,19 @@ jobs:
       - uses: actions/checkout@v2
 
       # Note: Using secrets will not work with forked pull requests
-      - name: Set repo var cbld
+      - name: Set CBLD image
         if: ${{ matrix.baseimage == 'cbld' }}
         run: "echo IMAGE=${{ secrets.CBLD_REPO }} >> $GITHUB_ENV"
 
-      - name: Set repo var mariner
+      - name: Set mariner 2.0 image
         if: ${{ matrix.baseimage == 'mariner' }}
         run: "echo IMAGE=${{ secrets.MARINER_REPO }} >> $GITHUB_ENV"
 
-      - name: Set repo var ubuntu
+      - name: Set mariner 1.0 image
+        if: ${{ matrix.baseimage == 'mariner-cm1' }}
+        run: "echo IMAGE=${{ secrets.MARINER_CM1_REPO }} >> $GITHUB_ENV"
+
+      - name: Set ubuntu image
         if: ${{ matrix.baseimage == 'ubuntu' }}
         run: "echo IMAGE=${{ secrets.UBUNTU_REPO }} >> $GITHUB_ENV"
 

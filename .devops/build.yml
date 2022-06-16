@@ -27,6 +27,10 @@ parameters:
         distro: mariner
         version: 11
         package: msopenjdk-11
+      distroless_11:
+        distro: distroless
+        version: 11
+        package: msopenjdk-11
       cbld_17:
         distro: cbld
         version: 17
@@ -37,6 +41,10 @@ parameters:
         package: msopenjdk-17
       mariner_17:
         distro: mariner
+        version: 17
+        package: msopenjdk-17
+      distroless_17:
+        distro: distroless
         version: 17
         package: msopenjdk-17
 

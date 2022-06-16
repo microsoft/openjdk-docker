@@ -1,0 +1,40 @@
+FROM cblmariner.azurecr.io/base/core:2.0 AS installer
+
+ARG package=msopenjdk-11
+
+# Install msopenjdk
+RUN mkdir /staging \
+    && tdnf install -y --releasever=2.0 --installroot /staging \
+    tzdata \
+    ca-certificates \
+    freetype \
+    fontconfig \
+    zlib \
+    && rpm -Uhv https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm \
+    && tdnf install -y --releasever=2.0 --installroot /staging ${package} --nogpgcheck \
+    && tdnf clean all
+
+# Clean up staging
+RUN rm -rf /staging/etc/tdnf \
+    && rm -rf /staging/run/* \
+    && rm -rf /staging/var/cache/tdnf \
+    && rm -rf /staging/usr/share/doc \
+    && rm -rf /staging/usr/share/man \
+    && find /staging/var/log -type f -size +0 -delete
+
+FROM mcr.microsoft.com/cbl-mariner/distroless/minimal:2.0
+
+LABEL "Author"="Microsoft"
+LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
+
+ARG package=msopenjdk-11
+
+COPY --from=installer /staging/ /
+
+ENV JAVA_HOME=/usr/lib/jvm/${package}
+
+RUN java -Xshare:dump
+
+ENTRYPOINT [ "java"]
+# ENTRYPOINT [ "java", "-jar"] Google has it like this: https://github.com/GoogleContainerTools/distroless/tree/main/java
+CMD ["-version"]

@@ -24,7 +24,7 @@ jdk11="11.0.15"
 java_versions=("11" "16" "17")
 
 imagerepo="mcr.microsoft.com/openjdk/jdk"
-distros=("ubuntu" "cbld" "mariner")
+distros=("ubuntu" "cbld" "mariner" "distroless")
 validatedimages=()
 
 validationlog="validation-latest-images.log"

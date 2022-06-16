@@ -15,7 +15,7 @@ jobs:
     strategy: 
       matrix:
         jdkversion: [11, 16, 17]
-        baseimage: ["cbld", "mariner", "ubuntu"]
+        baseimage: ["cbld", "mariner", "ubuntu", "distroless"]
 
     steps:
       - uses: actions/checkout@v2

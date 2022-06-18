@@ -1,6 +1,6 @@
 #!/bin/bash
 
-while getcmd "su" optname; do
+while getopts 'su' optname; do
   case "$optname" in
     "s")
       SKIPDELETE=1
@@ -49,8 +49,13 @@ do
         validatedimages+=(${image})
         
         deleteAndPullImage $image
+
+        if [[ ${distro} -eq "distroless" ]]; then
+            java_version=$(docker run --rm $image 2>&1 | head -n 1 | awk -F '"' '{print $2}')
+        else
+            java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
+        fi
      
-        java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
         java_version=${java_version//[$'\t\r\n']}
         java_version=${java_version%%*( )}
         
@@ -80,7 +85,7 @@ done
 # LTS Versions only
 ubuntu_versions=("20.04" "18.04")
 
-if if [ ! "$SKIPUBUNTU" -eq 1 ]; then
+if [ ! "$SKIPUBUNTU" -eq 1 ]; then
     for distro in "${ubuntu_versions[@]}" 
     do
         for version in "${java_versions[@]}"

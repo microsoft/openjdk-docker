@@ -34,7 +34,3 @@ COPY --from=installer /staging/ /
 ENV JAVA_HOME=/usr/lib/jvm/${package}
 
 RUN java -Xshare:dump
-
-ENTRYPOINT [ "java"]
-# ENTRYPOINT [ "java", "-jar"] Google has it like this: https://github.com/GoogleContainerTools/distroless/tree/main/java
-CMD ["-version"]

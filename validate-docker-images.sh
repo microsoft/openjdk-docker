@@ -78,7 +78,7 @@ done
 
 # Validates existing LTS releases of Ubuntu
 # LTS Versions only
-ubuntu_versions=("20.04" "18.04")
+ubuntu_versions=("22.04" "20.04" "18.04")
 
 if [ ! "$SKIPUBUNTU" -eq 1 ]; then
     for distro in "${ubuntu_versions[@]}" 

@@ -7,7 +7,7 @@ LABEL "Author"="Microsoft"
 LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
-ARG package=msopenjdk-16
+ARG package=msopenjdk-11
 
 RUN tdnf -y update && \
     tdnf -y upgrade && \

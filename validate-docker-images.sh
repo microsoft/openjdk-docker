@@ -51,7 +51,7 @@ do
         deleteAndPullImage $image
 
         if [[ ${distro} -eq "distroless" ]]; then
-            java_version=$(docker run --rm $image 2>&1 | head -n 1 | awk -F '"' '{print $2}')
+            java_version=$(docker run --rm $image java -version 2>&1 | head -n 1 | awk -F '"' '{print $2}')
         else
             java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
         fi

@@ -31,12 +31,6 @@ parameters:
         package: msopenjdk-11
         image: "image-repository"
         tag: "image-tag"
-      mariner_11:
-        distro: mariner
-        version: 11
-        package: msopenjdk-11
-        image: "image-repository"
-        tag: "'2.0'"
       mariner_cm1_11:
         distro: mariner-cm1
         version: 11
@@ -55,12 +49,6 @@ parameters:
         package: msopenjdk-17
         image: "image-repository"
         tag: "image-tag"
-      mariner_17:
-        distro: mariner
-        version: 17
-        package: msopenjdk-17
-        image: "image-repository"
-        tag: "'2.0'"
       mariner_cm1_17:
         distro: mariner-cm1
         version: 17

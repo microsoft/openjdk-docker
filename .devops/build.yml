@@ -1,3 +1,7 @@
+# build.yml Build pipeline to build JDK docker images. When running the pipeline
+# replace "image-repository" value with the location of your docker images (e.g. hub.docker.io/...)
+# replace the image tags as needed.
+
 name: "$(Year:yyyy).$(Month).$(BuildID)"
 
 trigger:
@@ -19,26 +23,38 @@ parameters:
         distro: cbld
         version: 11
         package: msopenjdk-11
+        image: "image-repository" # set to image repo on pipeline run
+        tag: "image-tag" # set to image tag on pipeline run
       ubuntu_11:
         distro: ubuntu
         version: 11
         package: msopenjdk-11
-      mariner_11:
-        distro: mariner
+        image: "image-repository"
+        tag: "image-tag"
+      mariner_cm1_11:
+        distro: mariner-cm1
         version: 11
         package: msopenjdk-11
+        image: "image-repository"
+        tag: "'1.0'"
       cbld_17:
         distro: cbld
         version: 17
         package: msopenjdk-17
+        image: "image-repository"
+        tag: "image-tag"
       ubuntu_17:
         distro: ubuntu
         version: 17
         package: msopenjdk-17
-      mariner_17:
-        distro: mariner
+        image: "image-repository"
+        tag: "image-tag"
+      mariner_cm1_17:
+        distro: mariner-cm1
         version: 17
         package: msopenjdk-17
+        image: "image-repository"
+        tag: "'1.0'"
 
 jobs:
   - job: build_internal
@@ -55,7 +71,7 @@ jobs:
           repository: internal/private/openjdk/jdk
           dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
           containerRegistry: "msopenjdk ACR"
-          arguments: --build-arg package=$(package)
+          arguments: --build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)
           tags: |
             $(version)-$(distro)
       - task: Docker@2
@@ -66,6 +82,7 @@ jobs:
           containerRegistry: "msopenjdk ACR"
           tags: |
             $(version)-$(distro)
+
 
   - job: wait_for_validation
     dependsOn: build_internal
@@ -94,7 +111,7 @@ jobs:
           repository: public/openjdk/jdk
           dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
           containerRegistry: "msopenjdk ACR"
-          arguments: --build-arg package=$(package)
+          arguments: --build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)
           tags: |
             $(version)-$(distro)
       - task: Docker@2

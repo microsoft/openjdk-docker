@@ -1,4 +1,6 @@
-FROM cblmariner.azurecr.io/base/core:1.0
+ARG IMAGE
+ARG TAG
+FROM ${IMAGE}:${TAG}
 
 MAINTAINER Microsoft OpenJDK Support <openjdk-support@microsoft.com>
 LABEL "Author"="Microsoft"
@@ -12,7 +14,6 @@ RUN tdnf -y update && \
     tdnf install -y tzdata ca-certificates freetype fontconfig && \
     rm -rf /var/cache/tdnf && \
     rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
-    tdnf install -y mariner-repos-ui && \
     tdnf install -y $package --nogpgcheck && \
     echo java -Xshare:dump && \
     java -Xshare:dump 

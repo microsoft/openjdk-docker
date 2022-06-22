@@ -1,4 +1,6 @@
-FROM sbidprod.azurecr.io/quinault
+ARG IMAGE
+ARG TAG
+FROM ${IMAGE}:${TAG}
 
 MAINTAINER Microsoft OpenJDK Support <openjdk-support@microsoft.com>
 LABEL "Author"="Microsoft"

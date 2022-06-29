@@ -4,7 +4,6 @@ ARG BASE_IMAGE
 ARG BASE_TAG
 
 FROM ${INSTALLER_IMAGE}:${INSTALLER_TAG} AS installer
-# FROM cblmariner.azurecr.io/base/core:2.0 AS installer
 
 ARG package=msopenjdk-16
 
@@ -29,7 +28,6 @@ RUN rm -rf /staging/etc/tdnf \
     && find /staging/var/log -type f -size +0 -delete
 
 FROM ${BASE_IMAGE}:${BASE_TAG}
-# FROM mcr.microsoft.com/cbl-mariner/distroless/minimal:2.0
 
 LABEL "Author"="Microsoft"
 LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"

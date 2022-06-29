@@ -19,8 +19,9 @@ jobs:
         include:
           - baseimage: "cbld"
             tag: latest
-          - baseimage: "mariner"
-            tag: "'2.0'"
+          # Postponed until after July 2022 PSU
+          # - baseimage: "mariner"
+          #   tag: "'2.0'"
           - baseimage: "mariner-cm1"
             tag: "'1.0'"
           - baseimage: "ubuntu"

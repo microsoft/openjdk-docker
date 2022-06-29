@@ -38,9 +38,10 @@ jobs:
         if: ${{ matrix.baseimage == 'cbld' }}
         run: "echo IMAGE=${{ secrets.CBLD_REPO }} >> $GITHUB_ENV"
 
-      - name: Set mariner 2.0 image
-        if: ${{ matrix.baseimage == 'mariner' }}
-        run: "echo IMAGE=${{ secrets.MARINER_REPO }} >> $GITHUB_ENV"
+      # Postponed until after July 2022 PSU
+      # - name: Set mariner 2.0 image
+      #   if: ${{ matrix.baseimage == 'mariner' }}
+      #   run: "echo IMAGE=${{ secrets.MARINER_REPO }} >> $GITHUB_ENV"
 
       - name: Set mariner 1.0 image
         if: ${{ matrix.baseimage == 'mariner-cm1' }}

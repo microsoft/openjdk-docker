@@ -12,6 +12,10 @@ RUN tdnf -y update && \
     rm -rf /var/cache/tdnf && \
     rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
     tdnf install -y mariner-repos-ui && \
-    tdnf install -y msopenjdk-17 --nogpgcheck
+    # Temporary fix for Jan 2022 JDK Update (see issue #21 for details)
+    # tdnf install -y msopenjdk-17 --nogpgcheck
+    tdnf install -y msopenjdk-17-17.0.2+8_LTS-1 --nogpgcheck && \
+    echo java -Xshare:dump && \
+    java -Xshare:dump 
 
 ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-17

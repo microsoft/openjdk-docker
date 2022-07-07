@@ -1,0 +1,36 @@
+ARG INSTALLER_IMAGE
+ARG INSTALLER_TAG
+ARG BASE_IMAGE
+ARG BASE_TAG
+
+FROM ${INSTALLER_IMAGE}:${INSTALLER_TAG} AS installer
+
+ARG package=msopenjdk-11
+
+# Install msopenjdk
+RUN mkdir /staging \
+    && tdnf install -y --releasever=2.0 --installroot /staging \
+    tzdata \
+    ${package} \
+    && tdnf clean all
+
+# Clean up staging
+RUN rm -rf /staging/etc/tdnf \
+    && rm -rf /staging/run/* \
+    && rm -rf /staging/var/cache/tdnf \
+    && rm -rf /staging/usr/share/doc \
+    && rm -rf /staging/usr/share/man \
+    && find /staging/var/log -type f -size +0 -delete
+
+FROM ${BASE_IMAGE}:${BASE_TAG}
+
+LABEL "Author"="Microsoft"
+LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
+
+ARG package=msopenjdk-11
+
+COPY --from=installer /staging/ /
+
+ENV JAVA_HOME=/usr/lib/jvm/${package}
+
+RUN java -Xshare:dump

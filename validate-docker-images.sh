@@ -1,6 +1,6 @@
 #!/bin/bash
 
-while getcmd "su" optname; do
+while getopts 'su' optname; do
   case "$optname" in
     "s")
       SKIPDELETE=1
@@ -24,7 +24,7 @@ jdk11="11.0.15"
 java_versions=("11" "16" "17")
 
 imagerepo="mcr.microsoft.com/openjdk/jdk"
-distros=("ubuntu" "cbld" "mariner")
+distros=("ubuntu" "cbld" "mariner" "distroless")
 validatedimages=()
 
 validationlog="validation-latest-images.log"
@@ -49,8 +49,13 @@ do
         validatedimages+=(${image})
         
         deleteAndPullImage $image
+
+        if [[ ${distro} -eq "distroless" ]]; then
+            java_version=$(docker run --rm $image java -version 2>&1 | head -n 1 | awk -F '"' '{print $2}')
+        else
+            java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
+        fi
      
-        java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
         java_version=${java_version//[$'\t\r\n']}
         java_version=${java_version%%*( )}
         

@@ -15,14 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build the regular image
-        run: |
-         echo IMAGE=${{ secrets.MARINER_REPO }} >> $GITHUB_ENV
-         docker build -t mcr.microsoft.com/openjdk/jdk:8-mariner -f ./docker/mariner/Dockerfile.temurin-8-jdk ./docker/mariner/ --build-arg IMAGE=${{ env.IMAGE }}
+        run: docker build -t mcr.microsoft.com/openjdk/jdk:8-mariner -f ./docker/mariner/Dockerfile.temurin-8-jdk ./docker/mariner/
       - name: Build the distroless image
-        run: |
-         echo INSTALLER_IMAGE=${{ secrets.DISTROLESS_INSTALLER_REPO }} >> $GITHUB_ENV
-         echo BASE_IMAGE=${{ secrets.DISTROLESS_BASE_REPO }} >> $GITHUB_ENV
-         docker build -t mcr.microsoft.com/openjdk/jdk:8-distroless -f ./docker/distroless/Dockerfile.temurin-8-jdk ./docker/distroless/ --build-arg INSTALLER_IMAGE=${{ env.INSTALLER_IMAGE }} --build-arg BASE_IMAGE=${{ env.BASE_IMAGE }}
+        run: docker build -t mcr.microsoft.com/openjdk/jdk:8-distroless -f ./docker/distroless/Dockerfile.temurin-8-jdk ./docker/distroless/
 
   build_images:
     runs-on: ubuntu-latest

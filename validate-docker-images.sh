@@ -2,13 +2,9 @@
 
 while getopts 'su' optname; do
   case "$optname" in
-    "s")
-      SKIPDELETE=1
-      echo "Set- Skip deletion of images. Will use whatever is local."
-      ;;
     "u")
       SKIPUBUNTU=1
-      echo "Set- Skip test of other Ubuntu images."
+      echo "Skip test of other Ubuntu images."
       ;;
     *)
       echo "Unknown parameter"
@@ -21,23 +17,14 @@ jdk17="17.0.3"
 jdk16="16.0.2"
 jdk11="11.0.15"
 
-java_versions=("11" "16" "17")
+java_versions=("17" "11" "16")
 
 imagerepo="mcr.microsoft.com/openjdk/jdk"
-distros=("ubuntu" "cbld" "mariner" "distroless")
+distros=("ubuntu" "cbld" "mariner" "mariner-cm1" "distroless")
 validatedimages=()
 
 validationlog="validation-latest-images.log"
-
-deleteAndPullImage() {
-    image=$1
-    if [ ! "$SKIPDELETE" -eq 1 ]; then
-        docker rmi --force $image
-        docker pull $image
-    else
-        echo "Skipped image deletion."
-    fi
-}
+rm $validationlog
 
 # Validate the top-level supported images
 # Only latest LTS of JDK and latest LTS of the Linux distribution
@@ -47,13 +34,16 @@ do
     do
         image="${imagerepo}:${version}-${distro}"
         validatedimages+=(${image})
-        
-        deleteAndPullImage $image
 
-        if [[ ${distro} -eq "distroless" ]]; then
-            java_version=$(docker run --rm $image java -version 2>&1 | head -n 1 | awk -F '"' '{print $2}')
+        if [[ "$(docker images -q $image 2> /dev/null)" == "" ]]; then
+            echo "ERROR: image '${image}' not found!"  | tee -a  $validationlog
+            continue
+        fi
+
+        if [[ "${distro}" == "distroless" ]]; then
+            java_version=$(docker run --pull=always --rm $image java -version 2>&1 | head -n 1 | awk -F '"' '{print $2}')
         else
-            java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
+            java_version=$(docker run --pull=always --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
         fi
      
         java_version=${java_version//[$'\t\r\n']}
@@ -76,7 +66,7 @@ do
                 echo "  \`- Expected: ${jdk11}. Found: ${java_version}."  | tee -a  $validationlog
             fi
         else
-            echo "Unknown version $java_version"  | tee -a  $validationlog
+            echo "ERROR: Unknown version '$java_version'"  | tee -a  $validationlog
         fi
     done
 done
@@ -85,12 +75,12 @@ done
 # LTS Versions only
 ubuntu_versions=("22.04" "20.04" "18.04")
 
-if [ ! "$SKIPUBUNTU" -eq 1 ]; then
+if [[ ! "$SKIPUBUNTU" == "1" ]]; then
     for distro in "${ubuntu_versions[@]}" 
     do
         for version in "${java_versions[@]}"
         do
-            image="${imagerepo}:jdk-${version}-ubuntu-${distro}"
+            image="${imagerepo}:jdk-${version}-ubuntu-${distro}-localtest"
             validatedimages+=(${image})
 
             docker build \
@@ -98,6 +88,11 @@ if [ ! "$SKIPUBUNTU" -eq 1 ]; then
                 --build-arg JAVA_VERSION="$version" \
                 -t $image \
                 -f ./docker/test-only/Dockerfile.ubuntu .
+
+            if [[ "$(docker images -q $image 2> /dev/null)" == "" ]]; then
+                echo "ERROR: image '${image}' did not build correctly!"  | tee -a  $validationlog
+                continue
+            fi
 
             java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
             java_version=${java_version//[$'\t\r\n']}
@@ -127,16 +122,17 @@ if [ ! "$SKIPUBUNTU" -eq 1 ]; then
 fi
 
 echo ""
-echo "Validation complete."
-
-echo "All images validated:"
+echo "### Validation completed on $(date)."
+echo ""
+echo "List of images validated:"
 for ci in "${validatedimages[@]}"
 do
     echo " - ${ci}"
 done
 
 echo ""
-echo "Validation log:"
+echo "-- Validation log --"
+echo ""
 cat $validationlog
 
 grep -q "ERROR" $validationlog

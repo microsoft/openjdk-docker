@@ -27,6 +27,7 @@ jobs:
   build_images:
     runs-on: ubuntu-latest
     strategy: 
+      fail-fast: false
       matrix:
         jdkversion: [11, 16, 17]
         baseimage: ["cbld", "mariner", "mariner-cm1", "ubuntu", "distroless"]

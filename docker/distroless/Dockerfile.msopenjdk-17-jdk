@@ -2,7 +2,6 @@ ARG INSTALLER_IMAGE="mcr.microsoft.com/cbl-mariner/base/core"
 ARG INSTALLER_TAG="2.0"
 ARG BASE_IMAGE="mcr.microsoft.com/cbl-mariner/distroless/base"
 ARG BASE_TAG="2.0"
-ARG JDK_PKG="msopenjdk-17"
 
 FROM ${INSTALLER_IMAGE}:${INSTALLER_TAG} AS installer
 
@@ -11,7 +10,7 @@ RUN mkdir /staging \
     && tdnf install -y --releasever=2.0 --installroot /staging \
     tzdata ca-certificates freetype fontconfig zlib \
     && rpm -Uhv https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm \
-    && tdnf install -y --releasever=2.0 --installroot /staging ${JDK_PKG} --nogpgcheck \
+    && tdnf install -y --releasever=2.0 --installroot /staging msopenjdk-17 --nogpgcheck \
     && tdnf clean all
 
 # Clean up staging
@@ -26,6 +25,6 @@ LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
 COPY --from=installer /staging/ /
 
-ENV JAVA_HOME=/usr/lib/jvm/${JDK_PKG}
+ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-17
 
 RUN java -Xshare:dump

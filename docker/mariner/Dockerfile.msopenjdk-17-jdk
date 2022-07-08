@@ -2,18 +2,16 @@ ARG IMAGE="mcr.microsoft.com/cbl-mariner/base/core"
 ARG TAG="2.0"
 FROM ${IMAGE}:${TAG}
 
-MAINTAINER Microsoft OpenJDK Support <openjdk-support@microsoft.com>
 LABEL "Author"="Microsoft"
 LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
-ARG package=msopenjdk-17
 
-RUN tdnf -y update && \
-    tdnf -y upgrade && \
-    tdnf install -y tzdata ca-certificates freetype fontconfig && \
+ARG PKGS="msopenjdk-17 tzdata ca-certificates freetype"
+
+RUN rpm -Uhv https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
+    tdnf install -y ${PKGS} && \
     rm -rf /var/cache/tdnf && \
-    tdnf install -y $package --nogpgcheck && \
     echo java -Xshare:dump && \
     java -Xshare:dump 
 

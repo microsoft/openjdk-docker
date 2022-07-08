@@ -1,0 +1,28 @@
+ARG INSTALLER_IMAGE="mcr.microsoft.com/cbl-mariner/base/core"
+ARG INSTALLER_TAG="2.0"
+ARG BASE_IMAGE="mcr.microsoft.com/cbl-mariner/distroless/base"
+ARG BASE_TAG="2.0"
+
+FROM ${INSTALLER_IMAGE}:${INSTALLER_TAG} AS installer
+
+ARG PKGS="ca-certificates tzdata freetype"
+ARG JDK_URL="https://api.adoptium.net/v3/binary/latest/8/ga/linux/x64/jdk/hotspot/normal/eclipse?project=jdk"
+
+# Install pre-reqs
+RUN mkdir -p /usr/lib/jvm && \
+    tdnf install -y ca-certificates tar && \
+    curl --silent -L ${JDK_URL} -o /jdk.tar.gz && \
+    tar -xzf /jdk.tar.gz -C / && \
+    rm /jdk.tar.gz && \
+    mv /jdk8u* /usr/jdk
+
+FROM ${BASE_IMAGE}:${BASE_TAG}
+
+LABEL "Author"="Microsoft"
+LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
+
+ENV JAVA_HOME=/usr/jdk
+
+COPY --from=installer /usr/jdk/ /usr/jdk/
+
+ENTRYPOINT [ "/usr/jdk/bin/java" ]

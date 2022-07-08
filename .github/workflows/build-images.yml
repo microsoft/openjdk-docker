@@ -10,6 +10,20 @@ on:
   workflow_dispatch:
 
 jobs:
+  build_jdk8:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Note: Using secrets will not work with forked pull requests
+      - name: Set Mariner 2.0 image
+        run: "echo IMAGE=${{ secrets.MARINER_REPO }} >> $GITHUB_ENV"
+
+      # Runs a single command using the runners shell
+      - name: Build the image
+        run: docker build -t mcr.microsoft.com/openjdk/jdk:8-mariner -f ./docker/mariner/Dockerfile.temurin-8-jdk ./docker/mariner/ --build-arg IMAGE=${{ env.IMAGE }} --build-arg TAG=2.0
+
   build_images:
     runs-on: ubuntu-latest
     strategy: 
@@ -71,3 +85,5 @@ jobs:
       # Validate the images
       - name: Validate container images
         run: ./validate-docker-images.sh -s -u
+
+

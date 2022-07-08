@@ -2,9 +2,9 @@ ARG IMAGE="mcr.microsoft.com/mirror/docker/library/ubuntu"
 ARG TAG="20.04"
 FROM ${IMAGE}:${TAG}
 
-MAINTAINER Microsoft OpenJDK Support <openjdk-support@microsoft.com>
 LABEL "Author"="Microsoft"
 LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
+
 ARG package=msopenjdk-17
 
 RUN DEBIAN_FRONTEND=noninteractive && \

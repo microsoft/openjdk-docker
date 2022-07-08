@@ -2,11 +2,11 @@ ARG IMAGE="mcr.microsoft.com/cbl-mariner/base/core"
 ARG TAG="1.0"
 FROM ${IMAGE}:${TAG}
 
-MAINTAINER Microsoft OpenJDK Support <openjdk-support@microsoft.com>
 LABEL "Author"="Microsoft"
 LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+
 ARG package=msopenjdk-16
 
 RUN tdnf -y update && \

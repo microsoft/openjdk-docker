@@ -7,10 +7,11 @@ LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-ARG PKGS="msopenjdk-17 tzdata ca-certificates freetype"
+ARG package="msopenjdk-17"
+ARG PKGS="tzdata ca-certificates freetype"
 
 RUN rpm -Uhv https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
-    tdnf install -y ${PKGS} && \
+    tdnf install -y ${package} ${PKGS} && \
     rm -rf /var/cache/tdnf && \
     echo java -Xshare:dump && \
     java -Xshare:dump 

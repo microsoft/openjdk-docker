@@ -5,12 +5,14 @@ ARG BASE_TAG="2.0"
 
 FROM ${INSTALLER_IMAGE}:${INSTALLER_TAG} AS installer
 
+ARG package="msopenjdk-17"
+
 # Install msopenjdk
 RUN mkdir /staging \
     && tdnf install -y --releasever=2.0 --installroot /staging \
     tzdata ca-certificates freetype fontconfig zlib \
     && rpm -Uhv https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm \
-    && tdnf install -y --releasever=2.0 --installroot /staging msopenjdk-17 --nogpgcheck \
+    && tdnf install -y --releasever=2.0 --installroot /staging ${package} --nogpgcheck \
     && tdnf clean all
 
 # Clean up staging

@@ -7,9 +7,10 @@ LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-ARG PKGS="msopenjdk-11 tzdata ca-certificates freetype"
+ARG package="msopenjdk-11"
+ARG PKGS="tzdata ca-certificates freetype"
 
-RUN tdnf install -y --releasever=2.0 ${PKGS} && \
+RUN tdnf install -y --releasever=2.0 ${package} ${PKGS} && \
     tdnf clean all && \
     rm -rf /var/cache/tdnf && \
     echo java -Xshare:dump && \

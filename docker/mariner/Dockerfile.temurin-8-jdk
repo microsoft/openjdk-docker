@@ -1,4 +1,4 @@
-ARG IMAGE=cblmariner.azurecr.io/base/core
+ARG IMAGE=mcr.microsoft.com/cbl-mariner/base/core
 ARG TAG=2.0
 FROM ${IMAGE}:${TAG}
 

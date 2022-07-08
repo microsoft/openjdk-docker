@@ -10,16 +10,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_jdk8:
+  build_temurin:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        baseimage: ["mariner", "distroless"]
+
     steps:
       - uses: actions/checkout@v2
-      - name: Build the regular image
-        run: docker build -t mcr.microsoft.com/openjdk/jdk:8-mariner -f ./docker/mariner/Dockerfile.temurin-8-jdk ./docker/mariner/
-      - name: Build the distroless image
-        run: docker build -t mcr.microsoft.com/openjdk/jdk:8-distroless -f ./docker/distroless/Dockerfile.temurin-8-jdk ./docker/distroless/
+      - name: Build the image
+        run: docker build -t mcr.microsoft.com/openjdk/jdk:8-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.temurin-8-jdk ./docker/${{ matrix.baseimage }}/
 
-  build_images:
+  build_msopenjdk:
     runs-on: ubuntu-latest
     strategy: 
       fail-fast: false

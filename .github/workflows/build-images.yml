@@ -78,13 +78,4 @@ jobs:
       - name: Build the distroless image
         if: ${{ matrix.baseimage == 'distroless' }}
         run: docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion }}-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.msopenjdk-${{ matrix.jdkversion }}-jdk ./docker/${{ matrix.baseimage }}/ --build-arg INSTALLER_IMAGE=${{ env.INSTALLER_IMAGE }} --build-arg INSTALLER_TAG=${{ matrix.installer_tag }} --build-arg BASE_IMAGE=${{ env.BASE_IMAGE }} --build-arg BASE_TAG=${{ matrix.base_tag }}
-  validate_images:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      # Validate the images
-      - name: Validate container images
-        run: ./validate-docker-images.sh -s -u
-
 

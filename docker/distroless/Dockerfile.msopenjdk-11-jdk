@@ -1,25 +1,22 @@
-ARG INSTALLER_IMAGE
-ARG INSTALLER_TAG
-ARG BASE_IMAGE
-ARG BASE_TAG
+ARG INSTALLER_IMAGE="mcr.microsoft.com/cbl-mariner/base/core"
+ARG INSTALLER_TAG="2.0"
+ARG BASE_IMAGE="mcr.microsoft.com/cbl-mariner/distroless/base"
+ARG BASE_TAG="2.0"
+ARG JDK_PKG="msopenjdk-11"
 
 FROM ${INSTALLER_IMAGE}:${INSTALLER_TAG} AS installer
 
-ARG package=msopenjdk-11
-
 # Install msopenjdk
-RUN mkdir /staging \
+RUN mkdir /staging && \
     && tdnf install -y --releasever=2.0 --installroot /staging \
-    tzdata \
-    ${package} \
+    tzdata ca-certificates freetype fontconfig zlib \
+    && rpm -Uhv https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm \
+    && tdnf install -y --releasever=2.0 --installroot /staging ${JDK_PKG} --nogpgcheck \
     && tdnf clean all
 
 # Clean up staging
-RUN rm -rf /staging/etc/tdnf \
-    && rm -rf /staging/run/* \
-    && rm -rf /staging/var/cache/tdnf \
-    && rm -rf /staging/usr/share/doc \
-    && rm -rf /staging/usr/share/man \
+RUN rm -rf /staging/etc/tdnf /staging/run/* /staging/var/cache/tdnf \
+    /staging/usr/share/doc /staging/usr/share/man \
     && find /staging/var/log -type f -size +0 -delete
 
 FROM ${BASE_IMAGE}:${BASE_TAG}
@@ -27,10 +24,8 @@ FROM ${BASE_IMAGE}:${BASE_TAG}
 LABEL "Author"="Microsoft"
 LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
-ARG package=msopenjdk-11
-
 COPY --from=installer /staging/ /
 
-ENV JAVA_HOME=/usr/lib/jvm/${package}
+ENV JAVA_HOME=/usr/lib/jvm/${JDK_PKG}
 
 RUN java -Xshare:dump

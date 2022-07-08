@@ -35,15 +35,16 @@ do
         image="${imagerepo}:${version}-${distro}"
         validatedimages+=(${image})
 
+        docker pull ${image} > /dev/null 2>&1
         if [[ "$(docker images -q $image 2> /dev/null)" == "" ]]; then
             echo "ERROR: image '${image}' not found!"  | tee -a  $validationlog
             continue
         fi
 
         if [[ "${distro}" == "distroless" ]]; then
-            java_version=$(docker run --pull=always --rm $image java -version 2>&1 | head -n 1 | awk -F '"' '{print $2}')
+            java_version=$(docker run --rm $image java -version 2>&1 | head -n 1 | awk -F '"' '{print $2}')
         else
-            java_version=$(docker run --pull=always --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
+            java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
         fi
      
         java_version=${java_version//[$'\t\r\n']}

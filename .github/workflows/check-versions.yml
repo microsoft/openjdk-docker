@@ -1,4 +1,4 @@
-name: Check JDK Versions on Published MCR Images CI
+name: Validate JDK Versions on Published MCR Images CI
 
 on:
   workflow_dispatch:

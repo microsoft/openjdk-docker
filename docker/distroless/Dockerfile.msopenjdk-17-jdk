@@ -5,20 +5,29 @@ ARG BASE_TAG="2.0"
 
 FROM ${INSTALLER_IMAGE}:${INSTALLER_TAG} AS installer
 
-ARG package="msopenjdk-17"
+ARG JDK_URL="https://aka.ms/download-jdk/microsoft-jdk-17-linux-x64.tar.gz"
 
-# Install msopenjdk
+# Install pre-reqs
+RUN mkdir -p /usr/lib/jvm && \
+    tdnf install -y ca-certificates tar && \
+    curl --silent -L ${JDK_URL} -o /jdk.tar.gz && \
+    tar -xzf /jdk.tar.gz -C / && \
+    rm /jdk.tar.gz && \
+    mv /jdk-1* /usr/jdk
+
+# Add dynamically linked packages: zlib
+# Distroless base image already has tzdata ca-certificates openssl glibc
 RUN mkdir /staging \
-    && tdnf install -y --releasever=2.0 --installroot /staging \
-    tzdata ca-certificates freetype fontconfig zlib \
-    && rpm -Uhv https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm \
-    && tdnf install -y --releasever=2.0 --installroot /staging ${package} --nogpgcheck \
-    && tdnf clean all
+    && tdnf install -y --releasever=2.0 --installroot /staging zlib
 
 # Clean up staging
-RUN rm -rf /staging/etc/tdnf /staging/run/* /staging/var/cache/tdnf \
-    /staging/usr/share/doc /staging/usr/share/man \
+RUN rm -rf /staging/etc/dnf \
+    && rm -rf /staging/run/* \
+    && rm -rf /staging/var/cache/dnf \
     && find /staging/var/log -type f -size +0 -delete
+
+# Clean up JDK
+RUN rm -rf /usr/jdk/man /usr/jdk/lib/src.zip
 
 FROM ${BASE_IMAGE}:${BASE_TAG}
 
@@ -26,7 +35,8 @@ LABEL "Author"="Microsoft"
 LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
 COPY --from=installer /staging/ /
+COPY --from=installer /usr/jdk/ /usr/jdk/
 
-ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-17
+ENV JAVA_HOME=/usr/jdk
 
-RUN java -Xshare:dump
+ENTRYPOINT [ "/usr/jdk/bin/java" ]

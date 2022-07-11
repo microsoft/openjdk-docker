@@ -7,11 +7,11 @@ LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-ARG package="temurin-8-jdk"
+ARG JDK_PKG="temurin-8-jdk"
 ARG PKGS="ca-certificates tzdata freetype"
 
 # Install pre-reqs
-RUN tdnf install -y ${package} ${PKGS} && \
+RUN tdnf install -y ${JDK_PKG} ${PKGS} && \
     rm -rf /var/cache/tdnf
 
 ENV JAVA_HOME=/usr/lib/jvm/temurin-8-jdk

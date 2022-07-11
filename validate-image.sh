@@ -1,17 +1,25 @@
 #!/bin/bash
 
+ARGS=""
 
-while getopts 'su' optname; do
-  case "$optname" in
-    "s")
+while (( "$#" )); do
+  case "$1" in
+    -s|--skip-pull)
       SKIPPULL=1
-      echo "Skip docker pull."
+      shift
+      ;;
+    -*|--*=)
+      echo "Invalid flag: $1" >&2
+      exit 1
       ;;
     *)
-      echo "Unknown parameter"
+      ARGS="$ARGS $1"
+      shift
       ;;
   esac
 done
+
+eval set -- "$ARGS"
 
 distro=$1
 jdkvendor=$2

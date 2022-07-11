@@ -1,14 +1,43 @@
-name: Validate Published Images
+name: Check Expected Versions
 
 on:
   workflow_dispatch:
 
 jobs:
-  build:
+  validate_temurin:
     runs-on: ubuntu-latest
-
+    strategy:
+      fail-fast: false
+      matrix:
+        distros: [ "mariner", "distroless" ]
+        jdkvendor: [ "temurin" ]
+        jdkversion: [ { major: "8", expected: "1.8.0_332" } ]
     steps:
       - uses: actions/checkout@v2
 
-      - name: Validate container images
-        run: ./validate-docker-images.sh
+      - name: Build image locally
+        run: |
+          docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion.major }}:${{ matrix.distros }} -f ./docker/${{ matrix.distros }}/Dockerfile.${{ matrix.jdkvendor }}-${{ matrix.jdkversion.major }}-jdk ./docker
+
+      - name: Validate container image
+        run: |
+          ./validate-image.sh ${{ matrix.distros }} ${{ matrix.jdkvendor }} ${{ matrix.jdkversion.major }} ${{ matrix.jdkversion.expected }} 
+
+  validate_msopenjdk:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        distros: [ "mariner", "distroless", "mariner-cm1", "ubuntu" ]
+        jdkvendor: [ "msopenjdk" ]
+        jdkversion: [ { major: "11", expected: "11.0.15" }, { major: "17", expected: "17.0.3" } ]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build image locally
+        run: |
+          docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion.major }}:${{ matrix.distros }} -f ./docker/${{ matrix.distros }}/Dockerfile.${{ matrix.jdkvendor }}-${{ matrix.jdkversion.major }}-jdk ./docker
+
+      - name: Validate container image
+        run: |
+          ./validate-image.sh ${{ matrix.distros }} ${{ matrix.jdkvendor }} ${{ matrix.jdkversion.major }} ${{ matrix.jdkversion.expected }} 

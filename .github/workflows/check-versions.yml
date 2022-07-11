@@ -17,7 +17,7 @@ jobs:
 
       - name: Build image locally
         run: |
-          docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion.major }}:${{ matrix.distros }} -f ./docker/${{ matrix.distros }}/Dockerfile.${{ matrix.jdkvendor }}-${{ matrix.jdkversion.major }}-jdk ./docker
+          docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion.major }}-${{ matrix.distros }} -f ./docker/${{ matrix.distros }}/Dockerfile.${{ matrix.jdkvendor }}-${{ matrix.jdkversion.major }}-jdk ./docker
 
       - name: Validate container image
         run: |
@@ -36,7 +36,7 @@ jobs:
 
       - name: Build image locally
         run: |
-          docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion.major }}:${{ matrix.distros }} -f ./docker/${{ matrix.distros }}/Dockerfile.${{ matrix.jdkvendor }}-${{ matrix.jdkversion.major }}-jdk ./docker
+          docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion.major }}-${{ matrix.distros }} -f ./docker/${{ matrix.distros }}/Dockerfile.${{ matrix.jdkvendor }}-${{ matrix.jdkversion.major }}-jdk ./docker
 
       - name: Validate container image
         run: |

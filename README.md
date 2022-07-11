@@ -1,8 +1,6 @@
-# Microsoft Build of OpenJDK Docker Images
+# Microsoft Build of OpenJDK Container Images
 
-This repository contains the Dockerfiles for the official Docker images of MSFT Build of OpenJDK. These images are officially hosted in the [Microsoft Container Registry (MCR)](https://github.com/microsoft/containerregistry).
-
-You may also see the images syndicated through [Docker Hub](https://hub.docker.com/_/microsoft-openjdk-jdk).
+This repository contains the Dockerfiles for the official container images of Microsoft Build of OpenJDK. These images are officially hosted in the [Microsoft Container Registry (MCR)](https://mcr.microsoft.com/en-us/product/openjdk/jdk/about).
 
 For more information on how to consume these images, please visit the Microsoft Build of OpenJDK documentation for [Containers](https://docs.microsoft.com/java/openjdk/containers).
 

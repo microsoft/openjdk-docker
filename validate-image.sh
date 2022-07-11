@@ -30,7 +30,7 @@ java_version=${java_version//[$'\t\r\n']}
 java_version=${java_version%%*( )}
 
 if [[ "$java_version" == "$expectedversion" ]]; then
-    echo "::notice ::Image '${image}' contains expected JDK version: ${expectedversion}"
+    echo "::notice title=Validation succeeded ($jdkversion-$distro)::Image '${image}' contains expected JDK version: ${expectedversion}"
 else
     echo "::error title=Wrong minor JDK version ($jdkversion-$distro)::Container image '${image}' contains unexpected JDK version: ${java_version}. Expected: ${expectedversion}."
     exit 1

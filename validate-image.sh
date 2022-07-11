@@ -15,7 +15,8 @@ image="${basemcr}:${jdkversion}-${distro}"
 docker pull "${image}" > /dev/null 2>&1
 
 if [[ $? -ne 0 ]]; then
-    echo "ERROR: Image '$image' not found!"
+    echo "Warning: image '$image' not found!"
+    echo "::warning title=Validation::Container image '$image' not found!"
     exit 1
 fi
 
@@ -35,5 +36,6 @@ if [[ "$java_version" == "$expectedversion" ]]; then
 else
     echo "ERROR: Image '${image}' contains unexpected JDK version: ${java_version}"
     echo "  Expected: ${expectedversion}"
+    echo "::error ::Container image '${image}' contains unexpected JDK version: ${java_version}"
     exit 1
 fi

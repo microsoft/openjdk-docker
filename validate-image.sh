@@ -1,5 +1,18 @@
 #!/bin/bash
 
+
+while getopts 'su' optname; do
+  case "$optname" in
+    "s")
+      SKIPPULL=1
+      echo "Skip docker pull."
+      ;;
+    *)
+      echo "Unknown parameter"
+      ;;
+  esac
+done
+
 distro=$1
 jdkvendor=$2
 jdkversion=$3
@@ -12,7 +25,9 @@ dockerfile="./docker/$distro/Dockerfile.$jdkvendor-$jdkversion-jdk"
 image="${basemcr}:${jdkversion}-${distro}"
 
 # Check image is published
-docker pull "${image}" > /dev/null 2>&1
+if [[ "$SKIPPULL" != "1" ]]; then
+  docker pull "${image}" > /dev/null 2>&1
+fi
 
 if [[ $? -ne 0 ]]; then
     echo "::error title=Image not found ($jdkversion-$distro)::Container image '$image' not found!"

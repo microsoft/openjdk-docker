@@ -1,0 +1,28 @@
+name: Validate Published Images
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy: 
+      fail-fast: false
+      matrix:
+        versions: [
+          {major: "11", minor: "11.0.15"},
+          {major: "17", minor: "17.0.3"},
+          {major: "8", minor: "1.8.0_332"}
+        ]
+        distros: [ 
+          { distro: "msopenjdk", images: [ "cbld", "mariner", "mariner-cm1", "ubuntu", "distroless" ] },
+          { distro: "temurin", images: [ "mariner", "distroless" ] }
+        ]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Validate container images
+        run: |
+          ./validate-image.sh ${{ matrix.distros.distro }} ${{ matrix.versions.major }} ${{ matrix.versions.minor }} ${{ matrix.distros.images }}
+ 

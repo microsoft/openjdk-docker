@@ -11,6 +11,14 @@ basemcr="mcr.microsoft.com/openjdk/jdk"
 dockerfile="./docker/$distro/Dockerfile.$jdkvendor-$jdkversion-jdk"
 image="$basemcr:${jdkversion}-${distro}"
 
+# Check image is published
+docker pull $image 2>&1 /dev/null
+
+if [[ $? -ne 0 ]]; then
+    echo "ERROR: Image '$image' not found!"
+    exit 1
+fi
+
 # Validate the image
 if [[ "${distro}" == "distroless" ]]; then
     java_version=$(docker run --rm $image -version 2>&1 | head -n 1 | awk -F '"' '{print $2}')

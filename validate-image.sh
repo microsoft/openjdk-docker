@@ -8,8 +8,17 @@ expectedversion=$4
 # Set the base MCR repo
 basemcr="mcr.microsoft.com/openjdk/jdk"
 
+echo "basemcr=${basemcr}"
+echo "distro=${distro}"
+echo "jdkvendor=${jdkvendor}"
+echo "jdkversion=${jdkversion}"
+echo "expectedversion=${expectedversion}"
+
 dockerfile="./docker/$distro/Dockerfile.$jdkvendor-$jdkversion-jdk"
 image="$basemcr:${jdkversion}-${distro}"
+
+echo "dockerfile=${dockerfile}"
+echo "image=${image}"
 
 # Check image is published
 docker pull $image 2>&1 /dev/null

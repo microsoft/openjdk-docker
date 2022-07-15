@@ -86,7 +86,7 @@ jobs:
     steps:
       - task: Docker@2
         displayName: build image
-        condition: and(succeeded(), ne($(distro), 'distroless'))
+        condition: and(succeeded(), ne('$(distro)', 'distroless'))
         inputs:
           command: build
           repository: internal/private/openjdk/jdk
@@ -97,7 +97,7 @@ jobs:
             $(version)-$(distro)
       - task: Docker@2
         displayName: build image
-        condition: and(succeeded(), eq($(distro), 'distroless'))
+        condition: and(succeeded(), eq('$(distro)', 'distroless'))
         inputs:
           command: build
           repository: internal/private/openjdk/jdk
@@ -138,7 +138,7 @@ jobs:
     steps:
       - task: Docker@2
         displayName: build regular image
-        condition: and(succeeded(), ne($(distro), 'distroless'))
+        condition: and(succeeded(), ne('$(distro)', 'distroless'))
         inputs:
           command: build
           repository: public/openjdk/jdk
@@ -149,7 +149,7 @@ jobs:
             $(version)-$(distro)
       - task: Docker@2
         displayName: build distroless image
-        condition: and(succeeded(), eq($(distro), 'distroless'))
+        condition: and(succeeded(), eq('$(distro)', 'distroless'))
         inputs:
           command: build
           repository: public/openjdk/jdk

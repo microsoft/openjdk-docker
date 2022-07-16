@@ -29,8 +29,12 @@ parameters:
         distro: distroless
         version: 8
         package: temurin-8
-        image: "image-repository"
-        tag: "image-tag"
+        installer_image:
+          image: "image-repository"
+          tag: "'2.0'"
+        base_image:
+          image: "image-repository"
+          tag: "'2.0'"
       ubuntu_11:
         distro: ubuntu
         version: 11

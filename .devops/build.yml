@@ -19,6 +19,18 @@ parameters:
   - name: jobs
     type: object
     default:
+      mariner_8:
+        distro: mariner
+        version: 8
+        package: temurin-8
+        image: "image-repository"
+        tag: "image-tag"
+      distroless_8:
+        distro: distroless
+        version: 8
+        package: temurin-8
+        image: "image-repository"
+        tag: "image-tag"
       ubuntu_11:
         distro: ubuntu
         version: 11
@@ -78,7 +90,7 @@ jobs:
         inputs:
           command: build
           repository: internal/private/openjdk/jdk
-          dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
+          dockerfile: docker/$(distro)/Dockerfile.$(package)-jdk
           containerRegistry: "msopenjdk ACR"
           arguments: --build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)
           tags: |
@@ -89,7 +101,7 @@ jobs:
         inputs:
           command: build
           repository: internal/private/openjdk/jdk
-          dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
+          dockerfile: docker/$(distro)/Dockerfile.$(package)-jdk
           containerRegistry: "msopenjdk ACR"
           arguments: --build-arg INSTALLER_IMAGE=$(installer_image.image) --build-arg INSTALLER_TAG=$(installer_image.tag) BASE_IMAGE=$(base_image.image) --build-arg BASE_TAG=$(base_image.tag) --build-arg package=$(package)
           tags: |
@@ -130,7 +142,7 @@ jobs:
         inputs:
           command: build
           repository: public/openjdk/jdk
-          dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
+          dockerfile: docker/$(distro)/Dockerfile.$(package)-jdk
           containerRegistry: "msopenjdk ACR"
           arguments: --build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)
           tags: |
@@ -141,7 +153,7 @@ jobs:
         inputs:
           command: build
           repository: public/openjdk/jdk
-          dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
+          dockerfile: docker/$(distro)/Dockerfile.$(package)S-jdk
           containerRegistry: "msopenjdk ACR"
           arguments: --build-arg INSTALLER_IMAGE=$(installer_image.image) --build-arg INSTALLER_TAG=$(installer_image.tag) BASE_IMAGE=$(base_image.image) --build-arg BASE_TAG=$(base_image.tag) --build-arg package=$(package)
           tags: |

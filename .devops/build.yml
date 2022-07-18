@@ -19,12 +19,20 @@ parameters:
   - name: jobs
     type: object
     default:
-      cbld_11:
-        distro: cbld
-        version: 11
-        package: msopenjdk-11
-        image: "image-repository" # set to image repo on pipeline run
-        tag: "image-tag" # set to image tag on pipeline run
+      mariner_8:
+        distro: mariner
+        version: 8
+        package: temurin-8
+        image: "image-repository"
+        tag: "image-tag"
+      distroless_8:
+        distro: distroless
+        version: 8
+        package: temurin-8
+        installer_image: "image-repository"
+        installer_tag: "2.0"
+        base_image: "image-repository"
+        base_tag: "2.0"
       ubuntu_11:
         distro: ubuntu
         version: 11
@@ -36,23 +44,15 @@ parameters:
         version: 11
         package: msopenjdk-11
         image: "image-repository"
-        tag: "'1.0'"
+        tag: "1.0"
       distroless_11:
         distro: distroless
         version: 11
         package: msopenjdk-11
-        installer_image:
-          image: "image-repository"
-          tag: "'2.0'"
-        base_image:
-          image: "image-repository"
-          tag: "'2.0'"
-      cbld_17:
-        distro: cbld
-        version: 17
-        package: msopenjdk-17
-        image: "image-repository"
-        tag: "image-tag"
+        installer_image: "image-repository"
+        installer_tag: "2.0"
+        base_image: "image-repository"
+        base_tag: "2.0"
       ubuntu_17:
         distro: ubuntu
         version: 17
@@ -64,17 +64,15 @@ parameters:
         version: 17
         package: msopenjdk-17
         image: "image-repository"
-        tag: "'1.0'"
+        tag: "1.0"
       distroless_17:
         distro: distroless
         version: 17
         package: msopenjdk-17
-        installer_image:
-          image: "image-repository"
-          tag: "'2.0'"
-        base_image:
-          image: "image-repository"
-          tag: "'2.0'"
+        installer_image: "image-repository"
+        installer_tag: "2.0"
+        base_image: "image-repository"
+        base_tag: "2.0"
 
 jobs:
   - job: build_internal
@@ -86,24 +84,24 @@ jobs:
     steps:
       - task: Docker@2
         displayName: build image
-        condition: and(succeeded(), ne($(distro), 'distroless'))
+        condition: and(succeeded(), ne(variables.distro, 'distroless'))
         inputs:
           command: build
           repository: internal/private/openjdk/jdk
-          dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
+          dockerfile: docker/$(distro)/Dockerfile.$(package)-jdk
           containerRegistry: "msopenjdk ACR"
           arguments: --build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)
           tags: |
             $(version)-$(distro)
       - task: Docker@2
         displayName: build image
-        condition: and(succeeded(), eq($(distro), 'distroless'))
+        condition: and(succeeded(), eq(variables.distro, 'distroless'))
         inputs:
           command: build
           repository: internal/private/openjdk/jdk
-          dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
+          dockerfile: docker/$(distro)/Dockerfile.$(package)-jdk
           containerRegistry: "msopenjdk ACR"
-          arguments: --build-arg INSTALLER_IMAGE=$(installer_image.image) --build-arg INSTALLER_TAG=$(installer_image.tag) BASE_IMAGE=$(base_image.image) --build-arg BASE_TAG=$(base_image.tag) --build-arg package=$(package)
+          arguments: --build-arg INSTALLER_IMAGE=$(installer_image) --build-arg INSTALLER_TAG=$(installer_tag) --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$(package)
           tags: |
             $(version)-$(distro)
       - task: Docker@2
@@ -138,24 +136,24 @@ jobs:
     steps:
       - task: Docker@2
         displayName: build regular image
-        condition: and(succeeded(), ne($(distro), 'distroless'))
+        condition: and(succeeded(), ne(variables.distro, 'distroless'))
         inputs:
           command: build
           repository: public/openjdk/jdk
-          dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
+          dockerfile: docker/$(distro)/Dockerfile.$(package)-jdk
           containerRegistry: "msopenjdk ACR"
           arguments: --build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)
           tags: |
             $(version)-$(distro)
       - task: Docker@2
         displayName: build distroless image
-        condition: and(succeeded(), eq($(distro), 'distroless'))
+        condition: and(succeeded(), eq(variables.distro, 'distroless'))
         inputs:
           command: build
           repository: public/openjdk/jdk
-          dockerfile: docker/$(distro)/Dockerfile.msopenjdk-$(version)-jdk
+          dockerfile: docker/$(distro)/Dockerfile.$(package)-jdk
           containerRegistry: "msopenjdk ACR"
-          arguments: --build-arg INSTALLER_IMAGE=$(installer_image.image) --build-arg INSTALLER_TAG=$(installer_image.tag) BASE_IMAGE=$(base_image.image) --build-arg BASE_TAG=$(base_image.tag) --build-arg package=$(package)
+          arguments: --build-arg INSTALLER_IMAGE=$(installer_image) --build-arg INSTALLER_TAG=$(installer_tag) --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$(package)
           tags: |
             $(version)-$(distro)
       - task: Docker@2

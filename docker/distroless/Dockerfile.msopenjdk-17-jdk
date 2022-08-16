@@ -38,5 +38,6 @@ COPY --from=installer /staging/ /
 COPY --from=installer /usr/jdk/ /usr/jdk/
 
 ENV JAVA_HOME=/usr/jdk
+ENV PATH="$PATH:$JAVA_HOME/bin"
 
 ENTRYPOINT [ "/usr/jdk/bin/java" ]

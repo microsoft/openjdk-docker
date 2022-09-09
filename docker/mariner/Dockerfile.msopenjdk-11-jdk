@@ -14,6 +14,7 @@ RUN tdnf install -y --releasever=2.0 ${package} ${PKGS} && \
     tdnf clean all && \
     rm -rf /var/cache/tdnf && \
     echo java -Xshare:dump && \
-    java -Xshare:dump 
+    java -Xshare:dump && \
+    rm -rf /usr/lib/jvm/msopenjdk-11/lib/src.zip
 
 ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-11

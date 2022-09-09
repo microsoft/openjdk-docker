@@ -21,7 +21,7 @@ jobs:
 
       - name: Validate container image
         run: |
-          ./validate-image.sh -s ${{ matrix.distros }} ${{ matrix.jdkvendor }} ${{ matrix.jdkversion.major }} ${{ matrix.jdkversion.expected }} 
+          ./validate-image.sh -s ${{ matrix.distros }} ${{ matrix.jdkvendor }} ${{ matrix.jdkversion.major }} ${{ matrix.jdkversion.expected }}
 
   validate_msopenjdk:
     runs-on: ubuntu-latest
@@ -40,4 +40,4 @@ jobs:
 
       - name: Validate container image
         run: |
-          ./validate-image.sh -s ${{ matrix.distros }} ${{ matrix.jdkvendor }} ${{ matrix.jdkversion.major }} ${{ matrix.jdkversion.expected }} 
+          ./validate-image.sh -s ${{ matrix.distros }} ${{ matrix.jdkvendor }} ${{ matrix.jdkversion.major }} ${{ matrix.jdkversion.expected }}

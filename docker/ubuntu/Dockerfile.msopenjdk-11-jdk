@@ -21,7 +21,10 @@ RUN DEBIAN_FRONTEND=noninteractive && \
     apt-get -qq autoremove --purge && \
     rm -rf /var/lib/apt/lists/* && \
     echo java -Xshare:dump && \
-    java -Xshare:dump 
+    java -Xshare:dump
+
+# Clean up JDK
+RUN rm -rf ./usr/lib/jvm/msopenjdk-11-amd64/lib/src.zip
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 

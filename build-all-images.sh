@@ -12,7 +12,7 @@ basepath="$(dirname "$0")/docker"
 # Build all distros and versions of OpenJDK
 for d in $(ls -d $basepath/*); do
     distro=`basename $d`
-    
+
     if [[ "$distro" == "test-only" ]]; then
         continue
     fi
@@ -22,14 +22,14 @@ for d in $(ls -d $basepath/*); do
         jdkversion=$(echo "$dockerfile" | sed 's/[^0-9]*//g')
         image="$basemcr:${jdkversion}-${distro}"
         echo "Building image: ${image} with Dockerfile ${f}"
-        docker build -t ${image} -f ${f} ${basepath}/${distro} 
+        docker build -t ${image} -f ${f} ${basepath}/${distro}
     done
 done
 
 # Validate all distros and versions of OpenJDK
 for d in $(ls -d $basepath/*); do
     distro=`basename $d`
-    
+
     for f in $(ls -f $basepath/$distro/*); do
         dockerfile=`basename $f`
         jdkversion=$(echo "$dockerfile" | sed 's/[^0-9]*//g')

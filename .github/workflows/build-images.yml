@@ -23,7 +23,7 @@ jobs:
 
   build_msopenjdk:
     runs-on: ubuntu-latest
-    strategy: 
+    strategy:
       fail-fast: false
       matrix:
         jdkversion: [11, 17] # Only build LTS releases

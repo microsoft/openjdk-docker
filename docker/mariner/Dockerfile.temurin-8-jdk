@@ -12,6 +12,7 @@ ARG PKGS="ca-certificates tzdata freetype"
 
 # Install pre-reqs
 RUN tdnf install -y ${JDK_PKG} ${PKGS} && \
-    rm -rf /var/cache/tdnf
+    rm -rf /var/cache/tdnf && \
+    rm -rf ./usr/lib/jvm/temurin-8-jdk/src.zip
 
 ENV JAVA_HOME=/usr/lib/jvm/temurin-8-jdk

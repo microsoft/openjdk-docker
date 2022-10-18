@@ -124,7 +124,7 @@ jobs:
         timeoutInMinutes: 4320
         inputs:
           instructions: "please validate the build configuration, artifacts, tests, and resume"
-          onTimeout: "resume"
+  #         onTimeout: "resume"
 
   - job: build_public
     displayName: "build public "

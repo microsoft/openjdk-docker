@@ -89,7 +89,7 @@ jobs:
           command: build
           repository: internal/private/openjdk/jdk
           dockerfile: docker/$(distro)/Dockerfile.$(package)-jdk
-          containerRegistry: "msopenjdk ACR"
+          containerRegistry: "Java Engineering ACR"
           arguments: --build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)
           tags: |
             $(version)-$(distro)
@@ -100,7 +100,7 @@ jobs:
           command: build
           repository: internal/private/openjdk/jdk
           dockerfile: docker/$(distro)/Dockerfile.$(package)-jdk
-          containerRegistry: "msopenjdk ACR"
+          containerRegistry: "Java Engineering ACR"
           arguments: --build-arg INSTALLER_IMAGE=$(installer_image) --build-arg INSTALLER_TAG=$(installer_tag) --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$(package)
           tags: |
             $(version)-$(distro)
@@ -109,7 +109,7 @@ jobs:
         inputs:
           command: push
           repository: internal/private/openjdk/jdk
-          containerRegistry: "msopenjdk ACR"
+          containerRegistry: "Java Engineering ACR"
           tags: |
             $(version)-$(distro)
 
@@ -141,7 +141,7 @@ jobs:
           command: build
           repository: public/openjdk/jdk
           dockerfile: docker/$(distro)/Dockerfile.$(package)-jdk
-          containerRegistry: "msopenjdk ACR"
+          containerRegistry: "Java Engineering ACR"
           arguments: --build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)
           tags: |
             $(version)-$(distro)
@@ -152,7 +152,7 @@ jobs:
           command: build
           repository: public/openjdk/jdk
           dockerfile: docker/$(distro)/Dockerfile.$(package)-jdk
-          containerRegistry: "msopenjdk ACR"
+          containerRegistry: "Java Engineering ACR"
           arguments: --build-arg INSTALLER_IMAGE=$(installer_image) --build-arg INSTALLER_TAG=$(installer_tag) --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$(package)
           tags: |
             $(version)-$(distro)
@@ -161,6 +161,6 @@ jobs:
         inputs:
           command: push
           repository: public/openjdk/jdk
-          containerRegistry: "msopenjdk ACR"
+          containerRegistry: "Java Engineering ACR"
           tags: |
             $(version)-$(distro)

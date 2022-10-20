@@ -8,13 +8,16 @@ LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 ARG package="msopenjdk-17"
-ARG PKGS="tzdata ca-certificates freetype"
+ARG PKGS="tzdata ca-certificates freetype shadow-utils"
 
 RUN rpm -Uhv https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
     tdnf install -y ${package} ${PKGS} && \
+    groupadd --system -g 101 java-app && \
+    useradd -u 101 -g java-app --shell /bin/false --home-dir /dev/null --system javauser && \
     rm -rf /var/cache/tdnf && \
     echo java -Xshare:dump && \
     java -Xshare:dump && \
     rm -rf /usr/lib/jvm/msopenjdk-17/lib/src.zip
 
+USER javauser
 ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-17

@@ -8,11 +8,14 @@ LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 ARG JDK_PKG="temurin-8-jdk"
-ARG PKGS="ca-certificates tzdata freetype"
+ARG PKGS="tzdata ca-certificates freetype shadow-utils"
 
 # Install pre-reqs
 RUN tdnf install -y ${JDK_PKG} ${PKGS} && \
+    groupadd --system -g 101 java-app && \
+    useradd -u 101 -g java-app --shell /bin/false --home-dir /dev/null --system javauser && \
     rm -rf /var/cache/tdnf && \
     rm -rf ./usr/lib/jvm/temurin-8-jdk/src.zip
 
+USER javauser
 ENV JAVA_HOME=/usr/lib/jvm/temurin-8-jdk

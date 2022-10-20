@@ -11,7 +11,9 @@ ARG package=msopenjdk-11
 
 RUN tdnf -y update && \
     tdnf -y upgrade && \
-    tdnf install -y tzdata ca-certificates freetype fontconfig && \
+    tdnf install -y tzdata ca-certificates freetype fontconfig shadow-utils && \
+    groupadd --system -g 101 java-app && \
+    useradd -u 101 -g java-app --shell /bin/false --home-dir /dev/null --system javauser && \
     rm -rf /var/cache/tdnf && \
     rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
     tdnf install -y mariner-repos-ui && \
@@ -20,4 +22,5 @@ RUN tdnf -y update && \
     java -Xshare:dump && \
     rm -rf /usr/lib/jvm/msopenjdk-11/lib/src.zip
 
+USER javauser
 ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-11

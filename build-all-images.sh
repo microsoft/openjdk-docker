@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set expected JDK versions after the images are built
-declare -A jdkversions=( ["11"]="11.0.15" ["17"]="17.0.3" ["8"]="1.8.0_332" )
+declare -A jdkversions=( ["11"]="11.0.16.1" ["17"]="17.0.4.1" ["8"]="1.8.0_345" )
 
 # Set the base MCR repo
 basemcr="mcr.microsoft.com/openjdk/jdk"

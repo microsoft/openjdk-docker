@@ -3,7 +3,7 @@ ARG INSTALLER_TAG="2.0"
 ARG BASE_IMAGE="mcr.microsoft.com/cbl-mariner/distroless/base"
 ARG BASE_TAG="2.0"
 
-FROM $INSTALLER_IMAGE:$INSTALLER_TAG AS installer
+FROM ${INSTALLER_IMAGE}:${INSTALLER_TAG} AS installer
 
 ARG JDK_URL="https://aka.ms/download-jdk/microsoft-jdk-17-linux-x64.tar.gz"
 
@@ -38,7 +38,7 @@ RUN rm -rf /staging/etc/dnf \
 # Clean up JDK
 RUN rm -rf /usr/jdk/man /usr/jdk/lib/src.zip
 
-FROM $BASE_IMAGE:$BASE_TAG
+FROM ${BASE_IMAGE}:${BASE_TAG}
 
 LABEL "Author"="Microsoft"
 LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"

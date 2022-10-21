@@ -1,6 +1,6 @@
 ARG IMAGE="mcr.microsoft.com/cbl-mariner/base/core"
 ARG TAG="1.0"
-FROM ${IMAGE}:${TAG}
+FROM $IMAGE:$TAG
 
 LABEL "Author"="Microsoft"
 LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"

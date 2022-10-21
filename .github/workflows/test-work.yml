@@ -1,0 +1,75 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Build Docker Images CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build_temurin:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        baseimage: ["mariner", "distroless"]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the image
+        run: docker build -t mcr.microsoft.com/openjdk/jdk:8-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.temurin-8-jdk ./docker/${{ matrix.baseimage }}/
+
+  build_msopenjdk:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        jdkversion: [11, 17] # Only build LTS releases
+        baseimage: ["mariner", "mariner-cm1", "ubuntu", "distroless"]
+        include:
+          - baseimage: "mariner"
+            tag: "'2.0'"
+          - baseimage: "mariner-cm1"
+            tag: "'1.0'"
+          - baseimage: "ubuntu"
+            tag: "20.04"
+          - baseimage: "distroless"
+            base_tag: "2.0"
+            installer_tag: "2.0"
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Note: Using secrets will not work with forked pull requests
+      - name: Set mariner 2.0 image
+        if: ${{ matrix.baseimage == 'mariner' }}
+        run: "echo IMAGE=${{ secrets.MARINER_REPO }} >> $GITHUB_ENV"
+
+      - name: Set mariner 1.0 image
+        if: ${{ matrix.baseimage == 'mariner-cm1' }}
+        run: "echo IMAGE=${{ secrets.MARINER_CM1_REPO }} >> $GITHUB_ENV"
+
+      - name: Set ubuntu image
+        if: ${{ matrix.baseimage == 'ubuntu' }}
+        run: "echo IMAGE=${{ secrets.UBUNTU_REPO }} >> $GITHUB_ENV"
+
+      - name: Set distroless image
+        if: ${{ matrix.baseimage == 'distroless' }}
+        run: |
+         echo INSTALLER_IMAGE=${{ secrets.DISTROLESS_INSTALLER_REPO }} >> $GITHUB_ENV
+         echo BASE_IMAGE=${{ secrets.DISTROLESS_BASE_REPO }} >> $GITHUB_ENV
+
+      - name: Debug $GITHUB_ENV
+        run: "echo $GITHUB_ENV"
+
+      # Runs a single command using the runners shell
+      - name: Build the image
+        if: ${{ matrix.baseimage != 'distroless' }}
+        run: docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion }}-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.msopenjdk-${{ matrix.jdkversion }}-jdk ./docker/${{ matrix.baseimage }}/ --build-arg IMAGE=${{ env.IMAGE }} --build-arg TAG=${{ matrix.tag }}
+
+      - name: Build the distroless image
+        if: ${{ matrix.baseimage == 'distroless' }}
+        run: docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion }}-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.msopenjdk-${{ matrix.jdkversion }}-jdk ./docker/${{ matrix.baseimage }}/ --build-arg INSTALLER_IMAGE=${{ env.INSTALLER_IMAGE }} --build-arg INSTALLER_TAG=${{ matrix.installer_tag }} --build-arg BASE_IMAGE=${{ env.BASE_IMAGE }} --build-arg BASE_TAG=${{ matrix.base_tag }}
+

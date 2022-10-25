@@ -14,6 +14,8 @@ RUN rpm -Uhv https://packages.microsoft.com/config/centos/7/packages-microsoft-p
     tdnf install -y ${package} ${PKGS} && \
     groupadd --system -g 2000 java-app && \
     useradd -u 2000 -g java-app --shell /bin/false --home-dir /dev/null --system javauser && \
+    mkdir /app && \
+    chown javauser:java-app /app && \
     rm -rf /var/cache/tdnf && \
     echo java -Xshare:dump && \
     java -Xshare:dump && \

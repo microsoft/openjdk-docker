@@ -21,19 +21,20 @@ RUN mkdir /staging \
     && tdnf install -y --releasever=2.0 --installroot /staging zlib
 
 # Create non-root user and group javauser
-RUN tdnf install -y  --releasever=2.0 shadow-utils \
-    && groupadd --system -g 2000 java-app \
-    && useradd -u 2000 -g java-app --shell /bin/false --home-dir /dev/null --system javauser \
-    && tdnf clean all \
+RUN tdnf install -y  --releasever=2.0 shadow-utils && \
+    groupadd --system -g 2000 java-app && \
+    useradd -u 2000 -g java-app --shell /bin/false --home-dir /dev/null --system javauser && \
+    mkdir /app && \
+    tdnf clean all && \
    # Copy user/group info to staging
-   && cp /etc/passwd /staging/etc/passwd \
-   && cp /etc/group /staging/etc/group
+    cp /etc/passwd /staging/etc/passwd && \
+    cp /etc/group /staging/etc/group
 
 # Clean up staging
-RUN rm -rf /staging/etc/dnf \
-    && rm -rf /staging/run/* \
-    && rm -rf /staging/var/cache/dnf \
-    && find /staging/var/log -type f -size +0 -delete
+RUN rm -rf /staging/etc/dnf && \
+    rm -rf /staging/run/* && \
+    rm -rf /staging/var/cache/dnf && \
+    find /staging/var/log -type f -size +0 -delete
 
 # Clean up JDK
 RUN rm -rf /usr/jdk/man /usr/jdk/lib/src.zip
@@ -45,6 +46,7 @@ LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
 COPY --from=installer /staging/ /
 COPY --from=installer /usr/jdk/ /usr/jdk/
+COPY --from=installer --chown=2000:2000 /app/ /app/
 
 USER javauser
 ENV JAVA_HOME=/usr/jdk

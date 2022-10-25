@@ -17,15 +17,16 @@ RUN mkdir -p /usr/lib/jvm && \
     mv /jdk8u* /usr/jdk
 
 # Create non-root user and group javauser
-RUN mkdir /staging \
-    && mkdir /staging/etc \
-    && tdnf install -y  --releasever=2.0 shadow-utils \
-    && groupadd --system -g 2000 java-app \
-    && useradd -u 2000 -g java-app --shell /bin/false --home-dir /dev/null --system javauser \
-    && tdnf clean all \
-   # Copy user/group info to staging
-   && cp /etc/passwd /staging/etc/passwd \
-   && cp /etc/group /staging/etc/group
+RUN mkdir /staging && \
+    mkdir /staging/etc && \
+    tdnf install -y  --releasever=2.0 shadow-utils && \
+    groupadd --system -g 2000 java-app && \
+    useradd -u 2000 -g java-app --shell /bin/false --home-dir /dev/null --system javauser && \
+    tdnf clean all && \
+    mkdir /app && \
+    # Copy user/group info to staging
+    cp /etc/passwd /staging/etc/passwd && \
+    cp /etc/group /staging/etc/group
 
 FROM ${BASE_IMAGE}:${BASE_TAG}
 
@@ -38,5 +39,6 @@ ENV PATH="$PATH:$JAVA_HOME/bin"
 USER javauser
 COPY --from=installer /staging/ /
 COPY --from=installer /usr/jdk/ /usr/jdk/
+COPY --from=installer --chown=2000:2000 /app/ /app/
 
 ENTRYPOINT [ "/usr/jdk/bin/java" ]

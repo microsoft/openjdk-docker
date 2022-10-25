@@ -14,6 +14,8 @@ RUN tdnf -y update && \
     tdnf install -y tzdata ca-certificates freetype fontconfig shadow-utils && \
     groupadd --system -g 2000 java-app && \
     useradd -u 2000 -g java-app --shell /bin/false --home-dir /dev/null --system javauser && \
+    mkdir /app && \
+    chown javauser:java-app /app && \
     rm -rf /var/cache/tdnf && \
     rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
     tdnf install -y mariner-repos-ui && \

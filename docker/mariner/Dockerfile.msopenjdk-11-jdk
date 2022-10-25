@@ -13,6 +13,8 @@ ARG PKGS="tzdata ca-certificates freetype shadow-utils"
 RUN tdnf install -y --releasever=2.0 ${package} ${PKGS} && \
     groupadd --system -g 2000 java-app && \
     useradd -u 2000 -g java-app --shell /bin/false --home-dir /dev/null --system javauser && \
+    mkdir /app && \
+    chown javauser:java-app /app && \
     tdnf clean all && \
     rm -rf /var/cache/tdnf && \
     echo java -Xshare:dump && \

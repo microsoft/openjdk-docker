@@ -14,7 +14,7 @@ jobs:
         jdkvendor: [ "temurin" ]
         jdkversion: [ { major: "8", expected: "1.8.0_345" } ]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Validate container images
         run: |
@@ -29,7 +29,7 @@ jobs:
         jdkvendor: [ "msopenjdk" ]
         jdkversion: [ { major: "11", expected: "11.0.16.1" }, { major: "17", expected: "17.0.4.1" } ]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Validate container images
         run: |

@@ -13,7 +13,7 @@ jobs:
         jdkvendor: [ "temurin" ]
         jdkversion: [ { major: "8", expected: "1.8.0_352" } ]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Build image locally
         run: |
@@ -32,7 +32,7 @@ jobs:
         jdkvendor: [ "msopenjdk" ]
         jdkversion: [ { major: "11", expected: "11.0.17" }, { major: "17", expected: "17.0.5" } ]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Build image locally
         run: |

@@ -1,5 +1,5 @@
-ARG IMAGE="mcr.microsoft.com/mirror/docker/library/ubuntu"
-ARG UBUNTU_VERSION="20.04"
+ARG IMAGE
+ARG UBUNTU_VERSION
 ARG JAVA_VERSION="17"
 
 FROM ${IMAGE}:${UBUNTU_VERSION}

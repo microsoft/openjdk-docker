@@ -84,7 +84,6 @@ jobs:
     steps:
       - script: |
           docker pull $(image):$(tag)
-          echo "Retagging from $(image):$(tag) ... to $(distro):$(tag)"
           docker tag $(image):$(tag) $(distro):$(tag)
         displayName: Docker pull and re-tag
         condition: and(succeeded(), ne(variables.distro, 'distroless'))

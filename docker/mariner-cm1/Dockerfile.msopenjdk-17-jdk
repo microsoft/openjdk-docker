@@ -1,5 +1,5 @@
-ARG IMAGE="mcr.microsoft.com/cbl-mariner/base/core"
-ARG TAG="1.0"
+ARG IMAGE
+ARG TAG
 FROM ${IMAGE}:${TAG}
 
 LABEL "Author"="Microsoft"

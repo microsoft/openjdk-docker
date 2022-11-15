@@ -1,7 +1,7 @@
-ARG INSTALLER_IMAGE="mcr.microsoft.com/cbl-mariner/base/core"
-ARG INSTALLER_TAG="2.0"
-ARG BASE_IMAGE="mcr.microsoft.com/cbl-mariner/distroless/base"
-ARG BASE_TAG="2.0"
+ARG INSTALLER_IMAGE
+ARG INSTALLER_TAG
+ARG BASE_IMAGE
+ARG BASE_TAG
 
 FROM ${INSTALLER_IMAGE}:${INSTALLER_TAG} AS installer
 

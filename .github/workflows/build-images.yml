@@ -15,11 +15,36 @@ jobs:
     strategy:
       matrix:
         baseimage: ["mariner", "distroless"]
+        include:
+          - baseimage: "mariner"
+            tag: "'2.0'"
+          - baseimage: "distroless"
+            base_tag: "2.0"
+            installer_tag: "2.0"
 
     steps:
+<<<<<<< HEAD
       - uses: actions/checkout@v3
+=======
+      # Note: Using secrets will not work with forked pull requests
+      - name: Set mariner 2.0 image
+        if: ${{ matrix.baseimage == 'mariner' }}
+        run: "echo IMAGE=${{ secrets.MARINER_REPO }} >> $GITHUB_ENV"
+
+      - name: Set distroless image
+        if: ${{ matrix.baseimage == 'distroless' }}
+        run: |
+         echo INSTALLER_IMAGE=${{ secrets.DISTROLESS_INSTALLER_REPO }} >> $GITHUB_ENV
+         echo BASE_IMAGE=${{ secrets.DISTROLESS_BASE_REPO }} >> $GITHUB_ENV
+
+>>>>>>> 2bbff01 (Update build_temurin)
       - name: Build the image
-        run: docker build -t mcr.microsoft.com/openjdk/jdk:8-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.temurin-8-jdk ./docker/${{ matrix.baseimage }}/
+        if: ${{ matrix.baseimage != 'distroless' }}
+        run: docker build -t mcr.microsoft.com/openjdk/jdk:8-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.temurin-8-jdk ./docker/${{ matrix.baseimage }}/ --build-arg IMAGE=${{ env.IMAGE }} --build-arg TAG=${{ matrix.tag }}
+
+      - name: Build the distroless image
+        if: ${{ matrix.baseimage == 'distroless' }}
+        run: docker build -t mcr.microsoft.com/openjdk/jdk:8-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.temurin-8-jdk ./docker/${{ matrix.baseimage }}/ --build-arg INSTALLER_IMAGE=${{ env.INSTALLER_IMAGE }} --build-arg INSTALLER_TAG=${{ matrix.installer_tag }} --build-arg BASE_IMAGE=${{ env.BASE_IMAGE }} --build-arg BASE_TAG=${{ matrix.base_tag }}
 
   build_msopenjdk:
     runs-on: ubuntu-latest

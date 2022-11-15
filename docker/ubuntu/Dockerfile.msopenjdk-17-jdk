@@ -1,5 +1,5 @@
-ARG IMAGE
-ARG TAG
+ARG IMAGE="mcr.microsoft.com/mirror/docker/library/ubuntu"
+ARG TAG="20.04"
 FROM ${IMAGE}:${TAG}
 
 LABEL "Author"="Microsoft"

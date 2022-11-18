@@ -1,3 +1,4 @@
+# DisableDockerDetector "Base image is obtained from internal registry"
 ARG IMAGE="ubuntu"
 ARG TAG="20.04"
 FROM ${IMAGE}:${TAG}

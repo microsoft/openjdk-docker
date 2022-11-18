@@ -1,3 +1,4 @@
+# DisableDockerDetector "Used for testing purposes only"
 ARG IMAGE="ubuntu"
 ARG UBUNTU_VERSION="20.04"
 ARG JAVA_VERSION="17"

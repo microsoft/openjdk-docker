@@ -17,7 +17,8 @@ jobs:
         baseimage: ["mariner", "distroless"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
       - name: Build the image
         run: docker build -t mcr.microsoft.com/openjdk/jdk:8-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.temurin-8-jdk ./docker/${{ matrix.baseimage }}/
 
@@ -40,7 +41,7 @@ jobs:
             installer_tag: "2.0"
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Note: Using secrets will not work with forked pull requests
       - name: Set mariner 2.0 image

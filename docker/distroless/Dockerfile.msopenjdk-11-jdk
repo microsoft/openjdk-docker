@@ -31,13 +31,14 @@ RUN tdnf install -y  --releasever=2.0 shadow-utils && \
     cp /etc/group /staging/etc/group
 
 # Clean up staging
-RUN rm -rf /staging/etc/dnf && \
-    rm -rf /staging/run/* && \
-    rm -rf /staging/var/cache/dnf && \
-    find /staging/var/log -type f -size +0 -delete
-
-# Clean up JDK
-RUN rm -rf /usr/jdk/man /usr/jdk/lib/src.zip
+RUN rm -rf /staging/etc/tdnf \
+    && rm -rf /staging/run/* \
+    && rm -rf /staging/var/cache/tdnf \
+    && rm -rf /staging/var/lib/rpm \
+    && rm -rf /staging/usr/share/doc \
+    && rm -rf /staging/usr/share/man \
+    && rm -rf /usr/jdk/man /usr/jdk/lib/src.zip \
+    && find /staging/var/log -type f -size +0 -delete
 
 FROM ${BASE_IMAGE}:${BASE_TAG}
 

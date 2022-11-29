@@ -9,7 +9,7 @@ ARG PKGS="ca-certificates tzdata freetype"
 ARG JDK_URL="https://api.adoptium.net/v3/binary/latest/8/ga/linux/x64/jdk/hotspot/normal/eclipse?project=jdk"
 
 # Create a non-root user and group (just like .NET's image)
-RUN mkdir /staging \
+RUN mkdir -p /staging/etc/ \
     && tdnf install -y gawk shadow-utils \
     && groupadd --system --gid=101 app \
     && adduser --uid 101 --gid 101 --shell /bin/false --system app \

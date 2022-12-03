@@ -42,21 +42,23 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-# Validate the image
-if [[ "${distro}" == "distroless" ]]; then
-    java_version=$(docker run --rm $image -version 2>&1 | head -n 1 | awk -F '"' '{print $2}')
-else
-    java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
-fi
+# Validate the image if expectedversion is set (not blank)
+if [[ ! -z "$expectedversion" ]]; then
+  if [[ "${distro}" == "distroless" ]]; then
+      java_version=$(docker run --rm $image -version 2>&1 | head -n 1 | awk -F '"' '{print $2}')
+  else
+      java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
+  fi
 
-java_version=${java_version//[$'\t\r\n']}
-java_version=${java_version%%*( )}
+  java_version=${java_version//[$'\t\r\n']}
+  java_version=${java_version%%*( )}
 
-if [[ "$java_version" == "$expectedversion" ]]; then
-    echo "::notice title=Validation succeeded ($jdkversion-$distro)::Image '${image}' contains expected JDK version: ${expectedversion}"
-else
-    echo "::error title=Wrong minor JDK version ($jdkversion-$distro)::Image '${image}' contains unexpected JDK version: ${java_version}. Expected: ${expectedversion}."
-    exit 1
+  if [[ "$java_version" == "$expectedversion" ]]; then
+      echo "::notice title=Validation succeeded ($jdkversion-$distro)::Image '${image}' contains expected JDK version: ${expectedversion}"
+  else
+      echo "::error title=Wrong minor JDK version ($jdkversion-$distro)::Image '${image}' contains unexpected JDK version: ${java_version}. Expected: ${expectedversion}."
+      exit 1
+  fi
 fi
 
 # Test running a Java app

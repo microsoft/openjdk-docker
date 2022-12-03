@@ -22,6 +22,10 @@ jobs:
       - name: Build the image
         run: docker build -t mcr.microsoft.com/openjdk/jdk:8-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.temurin-8-jdk ./docker/${{ matrix.baseimage }}/
 
+      - name: Test the image
+        run: |
+          ./validate-image.sh ${{ matrix.baseimage }} temurin 8
+
   build_msopenjdk:
     runs-on: ubuntu-latest
     strategy:
@@ -36,3 +40,7 @@ jobs:
       # Runs a single command using the runners shell
       - name: Build the image
         run: docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion }}-${{ matrix.baseimage }} -f ./docker/${{ matrix.baseimage }}/Dockerfile.msopenjdk-${{ matrix.jdkversion }}-jdk ./docker/${{ matrix.baseimage }}/
+
+      - name: Test the image
+        run: |
+          ./validate-image.sh ${{ matrix.baseimage }} msopenjdk ${{ matrix.jdkversion }}

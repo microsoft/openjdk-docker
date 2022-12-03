@@ -55,6 +55,22 @@ java_version=${java_version%%*( )}
 if [[ "$java_version" == "$expectedversion" ]]; then
     echo "::notice title=Validation succeeded ($jdkversion-$distro)::Image '${image}' contains expected JDK version: ${expectedversion}"
 else
-    echo "::error title=Wrong minor JDK version ($jdkversion-$distro)::Container image '${image}' contains unexpected JDK version: ${java_version}. Expected: ${expectedversion}."
+    echo "::error title=Wrong minor JDK version ($jdkversion-$distro)::Image '${image}' contains unexpected JDK version: ${java_version}. Expected: ${expectedversion}."
+    exit 1
+fi
+
+# Test running a Java app
+dockerfile="./docker/test-only/Dockerfile.testapp"
+if [[ "${distro}" == "distroless" ]]; then
+  dockerfile=${dockerfile}"distroless"
+fi
+
+docker build --build-arg IMGTOTEST=$image -t testapprunner -f $dockerfile .
+test_output=$(docker run --rm -ti $image)
+
+if [[ "${test_output}" =~ "Hello World" ]]; then
+    echo "::notice title=Test of sample app SUCCEEDED ($jdkversion-$distro)::Image '${image}' is ABLE to run a sample Java app."
+else
+    echo "::error title=Test of sample app FAILED ($jdkversion-$distro)::Image '${image}' CANNOT run a sample Java app."
     exit 1
 fi

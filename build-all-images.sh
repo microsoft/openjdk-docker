@@ -56,5 +56,21 @@ for d in $(ls -d $basepath/*); do
             echo "ERROR: Image '${image}' contains unexpected JDK version: ${java_version}"
             echo "  Expected: ${expectedversion}"
         fi
+
+        # Test running a Java app
+        dockerfile="./docker/test-only/Dockerfile.testapp"
+        if [[ "${distro}" == "distroless" ]]; then
+            dockerfile=${dockerfile}"distroless"
+        fi
+
+        docker build --build-arg IMGTOTEST=$image -t testapprunner -f $dockerfile ./docker/test-only/
+        test_output=$(docker run --rm -ti testapprunner)
+
+        if [[ "${test_output}" =~ "Hello World" ]]; then
+            echo "::notice title=Test of sample app SUCCEEDED ($jdkversion-$distro)::Image '${image}' is ABLE to run a sample Java app."
+        else
+            echo "::error title=Test of sample app FAILED ($jdkversion-$distro)::Image '${image}' CANNOT run a sample Java app."
+        fi
+
     done
 done

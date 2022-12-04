@@ -68,7 +68,7 @@ if [[ "${distro}" == "distroless" ]]; then
 fi
 
 docker build --build-arg IMGTOTEST=$image -t testapprunner -f $dockerfile ./docker/test-only/
-test_output=$(docker run --rm $image)
+test_output=$(docker run --rm testapprunner)
 
 if [[ "${test_output}" =~ "Hello World" ]]; then
     echo "::notice title=Test of sample app SUCCEEDED ($jdkversion-$distro)::Image '${image}' is ABLE to run a sample Java app."

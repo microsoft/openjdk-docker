@@ -67,7 +67,7 @@ if [[ "${distro}" == "distroless" ]]; then
   dockerfile=${dockerfile}"distroless"
 fi
 
-docker build --build-arg IMGTOTEST=$image -t testapprunner -f $dockerfile .
+docker build --build-arg IMGTOTEST=$image -t testapprunner -f $dockerfile ./docker/test-only/
 test_output=$(docker run --rm $image)
 
 if [[ "${test_output}" =~ "Hello World" ]]; then

@@ -49,6 +49,13 @@ if [[ ! -z "$expectedversion" ]]; then
   else
       java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
   fi
+# Validate the image if expectedversion is set (not blank)
+if [[ ! -z "$expectedversion" ]]; then
+  if [[ "${distro}" == "distroless" ]]; then
+      java_version=$(docker run --rm $image -version 2>&1 | head -n 1 | awk -F '"' '{print $2}')
+  else
+      java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
+  fi
 
   java_version=${java_version//[$'\t\r\n']}
   java_version=${java_version%%*( )}

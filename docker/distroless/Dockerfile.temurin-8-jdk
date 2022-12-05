@@ -8,6 +8,16 @@ FROM ${INSTALLER_IMAGE}:${INSTALLER_TAG} AS installer
 ARG PKGS="ca-certificates tzdata freetype"
 ARG JDK_URL="https://api.adoptium.net/v3/binary/latest/8/ga/linux/x64/jdk/hotspot/normal/eclipse?project=jdk"
 
+# Create a non-root user and group (just like .NET's image)
+RUN mkdir -p /staging/etc/ \
+    && tdnf install -y gawk shadow-utils \
+    && groupadd --system --gid=101 app \
+    && adduser --uid 101 --gid 101 --shell /bin/false --system app \
+    && install -d -m 0755 -o 101 -g 101 "/staging/home/app" \
+    && rootOrAppRegex='^\(root\|app\):' \
+    && cat /etc/passwd | grep $rootOrAppRegex > "/staging/etc/passwd" \
+    && cat /etc/group | grep $rootOrAppRegex > "/staging/etc/group"
+
 # Install pre-reqs
 RUN mkdir -p /usr/lib/jvm && \
     tdnf install -y ca-certificates tar && \
@@ -25,5 +35,6 @@ ENV JAVA_HOME=/usr/jdk
 ENV PATH="$PATH:$JAVA_HOME/bin"
 
 COPY --from=installer /usr/jdk/ /usr/jdk/
+COPY --from=installer --chown=101:101 /staging/home/app /home/app
 
 ENTRYPOINT [ "/usr/jdk/bin/java" ]

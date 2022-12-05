@@ -69,4 +69,4 @@ if [[ ! -z "$expectedversion" ]]; then
 fi
 
 # Run tests
-sh test-image.sh $distro $jdkversion
+bash test-image.sh $distro $jdkversion

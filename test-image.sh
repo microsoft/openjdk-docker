@@ -30,5 +30,6 @@ for testdockerfile in $(ls -f ./docker/test-only/$testfolder/Dockerfile.*); do
         echo "::notice title=Test '($filename)' SUCCEEDED ($jdkversion-$distro)::Image '${image}' passed test in ($filename)."
     else
         echo "::error title=Test '($filename)' FAILED ($jdkversion-$distro)::Image '${image}' failed test in ($filename)."
+        exit 1
     fi
 done

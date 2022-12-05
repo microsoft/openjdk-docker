@@ -1,9 +1,0 @@
-ARG IMGTOTEST=mcr.microsoft.com/openjdk/jdk:8-mariner
-
-FROM mcr.microsoft.com/openjdk/jdk:8-mariner as builder
-ADD SampleApp.java /SampleApp.java
-RUN javac -source 1.8 -target 1.8 SampleApp.java && jar cfe /app.jar SampleApp SampleApp.class
-
-FROM ${IMGTOTEST} as runner
-COPY --from=builder /app.jar /app.jar
-CMD ["-jar", "/app.jar"]

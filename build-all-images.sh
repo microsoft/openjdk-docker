@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set expected JDK versions after the images are built
-declare -A jdkversions=( ["11"]="11.0.17" ["17"]="17.0.5" ["8"]="1.8.0_352" )
+declare -a jdkversions=( ["11"]="11.0.17" ["17"]="17.0.5" ["8"]="1.8.0_352" )
 
 # Set the base MCR repo
 basemcr="mcr.microsoft.com/openjdk/jdk"
@@ -58,6 +58,6 @@ for d in $(ls -d $basepath/*); do
         fi
 
         # Run tests
-        sh test-image.sh $distro $jdkversion
+        bash test-image.sh $distro $jdkversion
     done
 done

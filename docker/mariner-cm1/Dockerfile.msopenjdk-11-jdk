@@ -5,25 +5,22 @@ FROM ${IMAGE}:${TAG}
 LABEL "Author"="Microsoft"
 LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
-ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
-
 ARG package=msopenjdk-11
+
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-11
 
 RUN tdnf -y update && \
     tdnf -y upgrade && \
     tdnf install -y tzdata ca-certificates freetype fontconfig && \
-    rm -rf /var/cache/tdnf && \
     rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
     tdnf install -y mariner-repos-ui && \
-    tdnf install -y $package --nogpgcheck && \
+    tdnf install -y ${package} shadow-utils --nogpgcheck && \
+    tdnf clean all && \
+    rm -rf /var/cache/tdnf && \
+    rm -rf /usr/lib/jvm/${package}/lib/src.zip && \
+    groupadd --system --gid=101 app && \
+    adduser --uid 101 --gid 101 --system app && \
+    install -d -m 0755 -o 101 -g 101 "/home/app" && \
     echo java -Xshare:dump && \
-    java -Xshare:dump && \
-    rm -rf /usr/lib/jvm/msopenjdk-11/lib/src.zip
-
-RUN tdnf install -y gawk shadow-utils \
-    && tdnf clean all \
-    && groupadd --system --gid=101 app \
-    && adduser --uid 101 --gid 101 --system app \
-    && install -d -m 0755 -o 101 -g 101 "/home/app"
-
-ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-11
+    java -Xshare:dump

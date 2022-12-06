@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set expected JDK versions after the images are built
-declare -A jdkversions=( ["11"]="11.0.17" ["17"]="17.0.5" ["8"]="1.8.0_352" )
+declare -a jdkversions=( ["11"]="11.0.17" ["17"]="17.0.5" ["8"]="1.8.0_352" )
 
 # Set the base MCR repo
 basemcr="mcr.microsoft.com/openjdk/jdk"
@@ -57,20 +57,7 @@ for d in $(ls -d $basepath/*); do
             echo "  Expected: ${expectedversion}"
         fi
 
-        # Test running a Java app
-        dockerfile="./docker/test-only/Dockerfile.testapp"
-        if [[ "${distro}" == "distroless" ]]; then
-            dockerfile=${dockerfile}"distroless"
-        fi
-
-        docker build --build-arg IMGTOTEST=$image -t testapprunner -f $dockerfile ./docker/test-only/
-        test_output=$(docker run --rm testapprunner)
-
-        if [[ "${test_output}" =~ "Hello World" ]]; then
-            echo "::notice title=Test of sample app SUCCEEDED ($jdkversion-$distro)::Image '${image}' is ABLE to run a sample Java app."
-        else
-            echo "::error title=Test of sample app FAILED ($jdkversion-$distro)::Image '${image}' CANNOT run a sample Java app."
-        fi
-
+        # Run tests
+        bash test-image.sh $distro $jdkversion
     done
 done

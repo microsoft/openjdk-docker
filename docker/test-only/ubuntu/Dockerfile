@@ -8,7 +8,6 @@ FROM ${IMAGE}:${UBUNTU_VERSION}
 ARG UBUNTU_VERSION
 ARG JAVA_VERSION
 
-MAINTAINER Microsoft OpenJDK Support <openjdk-support@microsoft.com>
 LABEL "Author"="Microsoft"
 LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 

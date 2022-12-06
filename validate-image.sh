@@ -61,18 +61,5 @@ if [[ ! -z "$expectedversion" ]]; then
   fi
 fi
 
-# Test running a Java app
-dockerfile="./docker/test-only/Dockerfile.testapp"
-if [[ "${distro}" == "distroless" ]]; then
-  dockerfile=${dockerfile}"distroless"
-fi
-
-docker build --build-arg IMGTOTEST=$image -t testapprunner -f $dockerfile ./docker/test-only/
-test_output=$(docker run --rm testapprunner)
-
-if [[ "${test_output}" =~ "Hello World" ]]; then
-    echo "::notice title=Test of sample app SUCCEEDED ($jdkversion-$distro)::Image '${image}' is ABLE to run a sample Java app."
-else
-    echo "::error title=Test of sample app FAILED ($jdkversion-$distro)::Image '${image}' CANNOT run a sample Java app."
-    exit 1
-fi
+# Run tests
+bash test-image.sh $distro $jdkversion

@@ -104,7 +104,7 @@ jobs:
           scriptLocation: 'inlineScript'
           inlineScript: |
             az acr login -n msopenjdk
-            docker buildx create -n mybuilder --platform linux/amd64,linux/arm64 --use            
+            docker buildx create --name mybuilder --platform linux/amd64,linux/arm64 --use            
             if [[ '$(distro)' != 'distroless' ]]; then
               BUILD_ARGS="--build-arg IMAGE=$(distro) --build-arg TAG=$(tag) --build-arg package=$(package)"
             else
@@ -164,7 +164,7 @@ jobs:
           scriptLocation: 'inlineScript'
           inlineScript: |
             az acr login -n msopenjdk
-            docker buildx create -n mybuilder --platform linux/amd64,linux/arm64 --use            
+            docker buildx create --name mybuilder --platform linux/amd64,linux/arm64 --use            
             if [[ '$(distro)' != 'distroless' ]]; then
               BUILD_ARGS="--build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)"
             else

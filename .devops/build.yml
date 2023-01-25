@@ -82,51 +82,21 @@ jobs:
     strategy:
       matrix: ${{ parameters.jobs }}
     steps:
-      - script: |
-          docker pull $(image):$(tag)
-          docker tag $(image):$(tag) $(distro):$(tag)
-        displayName: Docker pull and re-tag
-        condition: and(succeeded(), ne(variables.distro, 'distroless'))
-
-      - script: |
-          docker pull $(installer_image):$(installer_tag)
-          docker tag $(installer_image):$(installer_tag) $(distro):$(installer_tag)-installer
-
-          docker pull $(base_image):$(base_tag)
-          docker tag $(base_image):$(base_tag) $(distro):$(base_tag)-base
-        displayName: Docker pull and re-tag distroless
-        condition: and(succeeded(), eq(variables.distro, 'distroless'))
-
-      - task: Docker@2
+      - task: AzureCLI@2
+        inputs: 
+          azureSubscription: 'JEG-Infrastructure'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az acr login -n msopenjdk
+            docker buildx create --name mybuilder --platform linux/amd64,linux/arm64 --use            
+            if [[ '$(distro)' != 'distroless' ]]; then
+              BUILD_ARGS="--build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)"
+            else
+              BUILD_ARGS="--build-arg INSTALLER_IMAGE=$(installer_image) --build-arg INSTALLER_TAG=$(installer_tag) --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$(package)"
+            fi
+            docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} -t msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro) -f docker/$(distro)/Dockerfile.$(package)-jdk . --push
         displayName: build image
-        condition: and(succeeded(), ne(variables.distro, 'distroless'))
-        inputs:
-          command: build
-          repository: internal/private/openjdk/jdk
-          dockerfile: docker/$(distro)/Dockerfile.$(package)-jdk
-          containerRegistry: "Java Engineering ACR"
-          arguments: --build-arg IMAGE=$(distro) --build-arg TAG=$(tag) --build-arg package=$(package)
-          tags: |
-            $(version)-$(distro)
-      - task: Docker@2
-        displayName: build image
-        condition: and(succeeded(), eq(variables.distro, 'distroless'))
-        inputs:
-          command: build
-          repository: internal/private/openjdk/jdk
-          dockerfile: docker/$(distro)/Dockerfile.$(package)-jdk
-          containerRegistry: "Java Engineering ACR"
-          arguments: --build-arg INSTALLER_IMAGE=$(distro) --build-arg INSTALLER_TAG=$(installer_tag)-installer --build-arg BASE_IMAGE=$(distro) --build-arg BASE_TAG=$(base_tag)-base --build-arg package=$(package)
-          tags: |
-            $(version)-$(distro)
-      - task: Docker@2
-        displayName: push image to container registry
-        inputs:
-          command: push
-          repository: internal/private/openjdk/jdk
-          containerRegistry: "Java Engineering ACR"
-          tags: |
-            $(version)-$(distro)
 
   - job: wait_for_validation
     dependsOn: build_internal
@@ -148,48 +118,18 @@ jobs:
     strategy:
       matrix: ${{ parameters.jobs }}
     steps:
-      - script: |
-          docker pull $(image):$(tag)
-          docker tag $(image):$(tag) $(distro):$(tag)
-        displayName: Docker pull and re-tag
-        condition: and(succeeded(), ne(variables.distro, 'distroless'))
-
-      - script: |
-          docker pull $(installer_image):$(installer_tag)
-          docker tag $(installer_image):$(installer_tag) $(distro):$(installer_tag)-installer
-
-          docker pull $(base_image):$(base_tag)
-          docker tag $(base_image):$(base_tag) $(distro):$(base_tag)-base
-        displayName: Docker pull and re-tag distroless
-        condition: and(succeeded(), eq(variables.distro, 'distroless'))
-
-      - task: Docker@2
-        displayName: build regular image
-        condition: and(succeeded(), ne(variables.distro, 'distroless'))
-        inputs:
-          command: build
-          repository: public/openjdk/jdk
-          dockerfile: docker/$(distro)/Dockerfile.$(package)-jdk
-          containerRegistry: "Java Engineering ACR"
-          arguments: --build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)
-          tags: |
-            $(version)-$(distro)
-      - task: Docker@2
-        displayName: build distroless image
-        condition: and(succeeded(), eq(variables.distro, 'distroless'))
-        inputs:
-          command: build
-          repository: public/openjdk/jdk
-          dockerfile: docker/$(distro)/Dockerfile.$(package)-jdk
-          containerRegistry: "Java Engineering ACR"
-          arguments: --build-arg INSTALLER_IMAGE=$(distro) --build-arg INSTALLER_TAG=$(installer_tag)-installer --build-arg BASE_IMAGE=$(distro) --build-arg BASE_TAG=$(base_tag)-base --build-arg package=$(package)
-          tags: |
-            $(version)-$(distro)
-      - task: Docker@2
-        displayName: push image to container registry
-        inputs:
-          command: push
-          repository: public/openjdk/jdk
-          containerRegistry: "Java Engineering ACR"
-          tags: |
-            $(version)-$(distro)
+      - task: AzureCLI@2
+        inputs: 
+          azureSubscription: 'JEG-Infrastructure'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az acr login -n msopenjdk
+            docker buildx create --name mybuilder --platform linux/amd64,linux/arm64 --use            
+            if [[ '$(distro)' != 'distroless' ]]; then
+              BUILD_ARGS="--build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)"
+            else
+              BUILD_ARGS="--build-arg INSTALLER_IMAGE=$(installer_image) --build-arg INSTALLER_TAG=$(installer_tag) --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$(package)"
+            fi
+            docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} -t msopenjdk.azurecr.io/internal/public/openjdk/jdk:$(version)-$(distro) -f docker/$(distro)/Dockerfile.$(package)-jdk . --push
+        displayName: build image

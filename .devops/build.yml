@@ -95,7 +95,7 @@ jobs:
             else
               BUILD_ARGS="--build-arg INSTALLER_IMAGE=$(installer_image) --build-arg INSTALLER_TAG=$(installer_tag) --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$(package)"
             fi
-            docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} -t msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro) -f docker/$(distro)/Dockerfile.$(package)-jdk . -o type=local,dest=test
+            docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} -t msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro) -f docker/$(distro)/Dockerfile.$(package)-jdk . --push
         displayName: build image
 
   - job: wait_for_validation
@@ -131,5 +131,5 @@ jobs:
             else
               BUILD_ARGS="--build-arg INSTALLER_IMAGE=$(installer_image) --build-arg INSTALLER_TAG=$(installer_tag) --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$(package)"
             fi
-            docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} -t msopenjdk.azurecr.io/internal/public/openjdk/jdk:$(version)-$(distro) -f docker/$(distro)/Dockerfile.$(package)-jdk . -o type=local,dest=test
+            docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} -t msopenjdk.azurecr.io/internal/public/openjdk/jdk:$(version)-$(distro) -f docker/$(distro)/Dockerfile.$(package)-jdk . --push
         displayName: build image

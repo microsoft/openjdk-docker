@@ -5,7 +5,7 @@ ARG BASE_TAG="2.0"
 
 FROM ${INSTALLER_IMAGE}:${INSTALLER_TAG} AS installer
 
-ARG JDK_URL="https://aka.ms/download-jdk/microsoft-jdk-11-linux-x64.tar.gz"
+ARG JDK_URL="https://aka.ms/download-jdk/microsoft-jdk-11-linux-ARCH.tar.gz"
 
 # Add dynamically linked packages: zlib
 # Distroless base image already has tzdata ca-certificates openssl glibc
@@ -22,6 +22,11 @@ RUN mkdir /staging \
 
 # Get JDK
 RUN mkdir -p /usr/lib/jvm && \
+    if [ $(uname -m) = "x86_64" ]; then \
+        JDK_URL=${JDK_URL/ARCH/x64}; \
+    else \
+        JDK_URL=${JDK_URL/ARCH/aarch64}; \
+    fi && \
     curl --silent -L ${JDK_URL} -o /jdk.tar.gz && \
     tar -xzf /jdk.tar.gz -C / && \
     rm /jdk.tar.gz && \

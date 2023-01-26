@@ -23,7 +23,9 @@ RUN DEBIAN_FRONTEND=noninteractive && \
     rm -rf /var/lib/apt/lists/* && \
     echo java -Xshare:dump && \
     java -Xshare:dump && \
-    rm -rf ./usr/lib/jvm/msopenjdk-11-amd64/lib/src.zip
+    if [ $(uname -m) = "x86_64" ]; then ARCH="amd64"; else ARCH="arm64"; fi && \
+    rm -rf ./usr/lib/jvm/msopenjdk-11-${ARCH}/lib/src.zip && \
+    ln -s /usr/lib/jvm/msopenjdk-11-${ARCH} /usr/lib/jvm/msopenjdk-11
 
 RUN groupadd --system --gid=101 app \
     && adduser --uid 101 --gid 101 --system app \
@@ -31,4 +33,4 @@ RUN groupadd --system --gid=101 app \
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-11-amd64
+ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-11

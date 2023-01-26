@@ -26,8 +26,10 @@ RUN     apt-get -qq update && \
         apt-get -qq autoremove --purge && \
         rm -rf /var/lib/apt/lists/* && \
         echo java -Xshare:dump && \
-        java -Xshare:dump 
+        java -Xshare:dump && \
+        if [ $(uname -m) = "x86_64" ]; then ARCH="amd64"; else ARCH="arm64"; fi && \
+        ln -s /usr/lib/jvm/msopenjdk-${JAVA_VERSION}-${ARCH} /usr/lib/jvm/msopenjdk-${JAVA_VERSION}
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-${JAVA_VERSION}-amd64
+ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-${JAVA_VERSION}

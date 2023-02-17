@@ -11,8 +11,7 @@ ARG PKGS="tzdata ca-certificates freetype shadow-utils"
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-11
 
-RUN rpm -Uhv https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm && \
-    tdnf install -y ${package} ${PKGS} && \
+RUN tdnf install -y ${package} ${PKGS} && \
     tdnf clean all && \
     groupadd --system --gid=101 app && \
     adduser --uid 101 --gid 101 --system app && \

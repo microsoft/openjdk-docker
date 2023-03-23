@@ -61,5 +61,18 @@ if [[ ! -z "$expectedversion" ]]; then
   fi
 fi
 
+# Check if CDS is enabled
+if [[ "${distro}" == "distroless" ]]; then
+    java_version_string=$(docker run --rm $image -version 2>&1)
+else
+    java_version_string=$(docker run --rm $image /bin/bash -c "java -version 2>&1")
+fi
+
+if [[ "$java_version_string" =~ "sharing" ]]; then
+    echo "::notice title=CDS enabled ($jdkversion-$distro)::Image '${image}' has enabled CDS."
+else
+    echo "::warning title=CDS disabled ($jdkversion-$distro)::Image '${image}' has disabled CDS."
+fi
+
 # Run tests
 bash test-image.sh $distro $jdkversion

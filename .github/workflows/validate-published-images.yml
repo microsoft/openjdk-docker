@@ -12,7 +12,7 @@ jobs:
       matrix:
         distros: [ "mariner", "distroless" ]
         jdkvendor: [ "temurin" ]
-        jdkversion: [ { major: "8", expected: "1.8.0_362" } ]
+        jdkversion: [ { major: "8", expected: "1.8.0_372" } ]
     steps:
       - uses: actions/checkout@v3
 
@@ -27,7 +27,7 @@ jobs:
       matrix:
         distros: [ "mariner", "distroless", "mariner-cm1", "ubuntu" ]
         jdkvendor: [ "msopenjdk" ]
-        jdkversion: [ { major: "11", expected: "11.0.19" }, { major: "17", expected: "17.0.7" } ]
+        jdkversion: [ { major: "11", expected: "11.0.20" }, { major: "17", expected: "17.0.8" } ]
     steps:
       - uses: actions/checkout@v3
 
@@ -42,7 +42,7 @@ jobs:
       matrix:
         distros: [ "mariner", "distroless", "mariner-cm1", "ubuntu" ]
         jdkvendor: [ "msopenjdk" ]
-        jdkversion: [ { major: "11", expected: "11.0.19" }, { major: "17", expected: "17.0.7" } ]
+        jdkversion: [ { major: "11", expected: "11.0.20" }, { major: "17", expected: "17.0.8" } ]
     steps:
       - uses: actions/checkout@v3
 

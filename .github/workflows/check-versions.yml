@@ -11,7 +11,7 @@ jobs:
       matrix:
         distros: [ "mariner", "distroless" ]
         jdkvendor: [ "temurin" ]
-        jdkversion: [ { major: "8", expected: "1.8.0_372" } ]
+        jdkversion: [ { major: "8", expected: "1.8.0_382" } ]
     steps:
       - uses: actions/checkout@v3
 

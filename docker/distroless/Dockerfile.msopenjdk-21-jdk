@@ -30,7 +30,7 @@ RUN mkdir -p /usr/lib/jvm && \
     curl --silent -L ${JDK_URL} -o /jdk.tar.gz && \
     tar -xzf /jdk.tar.gz -C / && \
     rm /jdk.tar.gz && \
-    mv /jdk-1* /usr/jdk
+    mv /jdk-2* /usr/jdk
 
 # Clean up staging
 RUN rm -rf /staging/etc/tdnf \

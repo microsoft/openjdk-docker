@@ -98,7 +98,7 @@ jobs:
   - job: build_internal
     displayName: "build internal "
     pool:
-      vmImage: ubuntu-20.04
+      vmImage: ubuntu-22.04
     strategy:
       matrix: ${{ parameters.jobs }}
     steps:
@@ -134,7 +134,7 @@ jobs:
     displayName: "build public "
     dependsOn: wait_for_validation
     pool:
-      vmImage: ubuntu-20.04
+      vmImage: ubuntu-22.04
     strategy:
       matrix: ${{ parameters.jobs }}
     steps:

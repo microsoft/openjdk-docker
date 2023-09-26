@@ -1,0 +1,36 @@
+# DisableDockerDetector "Base image is obtained from internal registry"
+ARG IMAGE="ubuntu"
+ARG TAG="20.04"
+FROM ${IMAGE}:${TAG}
+
+LABEL "Author"="Microsoft"
+LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
+
+ARG package=msopenjdk-21
+
+RUN DEBIAN_FRONTEND=noninteractive && \
+    apt-get -qq update && \
+    apt-get -qq upgrade && \
+    apt-get -qq install --no-install-recommends tzdata ca-certificates fontconfig locales apt-transport-https wget binutils && \
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
+    locale-gen en_US.UTF-8 && \
+    wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
+    dpkg -i packages-microsoft-prod.deb && \
+    apt-get -qq update && \
+    apt-get -qq install $package && \
+    apt-get -qq purge apt-transport-https wget && \
+    apt-get -qq autoremove --purge && \
+    rm -rf /var/lib/apt/lists/* && \
+    echo java -Xshare:dump && \
+    java -Xshare:dump && \
+    if [ $(uname -m) = "x86_64" ]; then ARCH="amd64"; else ARCH="arm64"; fi && \
+    rm -rf ./usr/lib/jvm/msopenjdk-21-${ARCH}/lib/src.zip && \
+    ln -s /usr/lib/jvm/msopenjdk-21-${ARCH} /usr/lib/jvm/msopenjdk-21
+
+RUN groupadd --system --gid=101 app \
+    && adduser --uid 101 --gid 101 --system app \
+    && install -d -m 0755 -o 101 -g 101 "/home/app"
+
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+
+ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-21

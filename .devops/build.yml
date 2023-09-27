@@ -96,10 +96,10 @@ parameters:
 
 stages:
 - stage: build_internal
-  displayName: Build Internal
+  displayName: "Build Internal"
   jobs:
     - job: build_internal
-      displayName: "build internal "
+      displayName: "build internal"
       pool:
         vmImage: ubuntu-22.04
       strategy:
@@ -121,8 +121,8 @@ stages:
               docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} -t msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro) -f docker/$(distro)/Dockerfile.$(package)-jdk . --push
           displayName: build image
 
-- stage: build_internal
-  displayName: Build Internal
+- stage: validate_and_publish
+  displayName: "Validate & Publish"
   jobs:
     - job: wait_for_validation
       dependsOn: build_internal

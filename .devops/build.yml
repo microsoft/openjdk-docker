@@ -123,9 +123,9 @@ stages:
 
 - stage: validate_and_publish
   displayName: "Validate & Publish"
+  dependsOn: build_internal
   jobs:
     - job: wait_for_validation
-      dependsOn: build_internal
       displayName: wait for validation
       pool: server
       steps:

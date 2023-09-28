@@ -73,63 +73,83 @@ parameters:
         installer_tag: "2.0"
         base_image: "image-repository"
         base_tag: "2.0"
+      ubuntu_21:
+        distro: ubuntu
+        version: 21
+        package: msopenjdk-21
+        image: "image-repository"
+        tag: "image-tag"
+      distroless_21:
+        distro: distroless
+        version: 21
+        package: msopenjdk-21
+        installer_image: "image-repository"
+        installer_tag: "2.0"
+        base_image: "image-repository"
+        base_tag: "2.0"
 
-jobs:
-  - job: build_internal
-    displayName: "build internal "
-    pool:
-      vmImage: ubuntu-20.04
-    strategy:
-      matrix: ${{ parameters.jobs }}
-    steps:
-      - task: AzureCLI@2
-        inputs: 
-          azureSubscription: 'JEG-Infrastructure'
-          scriptType: 'bash'
-          scriptLocation: 'inlineScript'
-          inlineScript: |
-            az acr login -n msopenjdk
-            docker buildx create --name mybuilder --platform linux/amd64,linux/arm64 --use            
-            if [[ '$(distro)' != 'distroless' ]]; then
-              BUILD_ARGS="--build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)"
-            else
-              BUILD_ARGS="--build-arg INSTALLER_IMAGE=$(installer_image) --build-arg INSTALLER_TAG=$(installer_tag) --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$(package)"
-            fi
-            docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} -t msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro) -f docker/$(distro)/Dockerfile.$(package)-jdk . --push
-        displayName: build image
+stages:
+- stage: build_internal
+  displayName: "Build Internal"
+  jobs:
+    - job: build_internal
+      displayName: "build internal"
+      pool:
+        vmImage: ubuntu-22.04
+      strategy:
+        matrix: ${{ parameters.jobs }}
+      steps:
+        - task: AzureCLI@2
+          inputs: 
+            azureSubscription: 'JEG-Infrastructure'
+            scriptType: 'bash'
+            scriptLocation: 'inlineScript'
+            inlineScript: |
+              az acr login -n msopenjdk
+              docker buildx create --name mybuilder --platform linux/amd64,linux/arm64 --use            
+              if [[ '$(distro)' != 'distroless' ]]; then
+                BUILD_ARGS="--build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)"
+              else
+                BUILD_ARGS="--build-arg INSTALLER_IMAGE=$(installer_image) --build-arg INSTALLER_TAG=$(installer_tag) --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$(package)"
+              fi
+              docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} -t msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro) -f docker/$(distro)/Dockerfile.$(package)-jdk . --push
+          displayName: build image
 
-  - job: wait_for_validation
-    dependsOn: build_internal
-    displayName: wait for validation
-    pool: server
-    steps:
-      - task: ManualValidation@0
-        # 3 days
-        timeoutInMinutes: 4320
-        inputs:
-          instructions: "please validate the build configuration, artifacts, tests, and resume"
-          onTimeout: "resume"
+- stage: validate_and_publish
+  displayName: "Validate & Publish"
+  dependsOn: build_internal
+  jobs:
+    - job: wait_for_validation
+      displayName: wait for validation
+      pool: server
+      steps:
+        - task: ManualValidation@0
+          # 3 days
+          timeoutInMinutes: 4320
+          inputs:
+            instructions: "please validate the build configuration, artifacts, tests, and resume"
+            onTimeout: "resume"
 
-  - job: build_public
-    displayName: "build public "
-    dependsOn: wait_for_validation
-    pool:
-      vmImage: ubuntu-20.04
-    strategy:
-      matrix: ${{ parameters.jobs }}
-    steps:
-      - task: AzureCLI@2
-        inputs: 
-          azureSubscription: 'JEG-Infrastructure'
-          scriptType: 'bash'
-          scriptLocation: 'inlineScript'
-          inlineScript: |
-            az acr login -n msopenjdk
-            docker buildx create --name mybuilder --platform linux/amd64,linux/arm64 --use            
-            if [[ '$(distro)' != 'distroless' ]]; then
-              BUILD_ARGS="--build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)"
-            else
-              BUILD_ARGS="--build-arg INSTALLER_IMAGE=$(installer_image) --build-arg INSTALLER_TAG=$(installer_tag) --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$(package)"
-            fi
-            docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} -t msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro) -f docker/$(distro)/Dockerfile.$(package)-jdk . --push
-        displayName: build image
+    - job: build_public
+      displayName: "build public "
+      dependsOn: wait_for_validation
+      pool:
+        vmImage: ubuntu-22.04
+      strategy:
+        matrix: ${{ parameters.jobs }}
+      steps:
+        - task: AzureCLI@2
+          inputs: 
+            azureSubscription: 'JEG-Infrastructure'
+            scriptType: 'bash'
+            scriptLocation: 'inlineScript'
+            inlineScript: |
+              az acr login -n msopenjdk
+              docker buildx create --name mybuilder --platform linux/amd64,linux/arm64 --use            
+              if [[ '$(distro)' != 'distroless' ]]; then
+                BUILD_ARGS="--build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)"
+              else
+                BUILD_ARGS="--build-arg INSTALLER_IMAGE=$(installer_image) --build-arg INSTALLER_TAG=$(installer_tag) --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$(package)"
+              fi
+              docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} -t msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro) -f docker/$(distro)/Dockerfile.$(package)-jdk . --push
+          displayName: build image

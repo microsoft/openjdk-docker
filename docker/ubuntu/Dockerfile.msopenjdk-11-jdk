@@ -1,6 +1,6 @@
 # DisableDockerDetector "Base image is obtained from internal registry"
 ARG IMAGE="ubuntu"
-ARG TAG="20.04"
+ARG TAG="22.04"
 FROM ${IMAGE}:${TAG}
 
 LABEL "Author"="Microsoft"
@@ -14,7 +14,7 @@ RUN DEBIAN_FRONTEND=noninteractive && \
     apt-get -qq install --no-install-recommends tzdata ca-certificates fontconfig locales apt-transport-https wget && \
     echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
     locale-gen en_US.UTF-8 && \
-    wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
+    wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
     dpkg -i packages-microsoft-prod.deb && \
     apt-get -qq update && \
     apt-get -qq install $package && \

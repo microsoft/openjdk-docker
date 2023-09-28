@@ -25,9 +25,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distros: [ "mariner", "distroless", "mariner-cm1", "ubuntu" ]
+        distros: [ "mariner", "distroless", "ubuntu" ]
         jdkvendor: [ "msopenjdk" ]
-        jdkversion: [ { major: "11", expected: "11.0.20.1" }, { major: "17", expected: "17.0.8.1" } ]
+        jdkversion: [ { major: "11", expected: "11.0.20.1" }, { major: "17", expected: "17.0.8.1" }, { major: "21", expected: "21" } ]
     steps:
       - uses: actions/checkout@v3
 
@@ -40,9 +40,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distros: [ "mariner", "distroless", "mariner-cm1", "ubuntu" ]
+        distros: [ "mariner", "distroless", "ubuntu" ]
         jdkvendor: [ "msopenjdk" ]
-        jdkversion: [ { major: "11", expected: "11.0.20.1" }, { major: "17", expected: "17.0.8.1" } ]
+        jdkversion: [ { major: "11", expected: "11.0.20.1" }, { major: "17", expected: "17.0.8.1" }, { major: "21", expected: "21" } ]
     steps:
       - uses: actions/checkout@v3
 

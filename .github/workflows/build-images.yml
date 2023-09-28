@@ -31,7 +31,7 @@ jobs:
       fail-fast: false
       matrix:
         jdkversion: [11, 17, 21] # Only build LTS releases
-        baseimage: ["mariner", "mariner-cm1", "ubuntu", "distroless"]
+        baseimage: ["mariner", "ubuntu", "distroless"]
 
     steps:
       - uses: actions/checkout@v3

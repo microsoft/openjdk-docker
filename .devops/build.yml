@@ -79,12 +79,6 @@ parameters:
         package: msopenjdk-21
         image: "image-repository"
         tag: "image-tag"
-      mariner_cm1_21:
-        distro: mariner-cm1
-        version: 21
-        package: msopenjdk-21
-        image: "image-repository"
-        tag: "1.0"
       distroless_21:
         distro: distroless
         version: 21

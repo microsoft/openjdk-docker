@@ -27,7 +27,7 @@ jobs:
       matrix:
         distros: [ "mariner", "distroless", "ubuntu" ]
         jdkvendor: [ "msopenjdk" ]
-        jdkversion: [ { major: "11", expected: "11.0.20.1" }, { major: "17", expected: "17.0.8.1" }, { major: "21", expected: "21" } ]
+        jdkversion: [ { major: "11", expected: "11.0.21" }, { major: "17", expected: "17.0.9" }, { major: "21", expected: "21.0.1" } ]
     steps:
       - uses: actions/checkout@v4
 
@@ -42,7 +42,7 @@ jobs:
       matrix:
         distros: [ "mariner", "distroless", "ubuntu" ]
         jdkvendor: [ "msopenjdk" ]
-        jdkversion: [ { major: "11", expected: "11.0.20.1" }, { major: "17", expected: "17.0.8.1" }, { major: "21", expected: "21" } ]
+        jdkversion: [ { major: "11", expected: "11.0.21" }, { major: "17", expected: "17.0.9" }, { major: "21", expected: "21.0.1" } ]
     steps:
       - uses: actions/checkout@v4
 

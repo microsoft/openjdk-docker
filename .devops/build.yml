@@ -79,6 +79,12 @@ parameters:
         package: msopenjdk-21
         image: "image-repository"
         tag: "image-tag"
+      mariner_21:
+        distro: mariner
+        version: 21
+        package: msopenjdk-21
+        image: "image-repository"
+        tag: "2.0"
       distroless_21:
         distro: distroless
         version: 21

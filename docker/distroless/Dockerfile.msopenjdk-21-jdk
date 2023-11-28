@@ -11,6 +11,7 @@ ARG JDK_URL="https://aka.ms/download-jdk/microsoft-jdk-21-linux-ARCH.tar.gz"
 # Distroless base image already has tzdata ca-certificates openssl glibc
 # Create a non-root user and group (just like .NET's image)
 RUN mkdir /staging \
+    && tdnf update -y \
     && tdnf install -y --releasever=2.0 --installroot /staging zlib \
     && tdnf install -y gawk shadow-utils ca-certificates tar \
     && groupadd --system --gid=101 app \

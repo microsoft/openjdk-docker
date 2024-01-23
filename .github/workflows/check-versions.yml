@@ -30,7 +30,7 @@ jobs:
       matrix:
         distros: [ "mariner", "distroless", "ubuntu" ]
         jdkvendor: [ "msopenjdk" ]
-        jdkversion: [ { major: "11", expected: "11.0.21" }, { major: "17", expected: "17.0.9" }, { major: "21", expected: "21.0.1" } ]
+        jdkversion: [ { major: "11", expected: "11.0.22" }, { major: "17", expected: "17.0.10" }, { major: "21", expected: "21.0.2" } ]
     steps:
       - uses: actions/checkout@v4
 

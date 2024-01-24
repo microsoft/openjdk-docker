@@ -3,6 +3,9 @@ name: Validate Published Images
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
 
   validate_temurin:
@@ -14,7 +17,7 @@ jobs:
         jdkvendor: [ "temurin" ]
         jdkversion: [ { major: "8", expected: "1.8.0_382" } ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Validate container images
         run: |
@@ -29,7 +32,7 @@ jobs:
         jdkvendor: [ "msopenjdk" ]
         jdkversion: [ { major: "11", expected: "11.0.22" }, { major: "17", expected: "17.0.10" }, { major: "21", expected: "21.0.2" } ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Validate container images
         run: |
@@ -44,7 +47,7 @@ jobs:
         jdkvendor: [ "msopenjdk" ]
         jdkversion: [ { major: "11", expected: "11.0.22" }, { major: "17", expected: "17.0.10" }, { major: "21", expected: "21.0.2" } ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Validate container images
         run: |

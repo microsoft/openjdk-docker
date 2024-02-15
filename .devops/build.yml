@@ -106,7 +106,7 @@ extends:
   parameters:
     sdl:
       sourceAnalysisPool:
-        name: JEG-windows2022-x64-release
+        name: JEG-windows2022-x64-github
         os: windows
     stages:
       - stage: build_internal

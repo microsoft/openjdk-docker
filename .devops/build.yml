@@ -115,7 +115,8 @@ extends:
           - job: build_internal
             displayName: "build internal"
             pool:
-              vmImage: ubuntu-22.04
+              name: JEG-mariner2.0-x64-github
+              os: linux
             strategy:
               matrix: ${{ parameters.jobs }}
             steps:
@@ -154,7 +155,8 @@ extends:
             displayName: "build public "
             dependsOn: wait_for_validation
             pool:
-              vmImage: ubuntu-22.04
+              name: JEG-mariner2.0-x64-github
+              os: linux
             strategy:
               matrix: ${{ parameters.jobs }}
             steps:

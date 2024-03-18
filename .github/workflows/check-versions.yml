@@ -16,7 +16,7 @@ jobs:
         jdkvendor: [ "temurin" ]
         jdkversion: [ { major: "8", expected: "1.8.0_382" } ]
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
 
       - name: Build image locally
         run: |
@@ -35,7 +35,7 @@ jobs:
         jdkvendor: [ "msopenjdk" ]
         jdkversion: [ { major: "11", expected: "11.0.22" }, { major: "17", expected: "17.0.10" }, { major: "21", expected: "21.0.2" } ]
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
 
       - name: Build image locally
         run: |

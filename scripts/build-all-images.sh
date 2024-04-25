@@ -58,6 +58,6 @@ for d in $(ls -d $basepath/*); do
         fi
 
         # Run tests
-        bash test-image.sh $distro $jdkversion
+        bash ./scripts/test-image.sh $distro $jdkversion
     done
 done

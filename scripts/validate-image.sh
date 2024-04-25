@@ -75,4 +75,4 @@ else
 fi
 
 # Run tests
-bash test-image.sh $distro $jdkversion
+bash ./scripts/test-image.sh $distro $jdkversion

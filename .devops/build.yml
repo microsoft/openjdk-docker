@@ -26,14 +26,14 @@ parameters:
     type: object
     default:
       mariner_8:
-        new_image: false
+        new_LTS_image: false
         distro: mariner
         version: 8
         package: temurin-8
         image: "image-repository"
         tag: "2.0"
       distroless_8:
-        new_image: false
+        new_LTS_image: false
         distro: distroless
         version: 8
         package: temurin-8
@@ -42,21 +42,21 @@ parameters:
         base_image: "image-repository"
         base_tag: "2.0"
       ubuntu_11:
-        new_image: false
+        new_LTS_image: false
         distro: ubuntu
         version: 11
         package: msopenjdk-11
         image: "image-repository"
         tag: "image-tag"
       mariner_11:
-        new_image: false
+        new_LTS_image: false
         distro: mariner
         version: 11
         package: msopenjdk-11
         image: "image-repository"
         tag: "2.0"
       distroless_11:
-        new_image: false
+        new_LTS_image: false
         distro: distroless
         version: 11
         package: msopenjdk-11
@@ -65,21 +65,21 @@ parameters:
         base_image: "image-repository"
         base_tag: "2.0"
       ubuntu_17:
-        new_image: false
+        new_LTS_image: false
         distro: ubuntu
         version: 17
         package: msopenjdk-17
         image: "image-repository"
         tag: "image-tag"
       mariner_17:
-        new_image: false
+        new_LTS_image: false
         distro: mariner
         version: 17
         package: msopenjdk-17
         image: "image-repository"
         tag: "2.0"
       distroless_17:
-        new_image: false
+        new_LTS_image: false
         distro: distroless
         version: 17
         package: msopenjdk-17
@@ -88,21 +88,21 @@ parameters:
         base_image: "image-repository"
         base_tag: "2.0"
       ubuntu_21:
-        new_image: false
+        new_LTS_image: false
         distro: ubuntu
         version: 21
         package: msopenjdk-21
         image: "image-repository"
         tag: "image-tag"
       mariner_21:
-        new_image: false
+        new_LTS_image: false
         distro: mariner
         version: 21
         package: msopenjdk-21
         image: "image-repository"
         tag: "2.0"
       distroless_21:
-        new_image: false
+        new_LTS_image: false
         distro: distroless
         version: 21
         package: msopenjdk-21
@@ -139,7 +139,7 @@ extends:
             steps:
               - task: AzureCLI@2
                 displayName: "Download ORAS"
-                condition: ne( variables['new_image'], true)
+                condition: ne( variables['new_LTS_image'], true)
                 inputs:
                   azureSubscription: "JEG-Infrastructure"
                   scriptType: "bash"
@@ -154,7 +154,7 @@ extends:
 
               - task: AzureCLI@2
                 displayName: Annotate previous image
-                condition: ne( variables['new_image'], true)
+                condition: ne( variables['new_LTS_image'], true)
                 inputs:
                   azureSubscription: "JEG-Infrastructure"
                   scriptType: "bash"
@@ -208,7 +208,7 @@ extends:
 
               - task: AzureCLI@2
                 displayName: "Download ORAS"
-                condition: ne( variables['new_image'], true)
+                condition: ne( variables['new_LTS_image'], true)
                 inputs:
                   azureSubscription: "JEG-Infrastructure"
                   scriptType: "bash"
@@ -223,7 +223,7 @@ extends:
 
               - task: AzureCLI@2
                 displayName: Annotate previous image
-                condition: ne( variables['new_image'], true)
+                condition: ne( variables['new_LTS_image'], true)
                 inputs:
                   azureSubscription: "JEG-Infrastructure"
                   scriptType: "bash"

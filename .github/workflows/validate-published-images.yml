@@ -22,10 +22,10 @@ jobs:
       - name: Validate container images
         run: |
           ./scripts/validate-image.sh \
-          ${{ matrix.distros }} \
-          ${{ matrix.jdkvendor }} \
-          ${{ matrix.jdkversion.major }} \
-          ${{ matrix.jdkversion.expected }}
+            ${{ matrix.distros }} \
+            ${{ matrix.jdkvendor }} \
+            ${{ matrix.jdkversion.major }} \
+            ${{ matrix.jdkversion.expected }}
 
   validate_msopenjdk:
     runs-on: ubuntu-latest
@@ -41,10 +41,10 @@ jobs:
       - name: Validate container images
         run: |
           ./scripts/validate-image.sh \
-          ${{ matrix.distros }} \
-          ${{ matrix.jdkvendor }} \
-          ${{ matrix.jdkversion.major }} \
-          ${{ matrix.jdkversion.expected }}
+            ${{ matrix.distros }} \
+            ${{ matrix.jdkvendor }} \
+            ${{ matrix.jdkversion.major }} \
+            ${{ matrix.jdkversion.expected }}
 
   validate_msopenjdk_aarch64:
     runs-on: ['self-hosted', '1ES.Pool=JEG-linux-arm64-openjdk-docker']
@@ -60,7 +60,7 @@ jobs:
       - name: Validate container images
         run: |
           ./scripts/validate-image.sh \
-          ${{ matrix.distros }} \
-          ${{ matrix.jdkvendor }} \
-          ${{ matrix.jdkversion.major }} \
-          ${{ matrix.jdkversion.expected }}
+            ${{ matrix.distros }} \
+            ${{ matrix.jdkvendor }} \
+            ${{ matrix.jdkversion.major }} \
+            ${{ matrix.jdkversion.expected }}

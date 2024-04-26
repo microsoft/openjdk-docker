@@ -16,6 +16,12 @@ trigger:
 pr: none
 
 parameters:
+  - name: organization
+    type: string
+  - name: feed
+    type: string
+  - name: package
+    type: string
   - name: jobs
     type: object
     default:
@@ -142,6 +148,9 @@ extends:
                 env:
                   AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
                   ORAS_VERSION: 1.1.0
+                  ORGANIZATION: ${{ parameters.organization }}
+                  FEED: ${{ parameters.feed }}
+                  NAME: ${{ parameters.package }}
 
               - task: AzureCLI@2
                 displayName: Annotate previous image

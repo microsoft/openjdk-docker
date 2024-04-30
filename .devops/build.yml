@@ -1,4 +1,4 @@
-# build.yml Build pipeline to build JDK docker images. When running the pipeline
+# build.yml Build pipeline to build Microsoft's build of OpenJDK docker images. When running the pipeline
 # replace "image-repository" value with the location of your docker images (e.g. hub.docker.io/...)
 # replace the image tags as needed.
 
@@ -16,16 +16,24 @@ trigger:
 pr: none
 
 parameters:
+  - name: organization
+    type: string
+  - name: feed
+    type: string
+  - name: package
+    type: string
   - name: jobs
     type: object
     default:
       mariner_8:
+        new_LTS_image: false
         distro: mariner
         version: 8
         package: temurin-8
         image: "image-repository"
         tag: "2.0"
       distroless_8:
+        new_LTS_image: false
         distro: distroless
         version: 8
         package: temurin-8
@@ -34,18 +42,21 @@ parameters:
         base_image: "image-repository"
         base_tag: "2.0"
       ubuntu_11:
+        new_LTS_image: false
         distro: ubuntu
         version: 11
         package: msopenjdk-11
         image: "image-repository"
         tag: "image-tag"
       mariner_11:
+        new_LTS_image: false
         distro: mariner
         version: 11
         package: msopenjdk-11
         image: "image-repository"
         tag: "2.0"
       distroless_11:
+        new_LTS_image: false
         distro: distroless
         version: 11
         package: msopenjdk-11
@@ -54,18 +65,21 @@ parameters:
         base_image: "image-repository"
         base_tag: "2.0"
       ubuntu_17:
+        new_LTS_image: false
         distro: ubuntu
         version: 17
         package: msopenjdk-17
         image: "image-repository"
         tag: "image-tag"
       mariner_17:
+        new_LTS_image: false
         distro: mariner
         version: 17
         package: msopenjdk-17
         image: "image-repository"
         tag: "2.0"
       distroless_17:
+        new_LTS_image: false
         distro: distroless
         version: 17
         package: msopenjdk-17
@@ -74,18 +88,21 @@ parameters:
         base_image: "image-repository"
         base_tag: "2.0"
       ubuntu_21:
+        new_LTS_image: false
         distro: ubuntu
         version: 21
         package: msopenjdk-21
         image: "image-repository"
         tag: "image-tag"
       mariner_21:
+        new_LTS_image: false
         distro: mariner
         version: 21
         package: msopenjdk-21
         image: "image-repository"
         tag: "2.0"
       distroless_21:
+        new_LTS_image: false
         distro: distroless
         version: 21
         package: msopenjdk-21
@@ -115,26 +132,54 @@ extends:
           - job: build_internal
             displayName: "build internal"
             pool:
-              name: JEG-mariner2.0-x64-github
+              name: JEG-mariner2.0-x64-release
               os: linux
             strategy:
               matrix: ${{ parameters.jobs }}
             steps:
               - task: AzureCLI@2
+                displayName: "Download ORAS"
+                condition: ne( variables['new_LTS_image'], true)
                 inputs:
                   azureSubscription: "JEG-Infrastructure"
                   scriptType: "bash"
-                  scriptLocation: "inlineScript"
-                  inlineScript: |
-                    az acr login -n msopenjdk
-                    docker buildx create --name mybuilder --platform linux/amd64,linux/arm64 --use            
-                    if [[ '$(distro)' != 'distroless' ]]; then
-                      BUILD_ARGS="--build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)"
-                    else
-                      BUILD_ARGS="--build-arg INSTALLER_IMAGE=$(installer_image) --build-arg INSTALLER_TAG=$(installer_tag) --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$(package)"
-                    fi
-                    docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} -t msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro) -f docker/$(distro)/Dockerfile.$(package)-jdk . --push
+                  scriptLocation: "scriptPath"
+                  scriptPath: $(Build.SourcesDirectory)/scripts/install-oras.sh
+                env:
+                  AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+                  ORAS_VERSION: 1.1.0
+                  ORGANIZATION: ${{ parameters.organization }}
+                  FEED: ${{ parameters.feed }}
+                  NAME: ${{ parameters.package }}
+
+              - task: AzureCLI@2
+                displayName: Annotate previous image
+                condition: ne( variables['new_LTS_image'], true)
+                inputs:
+                  azureSubscription: "JEG-Infrastructure"
+                  scriptType: "bash"
+                  scriptLocation: "scriptPath"
+                  scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
+                env:
+                  ACR_NAME: msopenjdk
+                  REGISTRY: msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro)
+                  USER_NAME: "00000000-0000-0000-0000-000000000000"
+
+              - task: AzureCLI@2
+                inputs:
+                  azureSubscription: "JEG-Infrastructure"
+                  scriptType: "bash"
+                  scriptLocation: "scriptPath"
+                  scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
                 displayName: build image
+                env:
+                  REGISTRY_TAG: msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro)
+                  IMAGE: $(image)
+                  TAG: $(tag)
+                  PACKAGE: $(package)
+                  DISTRIBUTION: $(distro)
+                  INSTALLER_IMAGE: $(installer_image)
+                  INSTALLER_TAG: $(installer_tag)
 
       - stage: validate_and_publish
         displayName: "Validate & Publish"
@@ -155,23 +200,52 @@ extends:
             displayName: "build public "
             dependsOn: wait_for_validation
             pool:
-              name: JEG-mariner2.0-x64-github
+              name: JEG-mariner2.0-x64-release
               os: linux
             strategy:
               matrix: ${{ parameters.jobs }}
             steps:
+
+              - task: AzureCLI@2
+                displayName: "Download ORAS"
+                condition: ne( variables['new_LTS_image'], true)
+                inputs:
+                  azureSubscription: "JEG-Infrastructure"
+                  scriptType: "bash"
+                  scriptLocation: "scriptPath"
+                  scriptPath: $(Build.SourcesDirectory)/scripts/install-oras.sh
+                env:
+                  AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+                  ORAS_VERSION: 1.1.0
+                  ORGANIZATION: ${{ parameters.organization }}
+                  FEED: ${{ parameters.feed }}
+                  NAME: ${{ parameters.package }}
+
+              - task: AzureCLI@2
+                displayName: Annotate previous image
+                condition: ne( variables['new_LTS_image'], true)
+                inputs:
+                  azureSubscription: "JEG-Infrastructure"
+                  scriptType: "bash"
+                  scriptLocation: "scriptPath"
+                  scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
+                env:
+                  ACR_NAME: msopenjdk
+                  REGISTRY: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)
+                  USER_NAME: "00000000-0000-0000-0000-000000000000"
+
               - task: AzureCLI@2
                 inputs:
                   azureSubscription: "JEG-Infrastructure"
                   scriptType: "bash"
-                  scriptLocation: "inlineScript"
-                  inlineScript: |
-                    az acr login -n msopenjdk
-                    docker buildx create --name mybuilder --platform linux/amd64,linux/arm64 --use            
-                    if [[ '$(distro)' != 'distroless' ]]; then
-                      BUILD_ARGS="--build-arg IMAGE=$(image) --build-arg TAG=$(tag) --build-arg package=$(package)"
-                    else
-                      BUILD_ARGS="--build-arg INSTALLER_IMAGE=$(installer_image) --build-arg INSTALLER_TAG=$(installer_tag) --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$(package)"
-                    fi
-                    docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} -t msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro) -f docker/$(distro)/Dockerfile.$(package)-jdk . --push
+                  scriptLocation: "scriptPath"
+                  scriptPath: scripts/build-image.sh
                 displayName: build image
+                env:
+                  REGISTRY_TAG: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)
+                  IMAGE: $(image)
+                  TAG: $(tag)
+                  PACKAGE: $(package)
+                  DISTRIBUTION: $(distro)
+                  INSTALLER_IMAGE: $(installer_image)
+                  INSTALLER_TAG: $(installer_tag)

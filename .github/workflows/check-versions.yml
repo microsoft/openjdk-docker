@@ -20,11 +20,18 @@ jobs:
 
       - name: Build image locally
         run: |
-          docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion.major }}-${{ matrix.distros }} -f ./docker/${{ matrix.distros }}/Dockerfile.${{ matrix.jdkvendor }}-${{ matrix.jdkversion.major }}-jdk ./docker
+          docker build \
+            -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion.major }}-${{ matrix.distros }} \
+            -f ./docker/${{ matrix.distros }}/Dockerfile.${{ matrix.jdkvendor }}-${{ matrix.jdkversion.major }}-jdk \
+            ./docker
 
       - name: Validate container image
         run: |
-          ./validate-image.sh -s ${{ matrix.distros }} ${{ matrix.jdkvendor }} ${{ matrix.jdkversion.major }} ${{ matrix.jdkversion.expected }}
+          ./scripts/validate-image.sh \
+            -s ${{ matrix.distros }} \
+            ${{ matrix.jdkvendor }} \
+            ${{ matrix.jdkversion.major }} \
+            ${{ matrix.jdkversion.expected }}
 
   validate_msopenjdk:
     runs-on: ubuntu-latest
@@ -39,8 +46,15 @@ jobs:
 
       - name: Build image locally
         run: |
-          docker build -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion.major }}-${{ matrix.distros }} -f ./docker/${{ matrix.distros }}/Dockerfile.${{ matrix.jdkvendor }}-${{ matrix.jdkversion.major }}-jdk ./docker
+          docker build \
+            -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion.major }}-${{ matrix.distros }} \
+            -f ./docker/${{ matrix.distros }}/Dockerfile.${{ matrix.jdkvendor }}-${{ matrix.jdkversion.major }}-jdk \
+            ./docker
 
       - name: Validate container image
         run: |
-          ./validate-image.sh -s ${{ matrix.distros }} ${{ matrix.jdkvendor }} ${{ matrix.jdkversion.major }} ${{ matrix.jdkversion.expected }}
+          ./scripts/validate-image.sh \
+            -s ${{ matrix.distros }} \
+            ${{ matrix.jdkvendor }} \
+            ${{ matrix.jdkversion.major }} \
+            ${{ matrix.jdkversion.expected }}

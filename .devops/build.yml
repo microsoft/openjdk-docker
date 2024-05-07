@@ -258,4 +258,7 @@ extends:
                   scriptType: "bash"
                   scriptLocation: "inlineScript"
                   inlineScript: |
-                    az pipelines run --branch main --org ${{ parameters.organization }} --name $(OPENJDK_SIGNING)
+                    az pipelines run \
+                      --branch main \
+                      --org ${{ parameters.organization }} \
+                      --name $(OPENJDK_SIGNING)

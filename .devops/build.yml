@@ -249,3 +249,13 @@ extends:
                   DISTRIBUTION: $(distro)
                   INSTALLER_IMAGE: $(installer_image)
                   INSTALLER_TAG: $(installer_tag)
+
+
+              - task: AzureCLI@2
+                displayName: Image signing
+                inputs:
+                  azureSubscription: "JEG-Infrastructure"
+                  scriptType: "bash"
+                  scriptLocation: "inlineScript"
+                  inlineScript: |
+                    az pipelines run --branch main --org ${{ parameters.organization }} --name $(OPENJDK_SIGNING)

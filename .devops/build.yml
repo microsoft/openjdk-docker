@@ -261,4 +261,4 @@ extends:
                     az pipelines run \
                       --branch main \
                       --org ${{ parameters.organization }} \
-                      --name $(OPENJDK_SIGNING)
+                      --id $(OPENJDK_SIGNING_ID)

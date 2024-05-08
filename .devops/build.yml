@@ -250,7 +250,6 @@ extends:
                   INSTALLER_IMAGE: $(installer_image)
                   INSTALLER_TAG: $(installer_tag)
 
-
               - task: AzureCLI@2
                 displayName: Image signing
                 inputs:

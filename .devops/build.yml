@@ -251,7 +251,9 @@ extends:
                   INSTALLER_TAG: $(installer_tag)
 
               - task: AzureCLI@2
-                displayName: Image signing
+                displayName: Trigger image signing
+                env:
+                  AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
                 inputs:
                   azureSubscription: "JEG-Infrastructure"
                   scriptType: "bash"
@@ -261,4 +263,7 @@ extends:
                       --branch main \
                       --org ${{ parameters.organization }} \
                       --project $(OPENJDK_PROJECT) \
-                      --id $(OPENJDK_SIGNING_ID)
+                      --id $(OPENJDK_SIGNING_ID) \
+                      --parameters openjdk_tags="- $(version)-$(distro)" \
+                        image_registry="msopenjdk.azurecr.io/public/openjdk" \
+                        image_name="jdk"

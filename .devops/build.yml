@@ -163,8 +163,6 @@ extends:
                 env:
                   ACR_NAME: msopenjdk
                   REGISTRY: msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro)
-                  USER_NAME: "00000000-0000-0000-0000-000000000000"
-
               - task: AzureCLI@2
                 inputs:
                   azureSubscription: "JEG-Infrastructure"
@@ -232,7 +230,6 @@ extends:
                 env:
                   ACR_NAME: msopenjdk
                   REGISTRY: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)
-                  USER_NAME: "00000000-0000-0000-0000-000000000000"
 
               - task: AzureCLI@2
                 inputs:

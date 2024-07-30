@@ -7,15 +7,14 @@ permissions:
   contents: read
 
 jobs:
-
   validate_temurin:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        distros: [ "mariner", "distroless" ]
-        jdkvendor: [ "temurin" ]
-        jdkversion: [ { major: "8", expected: "1.8.0_382" } ]
+        distros: ["mariner", "distroless"]
+        jdkvendor: ["temurin"]
+        jdkversion: [{ major: "8", expected: "1.8.0_412" }]
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
@@ -32,9 +31,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distros: [ "mariner", "distroless", "ubuntu" ]
-        jdkvendor: [ "msopenjdk" ]
-        jdkversion: [ { major: "11", expected: "11.0.22" }, { major: "17", expected: "17.0.10" }, { major: "21", expected: "21.0.2" } ]
+        distros: ["mariner", "distroless", "ubuntu"]
+        jdkvendor: ["msopenjdk"]
+        jdkversion:
+          [
+            { major: "11", expected: "11.0.24" },
+            { major: "17", expected: "17.0.12" },
+            { major: "21", expected: "21.0.4" },
+          ]
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
@@ -47,13 +51,18 @@ jobs:
             ${{ matrix.jdkversion.expected }}
 
   validate_msopenjdk_aarch64:
-    runs-on: ['self-hosted', '1ES.Pool=JEG-linux-arm64-openjdk-docker']
+    runs-on: ["self-hosted", "1ES.Pool=JEG-linux-arm64-openjdk-docker"]
     strategy:
       fail-fast: false
       matrix:
-        distros: [ "mariner", "distroless", "ubuntu" ]
-        jdkvendor: [ "msopenjdk" ]
-        jdkversion: [ { major: "11", expected: "11.0.22" }, { major: "17", expected: "17.0.10" }, { major: "21", expected: "21.0.2" } ]
+        distros: ["mariner", "distroless", "ubuntu"]
+        jdkvendor: ["msopenjdk"]
+        jdkversion:
+          [
+            { major: "11", expected: "11.0.24" },
+            { major: "17", expected: "17.0.12" },
+            { major: "21", expected: "21.0.4" },
+          ]
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 

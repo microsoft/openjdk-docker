@@ -123,7 +123,7 @@ extends:
   parameters:
     sdl:
       sourceAnalysisPool:
-        name: JEG-windows2022-x64-github
+        name: JEG-windows2022-x64-release
         os: windows
     stages:
       - stage: build_internal
@@ -203,7 +203,6 @@ extends:
             strategy:
               matrix: ${{ parameters.jobs }}
             steps:
-
               - task: AzureCLI@2
                 displayName: "Download ORAS"
                 condition: ne( variables['new_LTS_image'], true)

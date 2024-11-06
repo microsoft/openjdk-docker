@@ -1,6 +1,8 @@
 #!/bin/bash
+az acr login -n junipercontainerregistry
+docker buildx create --name mybuilder --driver docker-container --driver-opt image=junipercontainerregistry.azurecr.io/mirror/moby/buildkit --platform linux/amd64,linux/arm64 --use
+
 az acr login -n msopenjdk
-docker buildx create --name mybuilder --platform linux/amd64,linux/arm64 --use
 
 if [[ '$DISTRIBUTION' != 'distroless' ]]; then
     BUILD_ARGS="--build-arg IMAGE=$IMAGE --build-arg TAG=$TAG --build-arg package=$PACKAGE"

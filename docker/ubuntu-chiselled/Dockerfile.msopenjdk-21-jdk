@@ -1,0 +1,58 @@
+FROM amd64/buildpack-deps:jammy-curl AS chisel
+
+RUN apt-get update && apt-get install -y file
+
+RUN curl -fSL --output chisel.tar.gz https://github.com/canonical/chisel/releases/download/v0.10.0/chisel_v0.10.0_linux_amd64.tar.gz \
+    && chisel_sha512='5c863d41e9b0829a3af57de444bdb7d1638612e5caa0a289511b5f46ec5728795152381257d30bbff012bcb5c533b6cfbc17b17b93569fd5c0e194ce2c6e0fc5' \
+    && echo "$chisel_sha512  chisel.tar.gz" | sha512sum -c - \
+    && tar -xzf chisel.tar.gz -C /usr/bin/ chisel \
+    && curl -fSL --output /usr/bin/chisel-wrapper https://raw.githubusercontent.com/canonical/rocks-toolbox/v1.1.2/chisel-wrapper \
+    && chmod 755 /usr/bin/chisel-wrapper
+
+RUN groupadd \
+        --gid=1654 \
+        app \
+    && useradd -l \
+        --uid=1654 \
+        --gid=1654 \
+        --shell /bin/false \
+        app \
+    && install -d -m 0755 -o 1654 -g 1654 "/rootfs/home/app" \
+    && mkdir -p "/rootfs/etc" \
+    && rootOrAppRegex='^\(root\|app\):' \
+    && cat /etc/passwd | grep $rootOrAppRegex > "/rootfs/etc/passwd" \
+    && cat /etc/group | grep $rootOrAppRegex > "/rootfs/etc/group" 
+
+RUN mkdir -p /rootfs/var/lib/dpkg/ 
+RUN \
+    chisel-wrapper --generate-dpkg-status /rootfs/var/lib/dpkg/status -- \
+        --release ubuntu-22.04 --root /rootfs \
+            base-files_base \
+            base-files_release-info \
+            ca-certificates-java_data \
+            libc6_libs \
+            libgcc-s1_libs \
+            libssl3_libs \
+            libstdc++6_libs \
+            zlib1g_libs \
+            bash_bins \
+            coreutils_bins \
+            tzdata_base \
+            tzdata_etc \
+            fontconfig-config_config 
+
+FROM scratch
+
+COPY --from=chisel /rootfs /
+
+ENV APP_UID='1654'
+
+# Workaround for https://github.com/moby/moby/issues/38710
+COPY --from=chisel --chown=$APP_UID:$APP_UID /rootfs/home/app /home/app
+
+ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-21-amd64
+ENV PATH=$JAVA_HOME/bin:$PATH
+
+COPY --from=mcr.microsoft.com/openjdk/jdk:21-ubuntu $JAVA_HOME $JAVA_HOME
+
+USER $APP_UID

@@ -1,0 +1,10 @@
+ARG IMGTOTEST=msopenjdk-11-jdk-chisel
+
+FROM mcr.microsoft.com/openjdk/jdk:11-ubuntu AS builder
+ADD NonRootUser.java /NonRootUser.java
+RUN javac -source 11 -target 11 NonRootUser.java && jar cfe /app.jar NonRootUser NonRootUser.class
+
+FROM ${IMGTOTEST} AS runner
+USER app
+COPY --from=builder /app.jar /app.jar
+CMD ["-ea", "-jar", "/app.jar"]

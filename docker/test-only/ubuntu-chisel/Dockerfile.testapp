@@ -1,0 +1,9 @@
+ARG IMGTOTEST=msopenjdk-11-jdk-chisel
+
+FROM mcr.microsoft.com/openjdk/jdk:11-ubuntu AS builder
+ADD SampleApp.java /SampleApp.java
+RUN javac -source 11 -target 11 SampleApp.java && jar cfe /app.jar SampleApp SampleApp.class
+
+FROM ${IMGTOTEST} AS runner
+COPY --from=builder /app.jar /app.jar
+CMD ["-jar", "/app.jar"]

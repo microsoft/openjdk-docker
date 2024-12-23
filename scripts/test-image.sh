@@ -9,7 +9,7 @@ basemcr="mcr.microsoft.com/openjdk/jdk"
 image="${basemcr}:${jdkversion}-${distro}"
 
 testfolder="regular"
-if [[ $distro == "distroless" ]]; then
+if [[ "$distro" == "distroless" || "$distro" == "ubuntu-chisel" ]]; then
     testfolder="distroless"
 fi
 

@@ -1,4 +1,5 @@
 # DisableDockerDetector "Base image is obtained from internal registry"
+# DisableDockerDetector "Base image is obtained from internal registry"
 ARG IMAGE="ubuntu"
 ARG TAG="22.04"
 FROM ${IMAGE}:${TAG} AS chisel-base
@@ -60,3 +61,12 @@ ENV APP_UID="101"
 
 # Workaround for https://github.com/moby/moby/issues/38710
 COPY --from=chisel-base --chown=$APP_UID:$APP_UID /rootfs/home/app /home/app
+
+USER root
+
+ENV JAVA_HOME=/usr/jdk
+ENV PATH=$PATH:$JAVA_HOME/bin
+
+COPY --from=mcr.microsoft.com/openjdk/jdk:11-ubuntu /usr/lib/jvm/msopenjdk-11-amd64 $JAVA_HOME
+
+ENTRYPOINT [ "/usr/jdk/bin/java" ]

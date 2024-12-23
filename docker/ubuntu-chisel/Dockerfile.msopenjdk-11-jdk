@@ -1,5 +1,4 @@
 # DisableDockerDetector "Base image is obtained from internal registry"
-# DisableDockerDetector "Base image is obtained from internal registry"
 ARG IMAGE="ubuntu"
 ARG TAG="22.04"
 FROM ${IMAGE}:${TAG} AS chisel-base

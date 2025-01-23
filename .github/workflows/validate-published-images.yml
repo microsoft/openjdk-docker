@@ -35,9 +35,9 @@ jobs:
         jdkvendor: ["msopenjdk"]
         jdkversion:
           [
-            { major: "11", expected: "11.0.25" },
-            { major: "17", expected: "17.0.13" },
-            { major: "21", expected: "21.0.5" },
+            { major: "11", expected: "11.0.26" },
+            { major: "17", expected: "17.0.14" },
+            { major: "21", expected: "21.0.6" },
           ]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -59,9 +59,9 @@ jobs:
         jdkvendor: ["msopenjdk"]
         jdkversion:
           [
-            { major: "11", expected: "11.0.25" },
-            { major: "17", expected: "17.0.13" },
-            { major: "21", expected: "21.0.5" },
+            { major: "11", expected: "11.0.26" },
+            { major: "17", expected: "17.0.14" },
+            { major: "21", expected: "21.0.6" },
           ]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2

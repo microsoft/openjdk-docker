@@ -1,0 +1,71 @@
+# DisableDockerDetector "Base image is obtained from internal registry"
+ARG IMAGE="ubuntu"
+ARG TAG="22.04"
+FROM ${IMAGE}:${TAG} AS chisel-base
+
+ENV GO_VERSION="1.23.4" 
+ENV CHISEL_VERSION="1.0.0" 
+ENV CHISEL_WRAPPER_VERSION="1.1.2"
+
+# Update and install core dependencies
+RUN apt-get update \
+    && apt-get install -y wget file tar \
+    && wget https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz \
+    && tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz \
+    && rm go${GO_VERSION}.linux-amd64.tar.gz
+
+ENV GOBIN=/usr/local/go/bin
+ENV PATH=$PATH:$GOBIN
+
+# Install Go and Chisel
+RUN go install github.com/canonical/chisel/cmd/chisel@v${CHISEL_VERSION} \
+    && wget -O /usr/bin/chisel-wrapper https://raw.githubusercontent.com/canonical/rocks-toolbox/v${CHISEL_WRAPPER_VERSION}/chisel-wrapper \
+    && chmod 755 /usr/bin/chisel-wrapper
+
+ENV APP_UID="101"
+
+# Create app user
+RUN groupadd --gid=${APP_UID} app \
+    && useradd -l --uid=${APP_UID} --gid=${APP_UID} --shell /bin/false app \
+    && install -d -m 0755 -o ${APP_UID} -g ${APP_UID} "/rootfs/home/app" \
+    && mkdir -p "/rootfs/etc" \
+    && rootOrAppRegex='^\(root\|app\):' \
+    && cat /etc/passwd | grep $rootOrAppRegex > "/rootfs/etc/passwd" \
+    && cat /etc/group | grep $rootOrAppRegex > "/rootfs/etc/group" 
+
+# Generate dpkg status for chisel
+RUN mkdir -p /rootfs/var/lib/dpkg/ 
+RUN chisel-wrapper --generate-dpkg-status /rootfs/var/lib/dpkg/status -- \
+        --release ubuntu-22.04 --root /rootfs \
+            base-files_base \
+            base-files_release-info \
+            ca-certificates-java_data \
+            libc6_libs \
+            libgcc-s1_libs \
+            libssl3_libs \
+            libstdc++6_libs \
+            zlib1g_libs \
+            bash_bins \
+            coreutils_bins \
+            tzdata_base \
+            tzdata_etc \
+            fontconfig-config_config 
+
+# Scratch image base
+FROM scratch
+
+COPY --from=chisel-base /rootfs /
+
+ENV APP_UID="101"
+
+# Workaround for https://github.com/moby/moby/issues/38710
+COPY --from=chisel-base --chown=$APP_UID:$APP_UID /rootfs/home/app /home/app
+
+USER root
+
+ENV JAVA_HOME=/usr/jdk
+ENV PATH=$PATH:$JAVA_HOME/bin
+
+COPY --from=mcr.microsoft.com/openjdk/jdk:21-ubuntu /usr/lib/jvm/msopenjdk-21-amd64 $JAVA_HOME
+
+ENTRYPOINT [ "/usr/jdk/bin/java" ]

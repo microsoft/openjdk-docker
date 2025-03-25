@@ -1,0 +1,22 @@
+ARG IMAGE="mcr.microsoft.com/azurelinux/base/core"
+ARG TAG="3.0"
+FROM ${IMAGE}:${TAG}
+
+LABEL "Author"="Microsoft"
+LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
+
+ARG JDK_PKG="temurin-8-jdk"
+ARG PKGS="tzdata ca-certificates freetype shadow-utils"
+
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+ENV JAVA_HOME=/usr/lib/jvm/temurin-8-jdk
+
+# Install pre-reqs
+RUN tdnf update -y && \
+    tdnf install -y ${JDK_PKG} ${PKGS} && \
+    tdnf clean all && \
+    groupadd --system --gid=101 app && \
+    adduser --uid 101 --gid 101 --system app && \
+    install -d -m 0755 -o 101 -g 101 "/home/app" && \
+    rm -rf /var/cache/tdnf && \
+    rm -rf ./usr/lib/jvm/${JDK_PKG}/src.zip

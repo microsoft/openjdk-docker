@@ -1,7 +1,7 @@
-ARG INSTALLER_IMAGE="mcr.microsoft.com/cbl-mariner/base/core"
-ARG INSTALLER_TAG="2.0"
-ARG BASE_IMAGE="mcr.microsoft.com/cbl-mariner/distroless/base"
-ARG BASE_TAG="2.0"
+ARG INSTALLER_IMAGE="mcr.microsoft.com/azurelinux/base/core"
+ARG INSTALLER_TAG="3.0"
+ARG BASE_IMAGE="mcr.microsoft.com/azurelinux/distroless/base"
+ARG BASE_TAG="3.0"
 
 FROM ${INSTALLER_IMAGE}:${INSTALLER_TAG} AS installer
 
@@ -12,7 +12,7 @@ ARG JDK_URL="https://aka.ms/download-jdk/microsoft-jdk-21-linux-ARCH.tar.gz"
 # Create a non-root user and group (just like .NET's image)
 RUN mkdir /staging \
     && tdnf update -y \
-    && tdnf install -y --releasever=2.0 --installroot /staging zlib \
+    && tdnf install -y --releasever=3.0 --installroot /staging zlib \
     && tdnf install -y gawk shadow-utils ca-certificates tar \
     && groupadd --system --gid=101 app \
     && adduser --uid 101 --gid 101 --shell /bin/false --system app \

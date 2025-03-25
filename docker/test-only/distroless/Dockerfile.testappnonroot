@@ -1,10 +1,10 @@
 ARG IMGTOTEST=mcr.microsoft.com/openjdk/jdk:8-mariner
 
-FROM mcr.microsoft.com/openjdk/jdk:8-mariner as builder
+FROM mcr.microsoft.com/openjdk/jdk:8-mariner AS builder
 ADD NonRootUser.java /NonRootUser.java
 RUN javac -source 1.8 -target 1.8 NonRootUser.java && jar cfe /app.jar NonRootUser NonRootUser.class
 
-FROM ${IMGTOTEST} as runner
+FROM ${IMGTOTEST} 
 USER app
 COPY --from=builder /app.jar /app.jar
 CMD ["-ea", "-jar", "/app.jar"]

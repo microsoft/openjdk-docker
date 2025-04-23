@@ -38,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distros: [ "mariner", "distroless", "ubuntu" ]
+        distros: [ "mariner", "distroless", "ubuntu", "ubuntu-chisel" ]
         jdkvendor: [ "msopenjdk" ]
         jdkversion: [ { major: "11", expected: "11.0.27" }, { major: "17", expected: "17.0.15" }, { major: "21", expected: "21.0.7" } ]
     steps:

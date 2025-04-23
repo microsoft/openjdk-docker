@@ -44,7 +44,7 @@ fi
 
 # Validate the image if expectedversion is set (not blank)
 if [[ ! -z "$expectedversion" ]]; then
-  if [[ "${distro}" == "distroless" ]]; then
+  if [[ "${distro}" == "distroless" || "${distro}" == "ubuntu-chisel" ]]; then
       java_version=$(docker run --rm $image -version 2>&1 | head -n 1 | awk -F '"' '{print $2}')
   else
       java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")
@@ -62,7 +62,7 @@ if [[ ! -z "$expectedversion" ]]; then
 fi
 
 # Check if CDS is enabled
-if [[ "${distro}" == "distroless" ]]; then
+if [[ "${distro}" == "distroless" || "${distro}" == "ubuntu-chisel" ]]; then
     java_version_string=$(docker run --rm $image -version 2>&1)
 else
     java_version_string=$(docker run --rm $image /bin/bash -c "java -version 2>&1")

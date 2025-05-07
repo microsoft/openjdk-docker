@@ -160,7 +160,7 @@ extends:
           - job: build_internal
             displayName: "build internal"
             pool:
-              name: JEG-mariner2.0-x64-release
+              name: JEG-azurelinux-x64-release
               os: linux
             strategy:
               matrix: ${{ parameters.jobs }}
@@ -226,7 +226,7 @@ extends:
             displayName: "build public "
             dependsOn: wait_for_validation
             pool:
-              name: JEG-mariner2.0-x64-release
+              name: JEG-azurelinux-x64-release
               os: linux
             strategy:
               matrix: ${{ parameters.jobs }}

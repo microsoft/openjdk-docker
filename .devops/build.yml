@@ -25,6 +25,13 @@ parameters:
   - name: jobs
     type: object
     default:
+      azurelinux_8:
+        new_LTS_image: false
+        distro: azurelinux
+        version: 8
+        package: temurin-8
+        image: "image-repository"
+        tag: "3.0"
       mariner_8:
         new_LTS_image: false
         distro: mariner
@@ -48,6 +55,13 @@ parameters:
         package: msopenjdk-11
         image: "image-repository"
         tag: "image-tag"
+      azurelinux_11:
+        new_LTS_image: false
+        distro: azurelinux
+        version: 11
+        package: msopenjdk-11
+        image: "image-repository"
+        tag: "3.0"
       mariner_11:
         new_LTS_image: false
         distro: mariner
@@ -71,6 +85,13 @@ parameters:
         package: msopenjdk-17
         image: "image-repository"
         tag: "image-tag"
+      azurelinux_17:
+        new_LTS_image: false
+        distro: azurelinux
+        version: 17
+        package: msopenjdk-17
+        image: "image-repository"
+        tag: "3.0"
       mariner_17:
         new_LTS_image: false
         distro: mariner
@@ -94,6 +115,13 @@ parameters:
         package: msopenjdk-21
         image: "image-repository"
         tag: "image-tag"
+      azurelinux_21:
+        new_LTS_image: false
+        distro: azurelinux
+        version: 21
+        package: msopenjdk-21
+        image: "image-repository"
+        tag: "3.0"
       mariner_21:
         new_LTS_image: false
         distro: mariner

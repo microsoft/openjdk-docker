@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distros: [ "mariner", "distroless" ]
+        distros: [ "azurelinux", "mariner", "distroless" ]
         jdkvendor: [ "temurin" ]
         jdkversion: [ { major: "8", expected: "1.8.0_452" } ]
     steps:
@@ -38,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distros: [ "mariner", "distroless", "ubuntu" ]
+        distros: [ "azurelinux", "mariner", "distroless", "ubuntu" ]
         jdkvendor: [ "msopenjdk" ]
         jdkversion: [ { major: "11", expected: "11.0.27" }, { major: "17", expected: "17.0.15" }, { major: "21", expected: "21.0.7" } ]
     steps:

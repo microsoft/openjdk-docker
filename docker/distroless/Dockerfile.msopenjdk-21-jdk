@@ -1,4 +1,5 @@
 ARG LINUX_VERSION="3.0"
+ARG JDK_VERSION="21"
 ARG INSTALLER_IMAGE="mcr.microsoft.com/azurelinux/base/core"
 ARG INSTALLER_TAG="${LINUX_VERSION}"
 ARG BASE_IMAGE="mcr.microsoft.com/azurelinux/distroless/base"
@@ -8,8 +9,8 @@ FROM ${INSTALLER_IMAGE}:${INSTALLER_TAG} AS installer
 
 # Redeclare ARG to make it available in this build stage
 ARG INSTALLER_TAG
-ARG JDK_URL="https://aka.ms/download-jdk/microsoft-jdk-21-linux-ARCH.tar.gz"
-ENV INSTALLER_TAG="${INSTALLER_TAG}"
+ARG JDK_VERSION
+ARG JDK_URL="https://aka.ms/download-jdk/microsoft-jdk-${JDK_VERSION}-linux-ARCH.tar.gz"
 
 # Add dynamically linked packages: zlib
 # Distroless base image already has tzdata ca-certificates openssl glibc

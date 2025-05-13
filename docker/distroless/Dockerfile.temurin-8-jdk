@@ -16,7 +16,7 @@ ARG JDK_URL="https://api.adoptium.net/v3/binary/latest/${JDK_VERSION}/ga/linux/A
 # Create a non-root user and group (just like .NET's image)
 RUN mkdir /staging \
     && tdnf update -y \
-    && tdnf install -y --releasever=${INSTALLER_TAG}} --installroot /staging zlib \
+    && tdnf install -y --releasever=${INSTALLER_TAG} --installroot /staging zlib \
     && tdnf install -y gawk shadow-utils ca-certificates tar \
     && groupadd --system --gid=101 app \
     && adduser --uid 101 --gid 101 --shell /bin/false --system app \

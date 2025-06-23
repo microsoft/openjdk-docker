@@ -45,9 +45,9 @@ parameters:
         version: 8
         package: temurin-8
         installer_image: "image-repository"
-        installer_tag: "2.0"
+        installer_tag: "3.0"
         base_image: "image-repository"
-        base_tag: "2.0"
+        base_tag: "3.0"
       ubuntu_11:
         new_LTS_image: false
         distro: ubuntu
@@ -75,9 +75,9 @@ parameters:
         version: 11
         package: msopenjdk-11
         installer_image: "image-repository"
-        installer_tag: "2.0"
+        installer_tag: "3.0"
         base_image: "image-repository"
-        base_tag: "2.0"
+        base_tag: "3.0"
       ubuntu_17:
         new_LTS_image: false
         distro: ubuntu
@@ -105,9 +105,9 @@ parameters:
         version: 17
         package: msopenjdk-17
         installer_image: "image-repository"
-        installer_tag: "2.0"
+        installer_tag: "3.0"
         base_image: "image-repository"
-        base_tag: "2.0"
+        base_tag: "3.0"
       ubuntu_21:
         new_LTS_image: false
         distro: ubuntu
@@ -135,9 +135,9 @@ parameters:
         version: 21
         package: msopenjdk-21
         installer_image: "image-repository"
-        installer_tag: "2.0"
+        installer_tag: "3.0"
         base_image: "image-repository"
-        base_tag: "2.0"
+        base_tag: "3.0"
 
 resources:
   repositories:

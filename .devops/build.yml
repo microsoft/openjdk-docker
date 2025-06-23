@@ -171,9 +171,9 @@ extends:
                   scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
                 displayName: build image
                 env:
-                  $[ if eq(variables.distro, 'azurelinux') ]:
+                  ${{ if eq(variables.distro, 'azurelinux') }}:
                     REGISTRY_TAGS: msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro);msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-mariner
-                  $[ else ]:
+                  ${{ else }}:
                     REGISTRY_TAGS: msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro)
                   IMAGE: $(image)
                   TAG: $(tag)
@@ -231,9 +231,9 @@ extends:
                   scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
                 env:
                   ACR_NAME: msopenjdk
-                  $[ if eq(variables.distro, 'azurelinux') ]:
+                  ${{ if eq(variables.distro, 'azurelinux') }}:
                     REGISTRIES: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro);msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-mariner
-                  $[ else ]:
+                  ${{ else }}:
                     REGISTRIES: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)
 
               - task: AzureCLI@2
@@ -244,10 +244,9 @@ extends:
                   scriptPath: scripts/build-image.sh
                 displayName: build image
                 env:
-                  REGISTRY_TAGS: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)
-                  $[ if eq(variables.distro, 'azurelinux') ]:
-                    REGISTRY_TAGS: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro);REGISTRY_TAGS: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-mariner
-                  $[ else ]:
+                  ${{ if eq(variables.distro, 'azurelinux') }}:
+                    REGISTRY_TAGS: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro);msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-mariner
+                  ${{ else }}:
                     REGISTRY_TAGS: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)
                   IMAGE: $(image)
                   TAG: $(tag)
@@ -274,7 +273,7 @@ extends:
                         image_registry="msopenjdk.azurecr.io/public/openjdk" \
                         image_name="jdk"
 
-               - $[ if eq(variables.distro, 'azurelinux') ]:
+              - ${{ if eq(variables.distro, 'azurelinux') }}:
                 - task: AzureCLI@2
                   displayName: Trigger image signing for mariner
                   env:

@@ -32,13 +32,6 @@ parameters:
         package: temurin-8
         image: "image-repository"
         tag: "3.0"
-      # mariner_8:
-      #   new_LTS_image: false
-      #   distro: mariner
-      #   version: 8
-      #   package: temurin-8
-      #   image: "image-repository"
-      #   tag: "2.0"
       distroless_8:
         new_LTS_image: false
         distro: distroless
@@ -62,13 +55,6 @@ parameters:
         package: msopenjdk-11
         image: "image-repository"
         tag: "3.0"
-      # mariner_11:
-      #   new_LTS_image: false
-      #   distro: mariner
-      #   version: 11
-      #   package: msopenjdk-11
-      #   image: "image-repository"
-      #   tag: "2.0"
       distroless_11:
         new_LTS_image: false
         distro: distroless
@@ -92,13 +78,6 @@ parameters:
         package: msopenjdk-17
         image: "image-repository"
         tag: "3.0"
-      # mariner_17:
-      #   new_LTS_image: false
-      #   distro: mariner
-      #   version: 17
-      #   package: msopenjdk-17
-      #   image: "image-repository"
-      #   tag: "2.0"
       distroless_17:
         new_LTS_image: false
         distro: distroless
@@ -122,13 +101,6 @@ parameters:
         package: msopenjdk-21
         image: "image-repository"
         tag: "3.0"
-      # mariner_21:
-      #   new_LTS_image: false
-      #   distro: mariner
-      #   version: 21
-      #   package: msopenjdk-21
-      #   image: "image-repository"
-      #   tag: "2.0"
       distroless_21:
         new_LTS_image: false
         distro: distroless
@@ -201,9 +173,6 @@ extends:
                 env:
                   $[ if eq(variables.distro, 'azurelinux') ]:
                     REGISTRY_TAGS: msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro);msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-mariner
-                  # Mariner is reaching EOL, this will be removed in July 2025
-                  # $[ elseif eq(variables.distro, 'mariner') ]:
-                  #   REGISTRY_TAGS: msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-mariner-cm2
                   $[ else ]:
                     REGISTRY_TAGS: msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro)
                   IMAGE: $(image)
@@ -278,9 +247,6 @@ extends:
                   REGISTRY_TAGS: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)
                   $[ if eq(variables.distro, 'azurelinux') ]:
                     REGISTRY_TAGS: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro);REGISTRY_TAGS: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-mariner
-                  # Mariner is reaching EOL, this will be removed in July 2025
-                  # $[ elseif eq(variables.distro, 'mariner') ]:
-                  #   REGISTRY_TAGS: REGISTRY_TAGS: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-mariner-cm2
                   $[ else ]:
                     REGISTRY_TAGS: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)
                   IMAGE: $(image)

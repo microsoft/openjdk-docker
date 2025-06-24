@@ -171,10 +171,7 @@ extends:
                   scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
                 displayName: build image
                 env:
-                  ${{ if eq(variables.distro, 'azurelinux') }}:
-                    REGISTRY_TAGS: test
-                  ${{ else }}:
-                    REGISTRY_TAGS: msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro)
+                  REGISTRIES: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)$[ if eq(variables['distro'], 'azurelinux'), ';msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-mariner' ]
                   IMAGE: $(image)
                   TAG: $(tag)
                   PACKAGE: $(package)

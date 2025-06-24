@@ -14,4 +14,5 @@ REGISTRY_TAGS="-t ${REGISTRY_TAGS/;/ -t }"
 
 # To push to a registry use --push
 # To build locally use --output=type=image,push=false
+echo "docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} ${REGISTRY_TAGS} -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . --output=type=image,push=false"
 docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} ${REGISTRY_TAGS} -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . --output=type=image,push=false

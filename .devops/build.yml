@@ -172,7 +172,7 @@ extends:
                 displayName: build image
                 env:
                   ${{ if eq(variables.distro, 'azurelinux') }}:
-                    REGISTRY_TAGS: msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro);msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-mariner
+                    REGISTRY_TAGS: test
                   ${{ else }}:
                     REGISTRY_TAGS: msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro)
                   IMAGE: $(image)

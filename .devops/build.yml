@@ -152,6 +152,14 @@ extends:
                   FEED: ${{ parameters.feed }}
                   NAME: ${{ parameters.package }}
 
+              - bash: |
+                  REGISTRIES=msopenjdk.azurecr.io/internal/private/openjdk/jdk:${version)-$(distro)
+                  if [[ "$(distro)" == "azurelinux" ]]; then
+                    REGISTRIES+=";msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-mariner"
+                  fi
+                  echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
+                displayName: Set REGISTRIES variable
+
               - task: AzureCLI@2
                 displayName: Annotate previous image
                 condition: ne( variables['new_LTS_image'], true)
@@ -162,7 +170,7 @@ extends:
                   scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
                 env:
                   ACR_NAME: msopenjdk
-                  REGISTRY: msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro)
+                  REGISTRIES: $(REGISTRIES)
               - task: AzureCLI@2
                 inputs:
                   azureSubscription: "JEG-Infrastructure"
@@ -171,7 +179,7 @@ extends:
                   scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
                 displayName: build image
                 env:
-                  REGISTRIES: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)$[ if eq(variables['distro'], 'azurelinux'), ';msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-mariner' ]
+                  REGISTRY_TAGS: $(REGISTRIES)
                   IMAGE: $(image)
                   TAG: $(tag)
                   PACKAGE: $(package)
@@ -218,6 +226,14 @@ extends:
                   FEED: ${{ parameters.feed }}
                   NAME: ${{ parameters.package }}
 
+              - bash: |
+                  REGISTRIES=msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)
+                  if [[ "$(distro)" == "azurelinux" ]]; then
+                    REGISTRIES+=";msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-mariner"
+                  fi
+                  echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
+                displayName: Set REGISTRIES variable
+
               - task: AzureCLI@2
                 displayName: Annotate previous image
                 condition: ne( variables['new_LTS_image'], true)
@@ -228,10 +244,7 @@ extends:
                   scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
                 env:
                   ACR_NAME: msopenjdk
-                  ${{ if eq(variables.distro, 'azurelinux') }}:
-                    REGISTRIES: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro);msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-mariner
-                  ${{ else }}:
-                    REGISTRIES: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)
+                  REGISTRIES: $(REGISTRIES)
 
               - task: AzureCLI@2
                 inputs:
@@ -241,10 +254,7 @@ extends:
                   scriptPath: scripts/build-image.sh
                 displayName: build image
                 env:
-                  ${{ if eq(variables.distro, 'azurelinux') }}:
-                    REGISTRY_TAGS: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro);msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-mariner
-                  ${{ else }}:
-                    REGISTRY_TAGS: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)
+                  REGISTRY_TAGS: $(REGISTRIES)
                   IMAGE: $(image)
                   TAG: $(tag)
                   PACKAGE: $(package)

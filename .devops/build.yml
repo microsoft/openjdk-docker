@@ -153,7 +153,7 @@ extends:
                   NAME: ${{ parameters.package }}
 
               - bash: |
-                  REGISTRIES=msopenjdk.azurecr.io/internal/private/openjdk/jdk:${version)-$(distro)
+                  REGISTRIES=msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro)
                   if [[ "$(distro)" == "azurelinux" ]]; then
                     REGISTRIES+=";msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-mariner"
                   fi

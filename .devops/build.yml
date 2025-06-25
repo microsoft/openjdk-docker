@@ -271,30 +271,15 @@ extends:
                   scriptType: "bash"
                   scriptLocation: "inlineScript"
                   inlineScript: |
+                    TAGS="$(version)-$(distro)"
+                    if [[ "$(distro)". == "azurelinux" ]]; then
+                      TAGS+=", $(version)-mariner"
+                    fi
                     az pipelines run \
                       --branch main \
                       --org ${{ parameters.organization }} \
                       --project $(OPENJDK_PROJECT) \
                       --id $(OPENJDK_SIGNING_ID) \
-                      --parameters openjdk_tags="- $(version)-$(distro)" \
+                      --parameters openjdk_tags="[${TAGS}]" \
                         image_registry="msopenjdk.azurecr.io/public/openjdk" \
                         image_name="jdk"
-
-              - ${{ if eq(variables.distro, 'azurelinux') }}:
-                - task: AzureCLI@2
-                  displayName: Trigger image signing for mariner
-                  env:
-                    AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
-                  inputs:
-                    azureSubscription: "JEG-Infrastructure"
-                    scriptType: "bash"
-                    scriptLocation: "inlineScript"
-                    inlineScript: |
-                      az pipelines run \
-                        --branch main \
-                        --org ${{ parameters.organization }} \
-                        --project $(OPENJDK_PROJECT) \
-                        --id $(OPENJDK_SIGNING_ID) \
-                        --parameters openjdk_tags="- $(version)-mariner" \
-                          image_registry="msopenjdk.azurecr.io/public/openjdk" \
-                          image_name="jdk"

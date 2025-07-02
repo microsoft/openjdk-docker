@@ -156,6 +156,8 @@ extends:
                   REGISTRIES=msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro)
                   if [[ "$(distro)" == "azurelinux" ]]; then
                     REGISTRIES+=";msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-mariner"
+                  elif [[ "$(distro)" == "mariner" ]]; then
+                    REGISTRIES="msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-mariner-cm2"
                   fi
                   echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
                 displayName: Set REGISTRIES variable
@@ -230,6 +232,8 @@ extends:
                   REGISTRIES=msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)
                   if [[ "$(distro)" == "azurelinux" ]]; then
                     REGISTRIES+=";msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-mariner"
+                  elif [[ "$(distro)" == "mariner" ]]; then
+                    REGISTRIES="msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-mariner-cm2"
                   fi
                   echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
                 displayName: Set REGISTRIES variable
@@ -274,6 +278,8 @@ extends:
                     TAGS="$(version)-$(distro)"
                     if [[ "$(distro)". == "azurelinux" ]]; then
                       TAGS+=", $(version)-mariner"
+                    elif [[ "$(distro)" == "mariner" ]]; then
+                      TAGS="$(version)-mariner-cm2"
                     fi
                     az pipelines run \
                       --branch main \

@@ -6,7 +6,7 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-FS=';' read -ra REGISTRIES_ARRAY <<< "$REGISTRIES"
+IFS=';' read -ra REGISTRIES_ARRAY <<< "$REGISTRIES"
 
 for REGISTRY in "${REGISTRIES_ARRAY[@]}"; do
     echo "Pulling... $REGISTRY"

@@ -276,9 +276,7 @@ extends:
                   scriptLocation: "inlineScript"
                   inlineScript: |
                     TAGS="$(version)-$(distro)"
-                    if [[ "$(distro)". == "azurelinux" ]]; then
-                      TAGS+=", $(version)-mariner"
-                    elif [[ "$(distro)" == "mariner" ]]; then
+                    if [[ "$(distro)" == "mariner" ]]; then
                       TAGS="$(version)-mariner-cm2"
                     fi
                     az pipelines run \

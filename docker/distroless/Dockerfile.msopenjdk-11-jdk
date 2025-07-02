@@ -12,7 +12,7 @@ ARG JDK_URL="https://aka.ms/download-jdk/microsoft-jdk-11-linux-ARCH.tar.gz"
 # Create a non-root user and group (just like .NET's image)
 RUN mkdir /staging \
     && tdnf update -y \
-    && tdnf install -y --releasever=2.0 --installroot /staging zlib \
+    && tdnf install -y --releasever=3.0 --installroot /staging zlib \
     && tdnf install -y gawk shadow-utils ca-certificates tar \
     && groupadd --system --gid=101 app \
     && adduser --uid 101 --gid 101 --shell /bin/false --system app \

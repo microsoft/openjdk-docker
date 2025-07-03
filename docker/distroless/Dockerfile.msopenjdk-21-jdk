@@ -1,25 +1,29 @@
+ARG LINUX_VERSION="3.0"
+ARG JDK_VERSION="21"
 ARG INSTALLER_IMAGE="mcr.microsoft.com/azurelinux/base/core"
-ARG INSTALLER_TAG="3.0"
+ARG INSTALLER_TAG="${LINUX_VERSION}"
 ARG BASE_IMAGE="mcr.microsoft.com/azurelinux/distroless/base"
-ARG BASE_TAG="3.0"
+ARG BASE_TAG="${LINUX_VERSION}"
 
 FROM ${INSTALLER_IMAGE}:${INSTALLER_TAG} AS installer
 
-ARG JDK_URL="https://aka.ms/download-jdk/microsoft-jdk-21-linux-ARCH.tar.gz"
+# Redeclare ARG to make it available in this build stage
+ARG INSTALLER_TAG
+ARG JDK_VERSION
+ARG JDK_URL="https://aka.ms/download-jdk/microsoft-jdk-${JDK_VERSION}-linux-ARCH.tar.gz"
 
 # Add dynamically linked packages: zlib
 # Distroless base image already has tzdata ca-certificates openssl glibc
 # Create a non-root user and group (just like .NET's image)
 RUN mkdir /staging \
     && tdnf update -y \
-    && tdnf install -y --releasever=3.0 --installroot /staging zlib \
+    && tdnf install -y --releasever=${INSTALLER_TAG} --installroot /staging zlib \
     && tdnf install -y gawk shadow-utils ca-certificates tar \
     && groupadd --system --gid=101 app \
-    && adduser --uid 101 --gid 101 --shell /bin/false --system app \
+    && useradd -l --uid=101 --gid=101 --shell /bin/false --system --create-home app  \
     && install -d -m 0755 -o 101 -g 101 "/staging/home/app" \
-    && rootOrAppRegex='^\(root\|app\):' \
-    && cat /etc/passwd | grep $rootOrAppRegex > "/staging/etc/passwd" \
-    && cat /etc/group | grep $rootOrAppRegex > "/staging/etc/group"
+    && cat /etc/passwd | grep '^\(root\|app\):' > "/staging/etc/passwd" \
+    && cat /etc/group | grep '^\(root\|app\):' > "/staging/etc/group"
 
 # Get JDK
 RUN mkdir -p /usr/lib/jvm && \
@@ -57,3 +61,4 @@ ENV JAVA_HOME=/usr/jdk
 ENV PATH="$PATH:$JAVA_HOME/bin"
 
 ENTRYPOINT [ "/usr/jdk/bin/java" ]
+CMD [ "-version" ]

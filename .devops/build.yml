@@ -230,13 +230,16 @@ extends:
 
               - bash: |
                   REGISTRIES=msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)
+                  TAGS="$(version)-$(distro)"
                   if [[ "$(distro)" == "azurelinux" ]]; then
                     REGISTRIES+=";msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-mariner"
                   elif [[ "$(distro)" == "mariner" ]]; then
                     REGISTRIES="msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-mariner-cm2"
+                    TAGS="$(version)-mariner-cm2"
                   fi
                   echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
-                displayName: Set REGISTRIES variable
+                  echo "##vso[task.setvariable variable=TAGS]$TAGS"
+                displayName: Set environment variables
 
               - task: AzureCLI@2
                 displayName: Annotate previous image
@@ -275,15 +278,11 @@ extends:
                   scriptType: "bash"
                   scriptLocation: "inlineScript"
                   inlineScript: |
-                    TAGS="$(version)-$(distro)"
-                    if [[ "$(distro)" == "mariner" ]]; then
-                      TAGS="$(version)-mariner-cm2"
-                    fi
                     az pipelines run \
                       --branch main \
                       --org ${{ parameters.organization }} \
                       --project $(OPENJDK_PROJECT) \
                       --id $(OPENJDK_SIGNING_ID) \
-                      --parameters openjdk_tags="[${TAGS}]" \
+                      --parameters openjdk_tags="[$(TAGS)]" \
                         image_registry="msopenjdk.azurecr.io/public/openjdk" \
                         image_name="jdk"

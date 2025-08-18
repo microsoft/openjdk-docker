@@ -16,7 +16,7 @@ jobs:
         jdkvendor: ["temurin"]
         jdkversion: [{ major: "8", expected: "1.8.0_462" }]
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Validate container images
         run: |
@@ -40,7 +40,7 @@ jobs:
             { major: "21", expected: "21.0.8" },
           ]
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Validate container images
         run: |
@@ -64,7 +64,7 @@ jobs:
             { major: "21", expected: "21.0.8" },
           ]
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Validate container images
         run: |

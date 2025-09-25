@@ -36,7 +36,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        jdkversion: [11, 17, 21] # Only build LTS releases
+        jdkversion: [11, 17, 21, 25] # Only build LTS releases
         baseimage: ["azurelinux", "ubuntu", "distroless"]
 
     steps:

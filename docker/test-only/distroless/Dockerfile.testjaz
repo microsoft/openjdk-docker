@@ -1,0 +1,10 @@
+ARG IMGTOTEST=mcr.microsoft.com/openjdk/jdk:11-azurelinux
+
+FROM mcr.microsoft.com/openjdk/jdk:8-azurelinux AS builder
+ADD SampleApp.java /SampleApp.java
+RUN javac -source 1.8 -target 1.8 SampleApp.java && jar cfe /app.jar SampleApp SampleApp.class
+
+FROM ${IMGTOTEST}
+COPY --from=builder /app.jar /app.jar
+ENTRYPOINT ["jaz" ]
+CMD ["-jar", "app.jar"]

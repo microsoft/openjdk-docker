@@ -27,9 +27,14 @@ jobs:
             -t mcr.microsoft.com/openjdk/jdk:8-${{ matrix.baseimage }} \
             -f ./docker/${{ matrix.baseimage }}/Dockerfile.temurin-8-jdk \
             ./docker/${{ matrix.baseimage }}/
-      - name: Test the image
+
+      - name: Validate the image
         run: |
           bash ./scripts/validate-image.sh -s ${{ matrix.baseimage }} temurin 8
+
+      - name: Test Sample Application
+        run: |
+          bash ./scripts/test-image.sh ${{ matrix.baseimage }} 8
 
   build_msopenjdk:
     runs-on: ubuntu-latest
@@ -47,6 +52,13 @@ jobs:
             -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion }}-${{ matrix.baseimage }} \
             -f ./docker/${{ matrix.baseimage }}/Dockerfile.msopenjdk-${{ matrix.jdkversion }}-jdk \
             ./docker/${{ matrix.baseimage }}/
-      - name: Test the image
+
+      - name: Validate the image
         run: |
-          bash ./scripts/validate-image.sh -s ${{ matrix.baseimage }} msopenjdk ${{ matrix.jdkversion }}
+          bash ./scripts/validate-image.sh \
+          -s ${{ matrix.baseimage }} msopenjdk ${{ matrix.jdkversion }}
+
+      - name: Test Sample Application
+        run: |
+          bash ./scripts/test-image.sh \
+          ${{ matrix.baseimage }} ${{ matrix.jdkversion }}

@@ -6,7 +6,7 @@ LABEL "Author"="Microsoft"
 LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
 ARG package="msopenjdk-17"
-ARG PKGS="tzdata ca-certificates freetype shadow-utils"
+ARG PKGS="tzdata ca-certificates freetype shadow-utils jaz"
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-17

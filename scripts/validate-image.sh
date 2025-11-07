@@ -85,7 +85,7 @@ fi
 if [[ "$jaz_version_string" =~ "jaz version:" ]]; then
     echo "::notice title=JAZ present ($jdkversion-$distro)::Image '${image}' has JAZ installed."
 else
-    echo "::warning title=JAZ missing ($jdkversion-$distro)::Image '${image}' does not have JAZ installed."
+    echo "::error title=JAZ missing ($jdkversion-$distro)::Image '${image}' does not have JAZ installed."
 fi
 
 

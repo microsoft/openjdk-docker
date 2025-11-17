@@ -74,5 +74,20 @@ else
     echo "::warning title=CDS disabled ($jdkversion-$distro)::Image '${image}' has disabled CDS."
 fi
 
+# Check if jaz is present
+if [[ "${distro}" == "distroless" ]]; then
+    jaz_version_string=$(docker run --rm -e JAZ_PRINT_VERSION=1 --entrypoint jaz $image 2>&1)
+else
+    jaz_version_string=$(docker run --rm $image /bin/bash -c "JAZ_PRINT_VERSION=1 jaz 2>&1")
+fi
+
+# We simply check for the presence of jaz.
+if [[ "$jaz_version_string" =~ "jaz version:" ]]; then
+    echo "::notice title=JAZ present ($jdkversion-$distro)::Image '${image}' has JAZ installed."
+else
+    echo "::error title=JAZ missing ($jdkversion-$distro)::Image '${image}' does not have JAZ installed."
+fi
+
+
 # Run tests
 bash ./scripts/test-image.sh $distro $jdkversion

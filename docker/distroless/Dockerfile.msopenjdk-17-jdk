@@ -17,7 +17,7 @@ ARG JDK_URL="https://aka.ms/download-jdk/microsoft-jdk-${JDK_VERSION}-linux-ARCH
 # Create a non-root user and group (just like .NET's image)
 RUN mkdir /staging \
     && tdnf update -y \
-    && tdnf install -y --releasever=${INSTALLER_TAG} --installroot /staging zlib \
+    && tdnf install -y --releasever=${INSTALLER_TAG} --installroot /staging zlib jaz \
     && tdnf install -y gawk shadow-utils ca-certificates tar \
     && groupadd --system --gid=101 app \
     && useradd -l --uid=101 --gid=101 --shell /bin/false --system --create-home app  \

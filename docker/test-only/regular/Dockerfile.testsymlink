@@ -1,0 +1,9 @@
+ARG IMGTOTEST=mcr.microsoft.com/openjdk/jdk:8-mariner
+
+FROM mcr.microsoft.com/openjdk/jdk:8-mariner AS builder
+ADD SymlinkTest.java /SymlinkTest.java
+RUN javac -source 1.8 -target 1.8 SymlinkTest.java && jar cfe /app.jar SymlinkTest SymlinkTest.class
+
+FROM ${IMGTOTEST}
+COPY --from=builder /app.jar /app.jar
+CMD ["java", "-ea", "-jar", "/app.jar"]

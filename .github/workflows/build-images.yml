@@ -17,36 +17,40 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        baseimage: ["mariner", "distroless"]
+        baseimage: ["azurelinux", "distroless"]
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       - name: Build the image
         run: |
           docker build \
             -t mcr.microsoft.com/openjdk/jdk:8-${{ matrix.baseimage }} \
             -f ./docker/${{ matrix.baseimage }}/Dockerfile.temurin-8-jdk \
             ./docker/${{ matrix.baseimage }}/
-      - name: Test the image
+
+      - name: Validate the image
         run: |
-          bash ./scripts/validate-image.sh -s ${{ matrix.baseimage }} temurin 8
+          bash ./scripts/validate-image.sh \
+          -s ${{ matrix.baseimage }} temurin 8
 
   build_msopenjdk:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        jdkversion: [11, 17, 21] # Only build LTS releases
-        baseimage: ["mariner", "ubuntu", "distroless", "ubuntu-chisel"]
+        jdkversion: [11, 17, 21, 25] # Only build LTS releases
+        baseimage: ["azurelinux", "ubuntu", "distroless", "ubuntu-chisel"]
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       - name: Build the image
         run: |
           docker build \
             -t mcr.microsoft.com/openjdk/jdk:${{ matrix.jdkversion }}-${{ matrix.baseimage }} \
             -f ./docker/${{ matrix.baseimage }}/Dockerfile.msopenjdk-${{ matrix.jdkversion }}-jdk \
             ./docker/${{ matrix.baseimage }}/
-      - name: Test the image
+
+      - name: Validate the image
         run: |
-          bash ./scripts/validate-image.sh -s ${{ matrix.baseimage }} msopenjdk ${{ matrix.jdkversion }}
+          bash ./scripts/validate-image.sh \
+          -s ${{ matrix.baseimage }} msopenjdk ${{ matrix.jdkversion }}

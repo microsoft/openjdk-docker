@@ -10,4 +10,9 @@ else
     BUILD_ARGS="--build-arg INSTALLER_IMAGE=$INSTALLER_IMAGE --build-arg INSTALLER_TAG=$INSTALLER_TAG --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$PACKAGE"
 fi
 
-docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} -t $REGISTRY_TAG -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . --push
+REGISTRY_TAGS="-t ${REGISTRY_TAGS/;/ -t }"
+
+# To push to a registry use --push
+# To build locally use --output=type=image,push=false
+echo "docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} ${REGISTRY_TAGS} -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . --push"
+docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} ${REGISTRY_TAGS} -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . --push

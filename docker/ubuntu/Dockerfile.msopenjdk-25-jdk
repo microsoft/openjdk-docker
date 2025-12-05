@@ -6,7 +6,7 @@ FROM ${IMAGE}:${TAG}
 LABEL "Author"="Microsoft"
 LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
-ARG ms_package="msopenjdk-21 jaz"
+ARG ms_package="msopenjdk-25 jaz"
 ARG PKGS="tzdata ca-certificates fontconfig locales apt-transport-https wget binutils"
 
 RUN DEBIAN_FRONTEND=noninteractive && \
@@ -25,8 +25,8 @@ RUN DEBIAN_FRONTEND=noninteractive && \
     echo java -Xshare:dump && \
     java -Xshare:dump && \
     if [ $(uname -m) = "x86_64" ]; then ARCH="amd64"; else ARCH="arm64"; fi && \
-    rm -rf ./usr/lib/jvm/msopenjdk-21-${ARCH}/lib/src.zip && \
-    ln -s /usr/lib/jvm/msopenjdk-21-${ARCH} /usr/lib/jvm/msopenjdk-21
+    rm -rf ./usr/lib/jvm/msopenjdk-25-${ARCH}/lib/src.zip && \
+    ln -s /usr/lib/jvm/msopenjdk-25-${ARCH} /usr/lib/jvm/msopenjdk-25
 
 RUN groupadd --system --gid=101 app \
     && adduser --uid 101 --gid 101 --system app \
@@ -34,4 +34,4 @@ RUN groupadd --system --gid=101 app \
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-21
+ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-25

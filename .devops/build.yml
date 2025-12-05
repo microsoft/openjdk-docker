@@ -25,22 +25,22 @@ parameters:
   - name: jobs
     type: object
     default:
-      mariner_8:
+      azurelinux_8:
         new_LTS_image: false
-        distro: mariner
+        distro: azurelinux
         version: 8
         package: temurin-8
         image: "image-repository"
-        tag: "2.0"
+        tag: "3.0"
       distroless_8:
         new_LTS_image: false
         distro: distroless
         version: 8
         package: temurin-8
         installer_image: "image-repository"
-        installer_tag: "2.0"
+        installer_tag: "3.0"
         base_image: "image-repository"
-        base_tag: "2.0"
+        base_tag: "3.0"
       ubuntu_11:
         new_LTS_image: false
         distro: ubuntu
@@ -48,22 +48,22 @@ parameters:
         package: msopenjdk-11
         image: "image-repository"
         tag: "image-tag"
-      mariner_11:
+      azurelinux_11:
         new_LTS_image: false
-        distro: mariner
+        distro: azurelinux
         version: 11
         package: msopenjdk-11
         image: "image-repository"
-        tag: "2.0"
+        tag: "3.0"
       distroless_11:
         new_LTS_image: false
         distro: distroless
         version: 11
         package: msopenjdk-11
         installer_image: "image-repository"
-        installer_tag: "2.0"
+        installer_tag: "3.0"
         base_image: "image-repository"
-        base_tag: "2.0"
+        base_tag: "3.0"
       ubuntu_17:
         new_LTS_image: false
         distro: ubuntu
@@ -71,22 +71,22 @@ parameters:
         package: msopenjdk-17
         image: "image-repository"
         tag: "image-tag"
-      mariner_17:
+      azurelinux_17:
         new_LTS_image: false
-        distro: mariner
+        distro: azurelinux
         version: 17
         package: msopenjdk-17
         image: "image-repository"
-        tag: "2.0"
+        tag: "3.0"
       distroless_17:
         new_LTS_image: false
         distro: distroless
         version: 17
         package: msopenjdk-17
         installer_image: "image-repository"
-        installer_tag: "2.0"
+        installer_tag: "3.0"
         base_image: "image-repository"
-        base_tag: "2.0"
+        base_tag: "3.0"
       ubuntu_21:
         new_LTS_image: false
         distro: ubuntu
@@ -94,22 +94,22 @@ parameters:
         package: msopenjdk-21
         image: "image-repository"
         tag: "image-tag"
-      mariner_21:
+      azurelinux_21:
         new_LTS_image: false
-        distro: mariner
+        distro: azurelinux
         version: 21
         package: msopenjdk-21
         image: "image-repository"
-        tag: "2.0"
+        tag: "3.0"
       distroless_21:
         new_LTS_image: false
         distro: distroless
         version: 21
         package: msopenjdk-21
         installer_image: "image-repository"
-        installer_tag: "2.0"
+        installer_tag: "3.0"
         base_image: "image-repository"
-        base_tag: "2.0"
+        base_tag: "3.0"
 
 resources:
   repositories:
@@ -132,7 +132,7 @@ extends:
           - job: build_internal
             displayName: "build internal"
             pool:
-              name: JEG-mariner2.0-x64-release
+              name: JEG-azurelinux-x64-release
               os: linux
             strategy:
               matrix: ${{ parameters.jobs }}
@@ -152,6 +152,14 @@ extends:
                   FEED: ${{ parameters.feed }}
                   NAME: ${{ parameters.package }}
 
+              - bash: |
+                  REGISTRIES=msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro)
+                  if [[ "$(distro)" == "azurelinux" ]]; then
+                    REGISTRIES+=";msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-mariner"
+                  fi
+                  echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
+                displayName: Set REGISTRIES variable
+
               - task: AzureCLI@2
                 displayName: Annotate previous image
                 condition: ne( variables['new_LTS_image'], true)
@@ -162,7 +170,7 @@ extends:
                   scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
                 env:
                   ACR_NAME: msopenjdk
-                  REGISTRY: msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro)
+                  REGISTRIES: $(REGISTRIES)
               - task: AzureCLI@2
                 inputs:
                   azureSubscription: "JEG-Infrastructure"
@@ -171,7 +179,7 @@ extends:
                   scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
                 displayName: build image
                 env:
-                  REGISTRY_TAG: msopenjdk.azurecr.io/internal/private/openjdk/jdk:$(version)-$(distro)
+                  REGISTRY_TAGS: $(REGISTRIES)
                   IMAGE: $(image)
                   TAG: $(tag)
                   PACKAGE: $(package)
@@ -198,7 +206,7 @@ extends:
             displayName: "build public "
             dependsOn: wait_for_validation
             pool:
-              name: JEG-mariner2.0-x64-release
+              name: JEG-azurelinux-x64-release
               os: linux
             strategy:
               matrix: ${{ parameters.jobs }}
@@ -218,6 +226,16 @@ extends:
                   FEED: ${{ parameters.feed }}
                   NAME: ${{ parameters.package }}
 
+              - bash: |
+                  REGISTRIES=msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)
+                  TAGS="$(version)-$(distro)"
+                  if [[ "$(distro)" == "azurelinux" ]]; then
+                    REGISTRIES+=";msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-mariner"
+                  fi
+                  echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
+                  echo "##vso[task.setvariable variable=TAGS]$TAGS"
+                displayName: Set environment variables
+
               - task: AzureCLI@2
                 displayName: Annotate previous image
                 condition: ne( variables['new_LTS_image'], true)
@@ -228,7 +246,7 @@ extends:
                   scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
                 env:
                   ACR_NAME: msopenjdk
-                  REGISTRY: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)
+                  REGISTRIES: $(REGISTRIES)
 
               - task: AzureCLI@2
                 inputs:
@@ -238,7 +256,7 @@ extends:
                   scriptPath: scripts/build-image.sh
                 displayName: build image
                 env:
-                  REGISTRY_TAG: msopenjdk.azurecr.io/public/openjdk/jdk:$(version)-$(distro)
+                  REGISTRY_TAGS: $(REGISTRIES)
                   IMAGE: $(image)
                   TAG: $(tag)
                   PACKAGE: $(package)
@@ -260,6 +278,6 @@ extends:
                       --org ${{ parameters.organization }} \
                       --project $(OPENJDK_PROJECT) \
                       --id $(OPENJDK_SIGNING_ID) \
-                      --parameters openjdk_tags="- $(version)-$(distro)" \
+                      --parameters openjdk_tags="[$(TAGS)]" \
                         image_registry="msopenjdk.azurecr.io/public/openjdk" \
                         image_name="jdk"

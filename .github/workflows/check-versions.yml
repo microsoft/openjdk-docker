@@ -12,11 +12,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distros: [ "mariner", "distroless" ]
+        distros: [ "azurelinux", "distroless" ]
         jdkvendor: [ "temurin" ]
-        jdkversion: [ { major: "8", expected: "1.8.0_382" } ]
+        jdkversion: [ { major: "8", expected: "1.8.0_462" } ]
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
       - name: Build image locally
         run: |
@@ -38,11 +38,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distros: [ "mariner", "distroless", "ubuntu", "ubuntu-chisel" ]
+        distros: [ "azurelinux", "distroless", "ubuntu", "ubuntu-chisel" ]
         jdkvendor: [ "msopenjdk" ]
-        jdkversion: [ { major: "11", expected: "11.0.25" }, { major: "17", expected: "17.0.13" }, { major: "21", expected: "21.0.5" } ]
+        jdkversion: [ { major: "11", expected: "11.0.28" }, { major: "17", expected: "17.0.16" }, { major: "21", expected: "21.0.8" }, { major: "25", expected: "25.0.0" }]
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
       - name: Build image locally
         run: |

@@ -7,7 +7,7 @@ declare -a jdkversions=( ["11"]="11.0.20.1" ["17"]="17.0.8.1" ["21"]="21" ["8"]=
 basemcr="mcr.microsoft.com/openjdk/jdk"
 
 # Get current directory
-basepath="$(dirname "$0")/docker"
+basepath=$(dirname "$(dirname "$0")")/docker/
 
 # Build all distros and versions of OpenJDK
 for d in $(ls -d $basepath/*); do

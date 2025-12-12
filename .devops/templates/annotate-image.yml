@@ -10,8 +10,6 @@ parameters:
     type: string
   - name: package
     type: string
-  - name: id
-    type: string
 
 steps:
   - task: AzureCLI@2

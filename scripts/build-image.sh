@@ -1,6 +1,12 @@
 #!/bin/bash
 az acr login -n junipercontainerregistry
-docker buildx create --name mybuilder --driver docker-container --driver-opt image=junipercontainerregistry.azurecr.io/mirror/moby/buildkit --platform linux/amd64,linux/arm64 --use
+
+docker buildx create \
+    --name mybuilder \
+    --driver docker-container \
+    --driver-opt image=junipercontainerregistry.azurecr.io/mirror/moby/buildkit \
+    --platform linux/amd64,linux/arm64 \
+    --use
 
 az acr login -n msopenjdk
 
@@ -15,4 +21,14 @@ REGISTRY_TAGS="-t ${REGISTRY_TAGS/;/ -t }"
 # To push to a registry use --push
 # To build locally use --output=type=image,push=false
 echo "docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} ${REGISTRY_TAGS} -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . --push"
-docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} ${REGISTRY_TAGS} -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . --push
+
+docker buildx build \
+    --platform linux/amd64,linux/arm64 \
+    ${BUILD_ARGS} \
+    ${REGISTRY_TAGS} \
+    -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . \
+    --metadata-file metadata.json \
+    --push
+
+containerImageDigest=$(cat metadata.json | grep -oP ('?<="containerimage.digest": ")[^"]+'))
+echo "##vso[task.setvariable variable=containerImageDigest]$containerImageDigest"

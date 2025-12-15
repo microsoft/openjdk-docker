@@ -34,8 +34,8 @@ steps:
     inputs:
       azureSubscription: "JEG-Infrastructure"
       scriptType: "bash"
-      scriptLocation: "inlineScript"
-      script: |
+      scriptLocation: inlineScript
+      inlineScript: |
         az acr login --name $(ACR_NAME)
         manifest=$(az acr manifest show ${{ parameters.registry }}/${{ parameters.tag }} -o json)
         echo "##vso[task.setvariable variable=manifest]$manifest"
@@ -43,7 +43,7 @@ steps:
   - task: PythonScript@0
     displayName: Output image digest
     inputs:
-      scriptSource: 'inlineScript'
+      scriptSource: 'inline'
       script: |
         import json
 

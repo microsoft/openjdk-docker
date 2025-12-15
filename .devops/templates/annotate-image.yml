@@ -72,7 +72,7 @@ steps:
         print(f"##vso[task.setvariable variable=imageDigestArm64]{arm64_digest}")
 
   - task: AzureCLI@2
-    displayName: Annotate amd64 $(imageDigestAmd64) as EOL
+    displayName: Annotate amd64 as EOL
     inputs:
       azureSubscription: "JEG-Infrastructure"
       scriptType: "bash"
@@ -91,7 +91,7 @@ steps:
           -m $(imageDigestAmd64)
 
   - task: AzureCLI@2
-    displayName: Annotate arm64 $(imageDigestArm64) as EOL
+    displayName: Annotate arm64 as EOL
     inputs:
       azureSubscription: "JEG-Infrastructure"
       scriptType: "bash"

@@ -177,7 +177,7 @@ extends:
                   DISTRIBUTION: $(distro)
                   INSTALLER_IMAGE: $(installer_image)
                   INSTALLER_TAG: $(installer_tag)
-                  ${{ if eq(parameters.dryrun, 'true') }}:
+                  ${{ if eq(parameters.dryrun, true) }}:
                     DRYRUN: "true"
                   ${{ else }}:
                     DRYRUN: "false"

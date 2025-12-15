@@ -21,7 +21,7 @@ REGISTRY_TAGS="-t ${REGISTRY_TAGS/;/ -t }"
 # To push to a registry use --push
 # To build locally use --output=type=image,push=false
 
-if [[ "$DRY_RUN" == "true" ]]; then
+if [[ "$DRYRUN" == "true" ]]; then
     echo "[DRY-RUN] Running in dry-run mode. No changes will be made."
     echo "[DRY-RUN] Command that would be executed:"
     echo "docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} ${REGISTRY_TAGS} -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . --metadata-file metadata.json --push"

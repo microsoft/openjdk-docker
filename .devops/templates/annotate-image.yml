@@ -49,7 +49,7 @@ steps:
 
         amd64_digest = ""
         arm64_digest = ""
-        manifest = json.loads(r'''$(manifest)''')
+        manifest = json.loads(r"""$(manifest)""")
 
         for descriptor in manifest['manifests']:
             if descriptor['platform']['architecture'] == 'amd64':

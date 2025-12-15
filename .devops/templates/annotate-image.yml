@@ -42,14 +42,21 @@ steps:
 
   - task: PythonScript@0
     displayName: Output image digest
+    env:
+      manifest: $(manifest)
     inputs:
       scriptSource: 'inline'
       script: |
         import json
+        import os
 
         amd64_digest = ""
         arm64_digest = ""
-        manifest = json.loads(r"""$(manifest)""")
+        manifest = json.loads(os.environ.get('manifest', {}))
+
+        if not manifest:
+            print("##vso[task.logissue type=error]Container image manifest is empty or null. Unable to retrieve image digests!")
+            exit(1)
 
         for descriptor in manifest['manifests']:
             if descriptor['platform']['architecture'] == 'amd64':

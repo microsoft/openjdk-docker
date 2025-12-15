@@ -20,15 +20,22 @@ REGISTRY_TAGS="-t ${REGISTRY_TAGS/;/ -t }"
 
 # To push to a registry use --push
 # To build locally use --output=type=image,push=false
-echo "docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} ${REGISTRY_TAGS} -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . --push"
 
-docker buildx build \
-    --platform linux/amd64,linux/arm64 \
-    ${BUILD_ARGS} \
-    ${REGISTRY_TAGS} \
-    -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . \
-    --metadata-file metadata.json \
-    --push
+if [[ "$DRY_RUN" == "true" ]]; then
+    echo "[DRY-RUN] Running in dry-run mode. No changes will be made."
+    echo "[DRY-RUN] Command that would be executed:"
+    echo "docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} ${REGISTRY_TAGS} -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . --metadata-file metadata.json --push"
+else
+    echo "docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} ${REGISTRY_TAGS} -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . --push"
 
-containerImageDigest=$(cat metadata.json | grep -oP ('?<="containerimage.digest": ")[^"]+'))
-echo "##vso[task.setvariable variable=containerImageDigest]$containerImageDigest"
+    docker buildx build \
+        --platform linux/amd64,linux/arm64 \
+        ${BUILD_ARGS} \
+        ${REGISTRY_TAGS} \
+        -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . \
+        --metadata-file metadata.json \
+        --push
+
+    containerImageDigest=$(cat metadata.json | grep -oP ('?<="containerimage.digest": ")[^"]+'))
+    echo "##vso[task.setvariable variable=containerImageDigest]$containerImageDigest"
+fi

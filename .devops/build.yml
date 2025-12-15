@@ -23,6 +23,10 @@ parameters:
   - name: az_package
     type: string
     displayName: "Oras package name"
+  - name: dryrun
+    displayName: "Execute a dry run?"
+    type: boolean
+    default: false
   - name: jobs
     type: object
     default:
@@ -147,6 +151,7 @@ extends:
                   organization: ${{ parameters.organization }}
                   feed: ${{ parameters.feed }}
                   package: ${{ parameters.az_package }}
+                  dryrun: ${{ parameters.dryrun }}
 
               - bash: |
                   REGISTRIES=$(INTERNAL_ACR_REGISTRY):$(version)-$(distro)
@@ -171,6 +176,10 @@ extends:
                   DISTRIBUTION: $(distro)
                   INSTALLER_IMAGE: $(installer_image)
                   INSTALLER_TAG: $(installer_tag)
+                  ${{ if eq(parameters.dryrun, true) }}:
+                    DRYRUN: "true"
+                  ${{ else }}:
+                    DRYRUN: "false"
 
       # - stage: validate_and_publish
       #   displayName: "Validate & Publish"

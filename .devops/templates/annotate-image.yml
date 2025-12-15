@@ -10,6 +10,9 @@ parameters:
     type: string
   - name: package
     type: string
+  - name: dryrun
+    type: boolean
+    default: false
 
 steps:
   - task: AzureCLI@2
@@ -68,10 +71,17 @@ steps:
       scriptType: "bash"
       scriptLocation: "scriptPath"
       scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
-      arguments: >
-        -r ${{ parameters.registry }}
-        -i jdk
-        -d $(imageDigestAmd64)
+      ${{ if eq(parameters.dryrun, true) }}:
+        arguments: >
+          -r ${{ parameters.registry }}
+          -i jdk
+          -m $(imageDigestAmd64)
+          -d
+      ${{ else }}:
+        arguments: >
+          -r ${{ parameters.registry }}
+          -i jdk
+          -m $(imageDigestAmd64)
 
   - task: AzureCLI@2
     displayName: Annotate arm64 $(imageDigestArm64) as EOL
@@ -80,7 +90,14 @@ steps:
       scriptType: "bash"
       scriptLocation: "scriptPath"
       scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
-      arguments: >
-        -r ${{ parameters.registry }}
-        -i jdk
-        -d $(imageDigestArm64)
+      ${{ if eq(parameters.dryrun, true) }}:
+        arguments: >
+          -r ${{ parameters.registry }}
+          -i jdk
+          -m $(imageDigestArm64)
+          -d
+      ${{ else }}:
+        arguments: >
+          -r ${{ parameters.registry }}
+          -i jdk
+          -m $(imageDigestArm64)

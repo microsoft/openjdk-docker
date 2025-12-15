@@ -6,11 +6,14 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-while getopts "r:i:d:" opt; do
+debug=false
+
+while getopts "r:i:m:d" opt; do
     case $opt in
         r) registry="$OPTARG" ;;
         i) image="$OPTARG" ;;
-        d) digest="$OPTARG" ;;
+        m) manifest="$OPTARG" ;;
+        d) debug=true ;;
         *) echo "Invalid option: -$OPTARG" ;;
     esac
 done
@@ -31,27 +34,28 @@ done
 # digest=$(echo $manifest | jq '.[0].RepoDigests[0]')
 # digest=${digest//\"/}
 
-if [[ -z "$digest" ]]; then
-    echo "##vso[task.logissue type=warning]Digest is empty or null. Skipping annotation."
-    exit 0
+if [[ -z "$manifest" ]]; then
+    echo "##vso[task.logissue type=error]Container image manifest is empty or null. Unable to add annotation!"
 fi
 
 endOfLifeDate=$(date "+%Y-%m-%d")
 
-echo "Annotating image $registry/$image@$digest with end-of-life date $endOfLifeDate"
-oras attach \
---artifact-type "application/vnd.microsoft.artifact.lifecycle" \
---annotation "vnd.microsoft.artifact.lifecycle.end-of-life.date=${endOfLifeDate}T00:00:00Z" \
-$registry/$image@$digest --verbose
+echo "Annotating image $registry/$image@$manifest with end-of-life date $endOfLifeDate"
 
-# oras attach \
-# --artifact-type "application/vnd.microsoft.artifact.lifecycle" \
-# --annotation "vnd.microsoft.artifact.lifecycle.end-of-life.date=${endOfLifeDate}T00:00:00Z" \
-# $digest --verbose
+if [[ "$debug" == "true" ]]; then
+    echo "[DRY-RUN] Running in dry-run mode. No changes will be made."
+    echo "[DRY-RUN] Command that would be executed:"
+    echo "oras attach --artifact-type \"application/vnd.microsoft.artifact.lifecycle\" --annotation \"vnd.microsoft.artifact.lifecycle.end-of-life.date=${endOfLifeDate}T00:00:00Z\" $registry/$image@$manifest --verbose"
+else
+    oras attach \
+    --artifact-type "application/vnd.microsoft.artifact.lifecycle" \
+    --annotation "vnd.microsoft.artifact.lifecycle.end-of-life.date=${endOfLifeDate}T00:00:00Z" \
+    $registry/$image@$manifest --verbose
 
-if [[ $? -ne 0 ]]; then
-    echo "Failed to annotate image!"
-    exit 1
+    if [[ $? -ne 0 ]]; then
+        echo "Failed to annotate image!"
+        exit 1
+    fi
 fi
 
 # done

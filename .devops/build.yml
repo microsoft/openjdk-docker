@@ -138,7 +138,6 @@ extends:
           ACR_NAME: msopenjdk
         jobs:
           - job: build_internal
-            displayName: "build internal"
             pool:
               name: JEG-azurelinux-x64-release
               os: linux

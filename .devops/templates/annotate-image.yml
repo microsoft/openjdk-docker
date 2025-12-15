@@ -81,13 +81,11 @@ steps:
       ${{ if eq(parameters.dryrun, true) }}:
         arguments: >
           -r ${{ parameters.registry }}
-          -i jdk
           -m $(imageDigestAmd64)
           -d
       ${{ else }}:
         arguments: >
           -r ${{ parameters.registry }}
-          -i jdk
           -m $(imageDigestAmd64)
 
   - task: AzureCLI@2
@@ -100,11 +98,9 @@ steps:
       ${{ if eq(parameters.dryrun, true) }}:
         arguments: >
           -r ${{ parameters.registry }}
-          -i jdk
           -m $(imageDigestArm64)
           -d
       ${{ else }}:
         arguments: >
           -r ${{ parameters.registry }}
-          -i jdk
           -m $(imageDigestArm64)

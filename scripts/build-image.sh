@@ -36,6 +36,6 @@ else
         --metadata-file metadata.json \
         --push
 
-    containerImageDigest=$(cat metadata.json | grep -oP ('?<="containerimage.digest": ")[^"]+'))
+    containerImageDigest=$(cat metadata.json | grep -oP '(?<="containerimage.digest": ")[^"]+')
     echo "##vso[task.setvariable variable=containerImageDigest]$containerImageDigest"
 fi

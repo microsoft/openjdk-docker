@@ -142,7 +142,7 @@ extends:
             steps:
               - template: /.devops/templates/annotate-image.yml@self
                 parameters:
-                  registry: $(ACR_REGISTRY)
+                  registry: $(INTERNAL_ACR_REGISTRY)
                   tag: $(version)-$(distro)
                   organization: ${{ parameters.organization }}
                   feed: ${{ parameters.feed }}

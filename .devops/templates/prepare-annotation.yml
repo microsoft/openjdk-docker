@@ -1,0 +1,97 @@
+# Do not call this if we have a new LTS image to support. There will be no image to EOL
+parameters:
+  - name: registry
+    type: string
+  - name: tag
+    type: string
+
+steps:
+  # - task: AzureCLI@2
+  #   displayName: Download ORAS
+  #   inputs:
+  #     azureSubscription: "JEG-Infrastructure"
+  #     scriptType: "bash"
+  #     scriptLocation: "scriptPath"
+  #     scriptPath: $(Build.SourcesDirectory)/scripts/install-oras.sh
+  #   env:
+  #     AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+  #     ORAS_VERSION: 1.1.0
+  #     ORGANIZATION: ${{ parameters.organization }}
+  #     FEED: ${{ parameters.feed }}
+  #     NAME: ${{ parameters.package }}
+
+  - task: AzureCLI@2
+    displayName: Gather container image manifests
+    inputs:
+      azureSubscription: "JEG-Infrastructure"
+      scriptType: "bash"
+      scriptLocation: inlineScript
+      inlineScript: |
+        az acr login --name $(ACR_NAME)
+        manifest=$(az acr manifest show ${{ parameters.registry }}:${{ parameters.tag }} -o json | jq -c .)
+        echo "##vso[task.setvariable variable=manifest]$manifest"
+
+  - task: PythonScript@0
+    displayName: Output image digest variables
+    env:
+      manifest: $(manifest)
+    inputs:
+      scriptSource: 'inline'
+      script: |
+        import json
+        import os
+
+        amd64_digest = ""
+        arm64_digest = ""
+        manifest = json.loads(os.environ.get('manifest', {}))
+
+        if not manifest:
+            print("##vso[task.logissue type=error]Container image manifest is empty or null. Unable to retrieve image digests!")
+            exit(1)
+
+        for descriptor in manifest['manifests']:
+            if descriptor['platform']['architecture'] == 'amd64':
+                amd64_digest = descriptor['digest']
+            elif descriptor['platform']['architecture'] == 'arm64':
+                arm64_digest = descriptor['digest']
+
+        # Theoretically, we should always have both, but log a warning in the event one is not found
+        if not amd64_digest or not arm64_digest:
+            print(f"##vso[task.logissue type=warning]Missing one of amd64_digest: {amd64_digest} or arm64_digest: {arm64_digest}.")
+
+        print(f"##vso[task.setvariable variable=imageDigestAmd64]{amd64_digest}")
+        print(f"##vso[task.setvariable variable=imageDigestArm64]{arm64_digest}")
+
+  # - task: AzureCLI@2
+  #   displayName: Annotate amd64 as EOL
+  #   inputs:
+  #     azureSubscription: "JEG-Infrastructure"
+  #     scriptType: "bash"
+  #     scriptLocation: "scriptPath"
+  #     scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
+  #     ${{ if eq(parameters.dryrun, true) }}:
+  #       arguments: >
+  #         -r ${{ parameters.registry }}
+  #         -m $(imageDigestAmd64)
+  #         -d
+  #     ${{ else }}:
+  #       arguments: >
+  #         -r ${{ parameters.registry }}
+  #         -m $(imageDigestAmd64)
+
+  # - task: AzureCLI@2
+  #   displayName: Annotate arm64 as EOL
+  #   inputs:
+  #     azureSubscription: "JEG-Infrastructure"
+  #     scriptType: "bash"
+  #     scriptLocation: "scriptPath"
+  #     scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
+  #     ${{ if eq(parameters.dryrun, true) }}:
+  #       arguments: >
+  #         -r ${{ parameters.registry }}
+  #         -m $(imageDigestArm64)
+  #         -d
+  #     ${{ else }}:
+  #       arguments: >
+  #         -r ${{ parameters.registry }}
+  #         -m $(imageDigestArm64)

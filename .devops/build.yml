@@ -144,14 +144,10 @@ extends:
             strategy:
               matrix: ${{ parameters.jobs }}
             steps:
-              - template: /.devops/templates/annotate-image.yml@self
+              - template: /.devops/templates/prepare-annotation.yml@self
                 parameters:
                   registry: $(INTERNAL_ACR_REGISTRY)
                   tag: $(version)-$(distro)
-                  organization: ${{ parameters.organization }}
-                  feed: ${{ parameters.feed }}
-                  package: ${{ parameters.az_package }}
-                  dryrun: ${{ parameters.dryrun }}
 
               - bash: |
                   REGISTRIES=$(INTERNAL_ACR_REGISTRY):$(version)-$(distro)
@@ -186,7 +182,15 @@ extends:
                       --registries $(REGISTRIES)
                       --installer-image $(installer_image)
                       --installer-tag $(installer_tag)
-                displayName: build image
+                displayName: build container image
+
+              - template: /.devops/templates/annotate-image.yml@self
+                parameters:
+                  registry: $(INTERNAL_ACR_REGISTRY)
+                  organization: ${{ parameters.organization }}
+                  feed: ${{ parameters.feed }}
+                  package: ${{ parameters.az_package }}
+                  dryrun: ${{ parameters.dryrun }}
 
       # - stage: validate_and_publish
       #   displayName: "Validate & Publish"

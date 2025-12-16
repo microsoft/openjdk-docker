@@ -192,86 +192,134 @@ extends:
                   package: ${{ parameters.az_package }}
                   dryrun: ${{ parameters.dryrun }}
 
-      # - stage: validate_and_publish
-      #   displayName: "Validate & Publish"
-      #   dependsOn: build_internal
-      #   jobs:
-      #     - job: wait_for_validation
-      #       displayName: wait for validation
-      #       pool: server
-      #       steps:
-      #         - task: ManualValidation@0
-      #           # 3 days
-      #           timeoutInMinutes: 4320
-      #           inputs:
-      #             instructions: "please validate the build configuration, artifacts, tests, and resume"
-      #             onTimeout: "resume"
+      - stage: validate_and_publish
+        displayName: "Validate & Publish"
+        dependsOn: build_internal
+        jobs:
 
-      #     - job: build_public
-      #       displayName: "build public "
-      #       dependsOn: wait_for_validation
-      #       pool:
-      #         name: JEG-azurelinux-x64-release
-      #         os: linux
-      #       strategy:
-      #         matrix: ${{ parameters.jobs }}
-      #       steps:
-      #         - template: /.devops/templates/annotate-image.yml@self
-      #           parameters:
-      #             registry: $(INTERNAL_ACR_REGISTRY)
-      #             tag: $(version)-$(distro)
-      #             organization: ${{ parameters.organization }}
-      #             feed: ${{ parameters.feed }}
-      #             package: ${{ parameters.az_package }}
-      #             dryrun: ${{ parameters.dryrun }}
+          - job: wait_for_validation
+            displayName: wait for validation
+            pool: server
+            steps:
+              - task: ManualValidation@0
+                # 3 days
+                timeoutInMinutes: 4320
+                inputs:
+                  instructions: "please validate the build configuration, artifacts, tests, and resume"
+                  onTimeout: "resume"
 
-      #         - bash: |
-      #             REGISTRIES=$(ACR_REGISTRY):$(version)-$(distro)
-      #             TAGS="$(version)-$(distro)"
+          - job: build_public
+            dependsOn: wait_for_validation
+            pool:
+              name: JEG-azurelinux-x64-release
+              os: linux
+            strategy:
+              matrix: ${{ parameters.jobs }}
+            steps:
+              - template: /.devops/templates/prepare-annotation.yml@self
+                parameters:
+                  registry: $(ACR_REGISTRY)
+                  tag: $(version)-$(distro)
 
-      #             if [[ "$(distro)" == "azurelinux" ]]; then
-      #               REGISTRIES+=";$(ACR_REGISTRY):$(version)-mariner"
-      #             fi
+              - bash: |
+                  REGISTRIES=$(ACR_REGISTRY):$(version)-$(distro)
+                  if [[ "$(distro)" == "azurelinux" ]]; then
+                    REGISTRIES+=";$(ACR_REGISTRY):$(version)-mariner"
+                  fi
+                  echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
+                displayName: Set REGISTRIES variable
 
-      #             echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
-      #             echo "##vso[task.setvariable variable=TAGS]$TAGS"
-      #           displayName: Set environment variables
+              - task: AzureCLI@2
+                inputs:
+                  azureSubscription: "JEG-Infrastructure"
+                  scriptType: "bash"
+                  scriptLocation: "scriptPath"
+                  scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
+                  ${{ if eq(parameters.dryrun, true) }}:
+                    arguments: >
+                      --image $(image)
+                      --tag $(tag)
+                      --package $(package)
+                      --distribution $(distro)
+                      --registries $(REGISTRIES)
+                      --installer-image $(installer_image)
+                      --installer-tag $(installer_tag)
+                      --dryrun
+                  ${{ else }}:
+                    arguments: >
+                      --image $(image)
+                      --tag $(tag)
+                      --package $(package)
+                      --distribution $(distro)
+                      --registries $(REGISTRIES)
+                      --installer-image $(installer_image)
+                      --installer-tag $(installer_tag)
+                displayName: build container image
 
-      #         - task: AzureCLI@2
-      #           inputs:
-      #             azureSubscription: "JEG-Infrastructure"
-      #             scriptType: "bash"
-      #             scriptLocation: "scriptPath"
-      #             scriptPath: scripts/build-image.sh
-      #           displayName: Build image
-      #           env:
-      #             REGISTRY_TAGS: $(REGISTRIES)
-      #             IMAGE: $(image)
-      #             TAG: $(tag)
-      #             PACKAGE: $(package)
-      #             DISTRIBUTION: $(distro)
-      #             INSTALLER_IMAGE: $(installer_image)
-      #             INSTALLER_TAG: $(installer_tag)
-      #             ${{ if eq(parameters.dryrun, true) }}:
-      #               DRYRUN: "true"
-      #             ${{ else }}:
-      #               DRYRUN: "false"
+              - template: /.devops/templates/annotate-image.yml@self
+                parameters:
+                  registry: $(ACR_REGISTRY)
+                  organization: ${{ parameters.organization }}
+                  feed: ${{ parameters.feed }}
+                  package: ${{ parameters.az_package }}
+                  dryrun: ${{ parameters.dryrun }}
 
-      #        ${{ if ne(parameters.dryrun, true) }}:
-      #         - task: AzureCLI@2
-      #           displayName: Trigger signing
-      #           env:
-      #             AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
-      #           inputs:
-      #             azureSubscription: "JEG-Infrastructure"
-      #             scriptType: "bash"
-      #             scriptLocation: "inlineScript"
-      #             inlineScript: |
-      #               az pipelines run \
-      #                 --branch main \
-      #                 --org ${{ parameters.organization }} \
-      #                 --project $(OPENJDK_PROJECT) \
-      #                 --id $(OPENJDK_SIGNING_ID) \
-      #                 --parameters openjdk_tags="[$(TAGS)]" \
-      #                   image_registry="$(ACR_REGISTRY)" \
-      #                   image_name="jdk"
+              # - template: /.devops/templates/annotate-image.yml@self
+              #   parameters:
+              #     registry: $(INTERNAL_ACR_REGISTRY)
+              #     tag: $(version)-$(distro)
+              #     organization: ${{ parameters.organization }}
+              #     feed: ${{ parameters.feed }}
+              #     package: ${{ parameters.az_package }}
+              #     dryrun: ${{ parameters.dryrun }}
+
+              # - bash: |
+              #     REGISTRIES=$(ACR_REGISTRY):$(version)-$(distro)
+              #     TAGS="$(version)-$(distro)"
+
+              #     if [[ "$(distro)" == "azurelinux" ]]; then
+              #       REGISTRIES+=";$(ACR_REGISTRY):$(version)-mariner"
+              #     fi
+
+              #     echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
+              #     echo "##vso[task.setvariable variable=TAGS]$TAGS"
+              #   displayName: Set environment variables
+
+              # - task: AzureCLI@2
+              #   inputs:
+              #     azureSubscription: "JEG-Infrastructure"
+              #     scriptType: "bash"
+              #     scriptLocation: "scriptPath"
+              #     scriptPath: scripts/build-image.sh
+              #   displayName: Build image
+              #   env:
+              #     REGISTRY_TAGS: $(REGISTRIES)
+              #     IMAGE: $(image)
+              #     TAG: $(tag)
+              #     PACKAGE: $(package)
+              #     DISTRIBUTION: $(distro)
+              #     INSTALLER_IMAGE: $(installer_image)
+              #     INSTALLER_TAG: $(installer_tag)
+              #     ${{ if eq(parameters.dryrun, true) }}:
+              #       DRYRUN: "true"
+              #     ${{ else }}:
+              #       DRYRUN: "false"
+
+              - ${{ if ne(parameters.dryrun, true) }}:
+                - task: AzureCLI@2
+                  displayName: Trigger signing
+                  env:
+                    AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+                  inputs:
+                    azureSubscription: "JEG-Infrastructure"
+                    scriptType: "bash"
+                    scriptLocation: "inlineScript"
+                    inlineScript: |
+                      az pipelines run \
+                        --branch main \
+                        --org ${{ parameters.organization }} \
+                        --project $(OPENJDK_PROJECT) \
+                        --id $(OPENJDK_SIGNING_ID) \
+                        --parameters openjdk_tags="[$(TAGS)]" \
+                          image_registry="$(ACR_REGISTRY)" \
+                          image_name="jdk"

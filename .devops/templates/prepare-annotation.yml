@@ -1,4 +1,3 @@
-# Do not call this if we have a new LTS image to support. There will be no image to EOL
 parameters:
   - name: registry
     type: string
@@ -6,22 +5,10 @@ parameters:
     type: string
 
 steps:
-  # - task: AzureCLI@2
-  #   displayName: Download ORAS
-  #   inputs:
-  #     azureSubscription: "JEG-Infrastructure"
-  #     scriptType: "bash"
-  #     scriptLocation: "scriptPath"
-  #     scriptPath: $(Build.SourcesDirectory)/scripts/install-oras.sh
-  #   env:
-  #     AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
-  #     ORAS_VERSION: 1.1.0
-  #     ORGANIZATION: ${{ parameters.organization }}
-  #     FEED: ${{ parameters.feed }}
-  #     NAME: ${{ parameters.package }}
 
   - task: AzureCLI@2
     displayName: Gather container image manifests
+    condition: eq(variables['hasExistingImages'], 'true')
     inputs:
       azureSubscription: "JEG-Infrastructure"
       scriptType: "bash"
@@ -33,6 +20,7 @@ steps:
 
   - task: PythonScript@0
     displayName: Output image digest variables
+    condition: eq(variables['hasExistingImages'], 'true')
     env:
       manifest: $(manifest)
     inputs:
@@ -61,37 +49,3 @@ steps:
 
         print(f"##vso[task.setvariable variable=imageDigestAmd64]{amd64_digest}")
         print(f"##vso[task.setvariable variable=imageDigestArm64]{arm64_digest}")
-
-  # - task: AzureCLI@2
-  #   displayName: Annotate amd64 as EOL
-  #   inputs:
-  #     azureSubscription: "JEG-Infrastructure"
-  #     scriptType: "bash"
-  #     scriptLocation: "scriptPath"
-  #     scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
-  #     ${{ if eq(parameters.dryrun, true) }}:
-  #       arguments: >
-  #         -r ${{ parameters.registry }}
-  #         -m $(imageDigestAmd64)
-  #         -d
-  #     ${{ else }}:
-  #       arguments: >
-  #         -r ${{ parameters.registry }}
-  #         -m $(imageDigestAmd64)
-
-  # - task: AzureCLI@2
-  #   displayName: Annotate arm64 as EOL
-  #   inputs:
-  #     azureSubscription: "JEG-Infrastructure"
-  #     scriptType: "bash"
-  #     scriptLocation: "scriptPath"
-  #     scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
-  #     ${{ if eq(parameters.dryrun, true) }}:
-  #       arguments: >
-  #         -r ${{ parameters.registry }}
-  #         -m $(imageDigestArm64)
-  #         -d
-  #     ${{ else }}:
-  #       arguments: >
-  #         -r ${{ parameters.registry }}
-  #         -m $(imageDigestArm64)

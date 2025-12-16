@@ -32,14 +32,14 @@ parameters:
     type: object
     default:
       azurelinux_8:
-        new_LTS_image: false
+        hasExistingImages: true
         distro: azurelinux
         version: 8
         package: temurin-8
         image: "image-repository"
         tag: "3.0"
       distroless_8:
-        new_LTS_image: false
+        hasExistingImages: true
         distro: distroless
         version: 8
         package: temurin-8
@@ -48,21 +48,21 @@ parameters:
         base_image: "image-repository"
         base_tag: "3.0"
       ubuntu_11:
-        new_LTS_image: false
+        hasExistingImages: true
         distro: ubuntu
         version: 11
         package: msopenjdk-11
         image: "image-repository"
         tag: "image-tag"
       azurelinux_11:
-        new_LTS_image: false
+        hasExistingImages: true
         distro: azurelinux
         version: 11
         package: msopenjdk-11
         image: "image-repository"
         tag: "3.0"
       distroless_11:
-        new_LTS_image: false
+        hasExistingImages: true
         distro: distroless
         version: 11
         package: msopenjdk-11
@@ -71,21 +71,21 @@ parameters:
         base_image: "image-repository"
         base_tag: "3.0"
       ubuntu_17:
-        new_LTS_image: false
+        hasExistingImages: true
         distro: ubuntu
         version: 17
         package: msopenjdk-17
         image: "image-repository"
         tag: "image-tag"
       azurelinux_17:
-        new_LTS_image: false
+        hasExistingImages: true
         distro: azurelinux
         version: 17
         package: msopenjdk-17
         image: "image-repository"
         tag: "3.0"
       distroless_17:
-        new_LTS_image: false
+        hasExistingImages: true
         distro: distroless
         version: 17
         package: msopenjdk-17
@@ -94,21 +94,21 @@ parameters:
         base_image: "image-repository"
         base_tag: "3.0"
       ubuntu_21:
-        new_LTS_image: false
+        hasExistingImages: true
         distro: ubuntu
         version: 21
         package: msopenjdk-21
         image: "image-repository"
         tag: "image-tag"
       azurelinux_21:
-        new_LTS_image: false
+        hasExistingImages: true
         distro: azurelinux
         version: 21
         package: msopenjdk-21
         image: "image-repository"
         tag: "3.0"
       distroless_21:
-        new_LTS_image: false
+        hasExistingImages: true
         distro: distroless
         version: 21
         package: msopenjdk-21
@@ -133,7 +133,7 @@ extends:
         os: windows
     stages:
       - stage: build_internal
-        displayName: "Build Internal"
+        displayName: Build Internal
         variables:
           ACR_NAME: msopenjdk
         jobs:

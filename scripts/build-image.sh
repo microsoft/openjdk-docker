@@ -1,5 +1,47 @@
 #!/bin/bash
+
+dryRun=false
+
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -i | --image)
+            image="$2";
+            shift 2
+            ;;
+        -t | --tag)
+            tag="$2";
+            shift 2
+            ;;
+        -p | --package)
+            package="$2";
+            shift 2
+            ;;
+        -d | --distribution)
+            distro="$2";
+            shift 2
+            ;;
+        -r | --registries)
+            registryTags="$2";
+            shift 2
+            ;;
+        -D | --dryrun)
+            dryRun=true
+            shift
+            ;;
+        -I | --installer-image)
+            installerImg="$2";
+            shift 2
+            ;;
+        -T | --installer-tag)
+            installerTag="$2";
+            shift 2
+            ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+    esac
+done
+
 az acr login -n junipercontainerregistry
+az acr login -n "$ACR_NAME"
 
 docker buildx create \
     --name mybuilder \
@@ -8,34 +50,34 @@ docker buildx create \
     --platform linux/amd64,linux/arm64 \
     --use
 
-az acr login -n msopenjdk
 
-if [[ '$DISTRIBUTION' != 'distroless' ]]; then
-    BUILD_ARGS="--build-arg IMAGE=$IMAGE --build-arg TAG=$TAG --build-arg package=$PACKAGE"
+if [[ "$distro" != "distroless" ]]; then
+    buildArgs="--build-arg IMAGE=$image --build-arg TAG=$tag --build-arg package=$package"
 else
-    BUILD_ARGS="--build-arg INSTALLER_IMAGE=$INSTALLER_IMAGE --build-arg INSTALLER_TAG=$INSTALLER_TAG --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$PACKAGE"
+    buildArgs="--build-arg INSTALLER_IMAGE=$installerImg --build-arg INSTALLER_TAG=$installerTag --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$package"
 fi
 
-REGISTRY_TAGS="-t ${REGISTRY_TAGS/;/ -t }"
+registryTags="-t ${registryTags/;/ -t }"
 
 # To push to a registry use --push
 # To build locally use --output=type=image,push=false
 
-if [[ "$DRYRUN" == "true" ]]; then
+if [[ "$dryRun" == true ]]; then
     echo "[DRY-RUN] Running in dry-run mode. No changes will be made."
     echo "[DRY-RUN] Command that would be executed:"
-    echo "docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} ${REGISTRY_TAGS} -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . --metadata-file metadata.json --push"
+    echo "docker buildx build --platform linux/amd64,linux/arm64 ${buildArgs} ${registryTags} -f docker/$distro/Dockerfile.$package-jdk . --metadata-file metadata.json --push"
 else
-    echo "docker buildx build --platform linux/amd64,linux/arm64 ${BUILD_ARGS} ${REGISTRY_TAGS} -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . --push"
+    echo "docker buildx build --platform linux/amd64,linux/arm64 ${buildArgs} ${registryTags} -f docker/$distro/Dockerfile.$package-jdk . --push"
 
     docker buildx build \
         --platform linux/amd64,linux/arm64 \
-        ${BUILD_ARGS} \
-        ${REGISTRY_TAGS} \
-        -f docker/$DISTRIBUTION/Dockerfile.$PACKAGE-jdk . \
+        ${buildArgs} \
+        ${registryTags} \
+        -f docker/$distro/Dockerfile.$package-jdk . \
         --metadata-file metadata.json \
         --push
 
     containerImageDigest=$(cat metadata.json | grep -oP '(?<="containerimage.digest": ")[^"]+')
     echo "##vso[task.setvariable variable=containerImageDigest]$containerImageDigest"
+    rn metadata.json
 fi

@@ -25,7 +25,7 @@ endOfLifeDate=$(date "+%Y-%m-%d")
 
 echo "Annotating image $registry@$manifest with end-of-life date $endOfLifeDate"
 
-if [[ "$debug" == "true" ]]; then
+if [[ "$debug" == true ]]; then
     echo "[DRY-RUN] Running in dry-run mode. No changes will be made."
     echo "[DRY-RUN] Command that would be executed:"
     echo "oras attach --artifact-type \"application/vnd.microsoft.artifact.lifecycle\" --annotation \"vnd.microsoft.artifact.lifecycle.end-of-life.date=${endOfLifeDate}T00:00:00Z\" $registry@$manifest --verbose"
@@ -33,12 +33,11 @@ else
     oras attach \
     --artifact-type "application/vnd.microsoft.artifact.lifecycle" \
     --annotation "vnd.microsoft.artifact.lifecycle.end-of-life.date=${endOfLifeDate}T00:00:00Z" \
-    $registry@$manifest --verbose
+    $registry@$manifest \
+    --verbose
 
     if [[ $? -ne 0 ]]; then
         echo "Failed to annotate image!"
         exit 1
     fi
 fi
-
-# done

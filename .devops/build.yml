@@ -167,19 +167,26 @@ extends:
                   scriptType: "bash"
                   scriptLocation: "scriptPath"
                   scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
-                displayName: build image
-                env:
-                  REGISTRY_TAGS: $(REGISTRIES)
-                  IMAGE: $(image)
-                  TAG: $(tag)
-                  PACKAGE: $(package)
-                  DISTRIBUTION: $(distro)
-                  INSTALLER_IMAGE: $(installer_image)
-                  INSTALLER_TAG: $(installer_tag)
                   ${{ if eq(parameters.dryrun, true) }}:
-                    DRYRUN: "true"
+                    arguments: >
+                      --image $(image)
+                      --tag $(tag)
+                      --package $(package)
+                      --distribution $(distro)
+                      --registries $(REGISTRIES)
+                      --installer-image $(installer_image)
+                      --installer-tag $(installer_tag)
+                      --dryrun
                   ${{ else }}:
-                    DRYRUN: "false"
+                    arguments: >
+                      --image $(image)
+                      --tag $(tag)
+                      --package $(package)
+                      --distribution $(distro)
+                      --registries $(REGISTRIES)
+                      --installer-image $(installer_image)
+                      --installer-tag $(installer_tag)
+                displayName: build image
 
       # - stage: validate_and_publish
       #   displayName: "Validate & Publish"
@@ -196,23 +203,6 @@ extends:
       #             instructions: "please validate the build configuration, artifacts, tests, and resume"
       #             onTimeout: "resume"
 
-      #         - template: /.devops/annotate-image.yml@self
-      #           parameters:
-      #             registry: $(ACR_REGISTRY)
-      #             tag: $(version)-$(distro)
-      #             organization: ${{ parameters.organization }}
-      #             feed: ${{ parameters.feed }}
-      #             package: ${{ parameters.az_package }}
-
-      #         - ${{ if eq("$(distro)", "azurelinux") }}:
-      #           - template: /.devops/annotate-image.yml@self
-      #             parameters:
-      #               registry: $(ACR_REGISTRY)
-      #               tag: $(version)-mariner
-      #               organization: ${{ parameters.organization }}
-      #               feed: ${{ parameters.feed }}
-      #               package: ${{ parameters.az_package }}
-
       #     - job: build_public
       #       displayName: "build public "
       #       dependsOn: wait_for_validation
@@ -222,6 +212,15 @@ extends:
       #       strategy:
       #         matrix: ${{ parameters.jobs }}
       #       steps:
+      #         - template: /.devops/templates/annotate-image.yml@self
+      #           parameters:
+      #             registry: $(INTERNAL_ACR_REGISTRY)
+      #             tag: $(version)-$(distro)
+      #             organization: ${{ parameters.organization }}
+      #             feed: ${{ parameters.feed }}
+      #             package: ${{ parameters.az_package }}
+      #             dryrun: ${{ parameters.dryrun }}
+
       #         - bash: |
       #             REGISTRIES=$(ACR_REGISTRY):$(version)-$(distro)
       #             TAGS="$(version)-$(distro)"
@@ -249,9 +248,14 @@ extends:
       #             DISTRIBUTION: $(distro)
       #             INSTALLER_IMAGE: $(installer_image)
       #             INSTALLER_TAG: $(installer_tag)
+      #             ${{ if eq(parameters.dryrun, true) }}:
+      #               DRYRUN: "true"
+      #             ${{ else }}:
+      #               DRYRUN: "false"
 
+      #        ${{ if ne(parameters.dryrun, true) }}:
       #         - task: AzureCLI@2
-      #           displayName: Trigger image signing
+      #           displayName: Trigger signing
       #           env:
       #             AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
       #           inputs:

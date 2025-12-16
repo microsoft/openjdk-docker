@@ -79,5 +79,5 @@ else
 
     containerImageDigest=$(cat metadata.json | grep -oP '(?<="containerimage.digest": ")[^"]+')
     echo "##vso[task.setvariable variable=containerImageDigest]$containerImageDigest"
-    rn metadata.json
+    rm metadata.json
 fi

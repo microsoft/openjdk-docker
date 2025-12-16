@@ -23,7 +23,7 @@ fi
 
 endOfLifeDate=$(date "+%Y-%m-%d")
 
-echo "Annotating image $registry@$manifest with end-of-life date $endOfLifeDate"
+echo "Annotating image ${registry}@${manifest} with end-of-life date ${endOfLifeDate}T00:00:00Z"
 
 if [[ "$debug" == true ]]; then
     echo "[DRY-RUN] Running in dry-run mode. No changes will be made."

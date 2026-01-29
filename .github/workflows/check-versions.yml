@@ -14,7 +14,7 @@ jobs:
       matrix:
         distros: [ "azurelinux", "distroless" ]
         jdkvendor: [ "temurin" ]
-        jdkversion: [ { major: "8", expected: "1.8.0_462" } ]
+        jdkversion: [ { major: "8", expected: "1.8.0_472" } ]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -40,7 +40,7 @@ jobs:
       matrix:
         distros: [ "azurelinux", "distroless", "ubuntu" ]
         jdkvendor: [ "msopenjdk" ]
-        jdkversion: [ { major: "11", expected: "11.0.28" }, { major: "17", expected: "17.0.16" }, { major: "21", expected: "21.0.8" }, { major: "25", expected: "25.0.0" }]
+        jdkversion: [ { major: "11", expected: "11.0.30" }, { major: "17", expected: "17.0.18" }, { major: "21", expected: "21.0.10" }, { major: "25", expected: "25.0.2" }]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 

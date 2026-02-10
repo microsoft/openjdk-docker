@@ -211,6 +211,11 @@ extends:
                   package: ${{ parameters.az_package }}
                   dryrun: ${{ parameters.dryrun }}
 
+              - bash: |
+                  short_digest=$(echo "$(containerImageDigest)" | cut -c1-15)
+                  echo "##vso[build.addbuildtag]$short_digest"
+                displayName: Add build tag from image digest
+
               - ${{ if ne(parameters.dryrun, true) }}:
                 - task: AzureCLI@2
                   displayName: Trigger signing

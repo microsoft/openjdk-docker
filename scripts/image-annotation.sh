@@ -19,11 +19,12 @@ done
 
 if [[ -z "$manifest" ]]; then
     echo "##vso[task.logissue type=error]Container image manifest is empty or null. Unable to add annotation!"
+    exit 1
 fi
 
 endOfLifeDate=$(date "+%Y-%m-%d")
 
-echo "Annotating image ${registry}@${manifest} with end-of-life date ${endOfLifeDate}T00:00:00Z"
+echo "Annotating image ${registry}@${manifest} with end-of-life date ${endOfLifeDate}T00:00:00"
 
 if [[ "$debug" == true ]]; then
     echo "[DRY-RUN] Running in dry-run mode. No changes will be made."

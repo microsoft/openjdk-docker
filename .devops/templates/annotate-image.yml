@@ -29,24 +29,24 @@ steps:
       FEED: ${{ parameters.feed }}
       NAME: ${{ parameters.package }}
 
-  ${{ each reference in parameters.references }}:
-  - task: AzureCLI@2
-    displayName: Annotate previous amd64 as EOL
-    condition: eq(variables['hasExistingImages'], 'true')
-    inputs:
-      azureSubscription: "JEG-Infrastructure"
-      scriptType: "bash"
-      scriptLocation: "scriptPath"
-      scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
-      ${{ if eq(parameters.dryrun, true) }}:
-        arguments: >
-          -r ${{ parameters.registry }}
-          -m $(reference)
-          -d
-      ${{ else }}:
-        arguments: >
-          -r ${{ parameters.registry }}
-          -m $(reference)
+  - ${{ each reference in parameters.references }}:
+    - task: AzureCLI@2
+      displayName: Annotate previous amd64 as EOL
+      condition: eq(variables['hasExistingImages'], 'true')
+      inputs:
+        azureSubscription: "JEG-Infrastructure"
+        scriptType: "bash"
+        scriptLocation: "scriptPath"
+        scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
+        ${{ if eq(parameters.dryrun, true) }}:
+          arguments: >
+            -r ${{ parameters.registry }}
+            -m $(reference)
+            -d
+        ${{ else }}:
+          arguments: >
+            -r ${{ parameters.registry }}
+            -m $(reference)
 
   # - task: AzureCLI@2
   #   displayName: Annotate previous arm64 as EOL

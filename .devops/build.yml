@@ -103,6 +103,7 @@ extends:
                 displayName: Set REGISTRIES variable
 
               - task: AzureCLI@2
+                retryCountOnTaskFailure: 2
                 inputs:
                   azureSubscription: "JEG-Infrastructure"
                   scriptType: "bash"
@@ -175,6 +176,7 @@ extends:
                 displayName: Set REGISTRIES variable
 
               - task: AzureCLI@2
+                retryCountOnTaskFailure: 2
                 inputs:
                   azureSubscription: "JEG-Infrastructure"
                   scriptType: "bash"

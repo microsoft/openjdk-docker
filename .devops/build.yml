@@ -137,6 +137,9 @@ extends:
                   feed: ${{ parameters.feed }}
                   package: ${{ parameters.az_package }}
                   dryrun: ${{ parameters.dryrun }}
+                  references:
+                    - $(imageDigestAmd64)
+                    - $(imageDigestArm64)
 
 
       - stage: validate_and_publish
@@ -210,6 +213,9 @@ extends:
                   feed: ${{ parameters.feed }}
                   package: ${{ parameters.az_package }}
                   dryrun: ${{ parameters.dryrun }}
+                  references:
+                    - $(imageDigestAmd64)
+                    - $(imageDigestArm64)
 
               - bash: |
                   short_digest=$(echo "$(containerImageDigest)" | cut -c1-15)

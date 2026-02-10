@@ -118,6 +118,8 @@ extends:
                       --registries $(REGISTRIES)
                       --installer-image $(installer_image)
                       --installer-tag $(installer_tag)
+                      --base-image $(base_image)
+                      --base-tag $(base_tag)
                       --dryrun
                   ${{ else }}:
                     arguments: >
@@ -128,6 +130,8 @@ extends:
                       --registries $(REGISTRIES)
                       --installer-image $(installer_image)
                       --installer-tag $(installer_tag)
+                      --base-image $(base_image)
+                      --base-tag $(base_tag)
                 displayName: build container image
 
               - template: /.devops/templates/annotate-image.yml@self
@@ -191,6 +195,8 @@ extends:
                       --registries $(REGISTRIES)
                       --installer-image $(installer_image)
                       --installer-tag $(installer_tag)
+                      --base-image $(base_image)
+                      --base-tag $(base_tag)
                       --dryrun
                   ${{ else }}:
                     arguments: >
@@ -201,6 +207,8 @@ extends:
                       --registries $(REGISTRIES)
                       --installer-image $(installer_image)
                       --installer-tag $(installer_tag)
+                      --base-image $(base_image)
+                      --base-tag $(base_tag)
                 displayName: build container image
 
               - template: /.devops/templates/annotate-image.yml@self

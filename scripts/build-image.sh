@@ -4,6 +4,14 @@ dryRun=false
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
+        -b | --base-image)
+            baseImage="$2"
+            shift 2
+            ;;
+        -g | --base-tag)
+            baseTag="$2"
+            shift 2
+            ;;
         -i | --image)
             image="$2";
             shift 2
@@ -54,7 +62,7 @@ docker buildx create \
 if [[ "$distro" != "distroless" ]]; then
     buildArgs="--build-arg IMAGE=$image --build-arg TAG=$tag --build-arg package=$package"
 else
-    buildArgs="--build-arg INSTALLER_IMAGE=$installerImg --build-arg INSTALLER_TAG=$installerTag --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$package"
+    buildArgs="--build-arg INSTALLER_IMAGE=$installerImg --build-arg INSTALLER_TAG=$installerTag --build-arg BASE_IMAGE=$baseImage --build-arg BASE_TAG=$baseTag --build-arg package=$package"
 fi
 
 registryTags="-t ${registryTags/;/ -t }"

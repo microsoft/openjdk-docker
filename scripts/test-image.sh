@@ -11,7 +11,7 @@ basemcr="${basemcr:-$DEFAULT_MCR}"
 image="${basemcr}:${jdkversion}-${distro}"
 
 testfolder="regular"
-if [[ $distro == "distroless" ]]; then
+if [[ "$distro" == "distroless" || "$distro" == "ubuntu-chisel" ]]; then
     testfolder="distroless"
 fi
 

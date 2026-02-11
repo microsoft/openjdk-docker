@@ -4,7 +4,7 @@ docker buildx create --name mybuilder --driver docker-container --driver-opt ima
 
 az acr login -n msopenjdk
 
-if [[ '$DISTRIBUTION' != 'distroless' ]]; then
+if [[ "${DISTRIBUTION}" != "distroless" && "${DISTRIBUTION}" != "ubuntu-chisel" ]]; then
     BUILD_ARGS="--build-arg IMAGE=$IMAGE --build-arg TAG=$TAG --build-arg package=$PACKAGE"
 else
     BUILD_ARGS="--build-arg INSTALLER_IMAGE=$INSTALLER_IMAGE --build-arg INSTALLER_TAG=$INSTALLER_TAG --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag) --build-arg package=$PACKAGE"

@@ -38,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distros: [ "azurelinux", "distroless", "ubuntu" ]
+        distros: [ "azurelinux", "distroless", "ubuntu", "ubuntu-chisel" ]
         jdkvendor: [ "msopenjdk" ]
         jdkversion: [ { major: "11", expected: "11.0.30" }, { major: "17", expected: "17.0.18" }, { major: "21", expected: "21.0.10" }, { major: "25", expected: "25.0.2" }]
     steps:

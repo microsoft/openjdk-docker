@@ -40,7 +40,7 @@ for d in $(ls -d $basepath/*); do
         fi
 
         # Validate the image
-        if [[ "${distro}" == "distroless" ]]; then
+        if [[ "${distro}" == "distroless" || "${distro}" == "ubuntu-chisel" ]]; then
             java_version=$(docker run --rm $image -version 2>&1 | head -n 1 | awk -F '"' '{print $2}')
         else
             java_version=$(docker run --rm $image /bin/bash -c "source \$JAVA_HOME/release && echo \$JAVA_VERSION")

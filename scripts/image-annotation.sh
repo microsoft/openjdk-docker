@@ -10,10 +10,19 @@ debug=false
 
 while getopts "r:m:d" opt; do
     case $opt in
-        r) registry="$OPTARG" ;;
-        m) manifest="$OPTARG" ;;
-        d) debug=true ;;
-        *) echo "Invalid option: -$OPTARG" ;;
+        r)
+            registry="$OPTARG"
+            ;;
+        m)
+            manifest="$OPTARG"
+            ;;
+        d)
+            debug=true
+            ;;
+        *)
+            echo "Invalid option: -$OPTARG"
+            exit 1
+            ;;
     esac
 done
 

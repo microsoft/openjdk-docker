@@ -111,27 +111,27 @@ extends:
                   scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
                   ${{ if eq(parameters.dryrun, true) }}:
                     arguments: >
-                      --image $(image)
-                      --tag $(tag)
-                      --package $(package)
-                      --distribution $(distro)
-                      --registries $(REGISTRIES)
-                      --installer-image $(installer_image)
-                      --installer-tag $(installer_tag)
-                      --base-image $(base_image)
-                      --base-tag $(base_tag)
+                      --image             $(image)
+                      --tag               $(tag)
+                      --package           $(package)
+                      --distribution      $(distro)
+                      --registries        $(REGISTRIES)
+                      --installer-image   $(installer_image)
+                      --installer-tag     $(installer_tag)
+                      --base-image        $(base_image)
+                      --base-tag          $(base_tag)
                       --dryrun
                   ${{ else }}:
                     arguments: >
-                      --image $(image)
-                      --tag $(tag)
-                      --package $(package)
-                      --distribution $(distro)
-                      --registries $(REGISTRIES)
-                      --installer-image $(installer_image)
-                      --installer-tag $(installer_tag)
-                      --base-image $(base_image)
-                      --base-tag $(base_tag)
+                      --image             $(image)
+                      --tag               $(tag)
+                      --package           $(package)
+                      --distribution      $(distro)
+                      --registries        $(REGISTRIES)
+                      --installer-image   $(installer_image)
+                      --installer-tag     $(installer_tag)
+                      --base-image        $(base_image)
+                      --base-tag          $(base_tag)
                 displayName: build container image
 
               - template: /.devops/templates/annotate-image.yml@self
@@ -165,6 +165,8 @@ extends:
               os: linux
             strategy:
               matrix: ${{ parameters.jobs }}
+            variables:
+              ACR_NAME: msopenjdk
             steps:
               - template: /.devops/templates/prepare-annotation.yml@self
                 parameters:
@@ -188,27 +190,27 @@ extends:
                   scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
                   ${{ if eq(parameters.dryrun, true) }}:
                     arguments: >
-                      --image $(image)
-                      --tag $(tag)
-                      --package $(package)
-                      --distribution $(distro)
-                      --registries $(REGISTRIES)
-                      --installer-image $(installer_image)
-                      --installer-tag $(installer_tag)
-                      --base-image $(base_image)
-                      --base-tag $(base_tag)
+                      --image             $(image)
+                      --tag               $(tag)
+                      --package           $(package)
+                      --distribution      $(distro)
+                      --registries        $(REGISTRIES)
+                      --installer-image   $(installer_image)
+                      --installer-tag     $(installer_tag)
+                      --base-image        $(base_image)
+                      --base-tag          $(base_tag)
                       --dryrun
                   ${{ else }}:
                     arguments: >
-                      --image $(image)
-                      --tag $(tag)
-                      --package $(package)
-                      --distribution $(distro)
-                      --registries $(REGISTRIES)
-                      --installer-image $(installer_image)
-                      --installer-tag $(installer_tag)
-                      --base-image $(base_image)
-                      --base-tag $(base_tag)
+                      --image             $(image)
+                      --tag               $(tag)
+                      --package           $(package)
+                      --distribution      $(distro)
+                      --registries        $(REGISTRIES)
+                      --installer-image   $(installer_image)
+                      --installer-tag     $(installer_tag)
+                      --base-image        $(base_image)
+                      --base-tag          $(base_tag)
                 displayName: build container image
 
               - template: /.devops/templates/annotate-image.yml@self

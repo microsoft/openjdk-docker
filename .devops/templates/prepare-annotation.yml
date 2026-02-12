@@ -31,7 +31,7 @@ steps:
 
         amd64_digest = ""
         arm64_digest = ""
-        manifest = json.loads(os.environ.get('manifest', {}))
+        manifest = json.loads(os.environ.get('manifest', '{}'))
 
         if not manifest:
             print("##vso[task.logissue type=error]Container image manifest is empty or null. Unable to retrieve image digests!")

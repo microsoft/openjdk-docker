@@ -75,7 +75,6 @@ if [[ "$dryRun" == true ]]; then
     echo "[DRY-RUN] Command that would be executed:"
     echo "docker buildx build --platform linux/amd64,linux/arm64 ${buildArgs} ${registryTags} -f docker/$distro/Dockerfile.$package-jdk . --metadata-file metadata.json --push"
 else
-    echo "docker buildx build --platform linux/amd64,linux/arm64 ${buildArgs} ${registryTags} -f docker/$distro/Dockerfile.$package-jdk . --push"
 
     docker buildx build \
         --platform linux/amd64,linux/arm64 \

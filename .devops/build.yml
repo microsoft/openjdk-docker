@@ -225,6 +225,7 @@ extends:
                   short_digest=$(echo "$(containerImageDigest)" | cut -c1-15)
                   echo "##vso[build.addbuildtag]$short_digest"
                 displayName: Add build tag from image digest
+                condition: ne(${{ parameters.dryrun }}, true)
 
               - ${{ if ne(parameters.dryrun, true) }}:
                 - task: AzureCLI@2

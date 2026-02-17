@@ -19,8 +19,8 @@ while [[ "$#" -gt 0 ]]; do
             shift 2
             ;;
         -d | --debug)
-            debug="$2";
-            shift 2
+            debug=true;
+            shift 1
             ;;
         *) echo "Unknown parameter passed: $1"; exit 1 ;;
     esac

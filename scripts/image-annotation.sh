@@ -8,21 +8,21 @@ fi
 
 debug=false
 
-while getopts "r:m:d" opt; do
-    case $opt in
-        r)
-            registry="$OPTARG"
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -r | --registry)
+            registry="$2"
+            shift 2
             ;;
-        m)
-            manifest="$OPTARG"
+        -m | --manifest)
+            manifest="$2"
+            shift 2
             ;;
-        d)
-            debug=true
+        -d | --debug)
+            debug="$2";
+            shift 2
             ;;
-        *)
-            echo "Invalid option: -$OPTARG"
-            exit 1
-            ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
     esac
 done
 

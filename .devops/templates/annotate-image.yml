@@ -37,13 +37,13 @@ steps:
       scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
       ${{ if eq(parameters.dryrun, true) }}:
         arguments: >
-          -r ${{ parameters.registry }}
-          -m $(imageDigestAmd64)
-          -d
+          --registry ${{ parameters.registry }}
+          --manifest $(imageDigestAmd64)
+          --debug
       ${{ else }}:
         arguments: >
-          -r ${{ parameters.registry }}
-          -m $(imageDigestAmd64)
+          --registry ${{ parameters.registry }}
+          --manifest $(imageDigestAmd64)
 
   - task: AzureCLI@2
     displayName: Annotate previous arm64 as EOL
@@ -55,10 +55,10 @@ steps:
       scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
       ${{ if eq(parameters.dryrun, true) }}:
         arguments: >
-          -r ${{ parameters.registry }}
-          -m $(imageDigestArm64)
-          -d
+          --registry ${{ parameters.registry }}
+          --manifest $(imageDigestArm64)
+          --debug
       ${{ else }}:
         arguments: >
-          -r ${{ parameters.registry }}
-          -m $(imageDigestArm64)
+          --registry ${{ parameters.registry }}
+          --manifest $(imageDigestArm64)

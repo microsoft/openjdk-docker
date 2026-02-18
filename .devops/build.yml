@@ -221,11 +221,17 @@ extends:
                   package: ${{ parameters.az_package }}
                   dryrun: ${{ parameters.dryrun }}
 
-              - bash: |
-                  short_digest=$(echo "$(containerImageDigest)" | cut -c1-15)
-                  echo "##vso[build.addbuildtag]$short_digest"
-                displayName: Add build tag from image digest
-                condition: ne(${{ parameters.dryrun }}, true)
+              - task: PythonScript@0
+                displayName: Set build tag
+                condition: ne(${{ parameters.dryrun }}, true) # images are not built when running in dryrun mode.
+                inputs:
+                  scriptSource: 'inline'
+                  script: |
+                    # 15 is used since that will include sha prefix + eight digits of the hash value
+                    tag = "$(containerImageDigest)"[:15]
+                    tag = tag.replace(":", "_")
+
+                    print(f"##vso[build.addbuildtag]{tag}")
 
               - ${{ if ne(parameters.dryrun, true) }}:
                 - task: AzureCLI@2

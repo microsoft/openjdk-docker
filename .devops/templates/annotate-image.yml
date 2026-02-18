@@ -1,0 +1,64 @@
+parameters:
+  - name: registry
+    type: string
+  - name: organization
+    type: string
+  - name: feed
+    type: string
+  - name: package
+    type: string
+  - name: dryrun
+    type: boolean
+    default: false
+
+steps:
+  - task: AzureCLI@2
+    displayName: Download ORAS
+    condition: eq(variables['hasExistingImages'], 'true')
+    inputs:
+      azureSubscription: "JEG-Infrastructure"
+      scriptType: "bash"
+      scriptLocation: "scriptPath"
+      scriptPath: $(Build.SourcesDirectory)/scripts/install-oras.sh
+    env:
+      AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+      ORAS_VERSION: 1.1.0
+      ORGANIZATION: ${{ parameters.organization }}
+      FEED: ${{ parameters.feed }}
+      NAME: ${{ parameters.package }}
+
+  - task: AzureCLI@2
+    displayName: Annotate previous amd64 as EOL
+    condition: eq(variables['hasExistingImages'], 'true')
+    inputs:
+      azureSubscription: "JEG-Infrastructure"
+      scriptType: "bash"
+      scriptLocation: "scriptPath"
+      scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
+      ${{ if eq(parameters.dryrun, true) }}:
+        arguments: >
+          --registry ${{ parameters.registry }}
+          --manifest $(imageDigestAmd64)
+          --debug
+      ${{ else }}:
+        arguments: >
+          --registry ${{ parameters.registry }}
+          --manifest $(imageDigestAmd64)
+
+  - task: AzureCLI@2
+    displayName: Annotate previous arm64 as EOL
+    condition: eq(variables['hasExistingImages'], 'true')
+    inputs:
+      azureSubscription: "JEG-Infrastructure"
+      scriptType: "bash"
+      scriptLocation: "scriptPath"
+      scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
+      ${{ if eq(parameters.dryrun, true) }}:
+        arguments: >
+          --registry ${{ parameters.registry }}
+          --manifest $(imageDigestArm64)
+          --debug
+      ${{ else }}:
+        arguments: >
+          --registry ${{ parameters.registry }}
+          --manifest $(imageDigestArm64)

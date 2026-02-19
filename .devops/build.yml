@@ -248,6 +248,6 @@ extends:
                         --org ${{ parameters.organization }} \
                         --project $(OPENJDK_PROJECT) \
                         --id $(OPENJDK_SIGNING_ID) \
-                        --parameters registry="$(ACR_REGISTRY)" \
+                        --parameters image_repository="$(ACR_REGISTRY)" \
                           reference="$(containerImageDigest)" \
                           reference_type="container_digest"

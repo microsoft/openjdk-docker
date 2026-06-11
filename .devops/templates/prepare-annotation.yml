@@ -22,7 +22,7 @@ steps:
     displayName: Output image digest variables
     condition: eq(variables['hasExistingImages'], 'true')
     env:
-      manifest: $(manifest)
+      MANIFEST: $(manifest)
     inputs:
       scriptSource: 'inline'
       script: |
@@ -31,10 +31,10 @@ steps:
 
         amd64_digest = ""
         arm64_digest = ""
-        manifest = json.loads(os.environ.get('manifest', '{}'))
+        manifest = json.loads(os.environ.get('MANIFEST', '{}'))
 
         if not manifest:
-            print("##vso[task.logissue type=error]Container image manifest is empty or null. Unable to retrieve image digests!")
+            print("##vso[task.logissue type=error]Container image manifest is empty or null!")
             exit(1)
 
         for descriptor in manifest['manifests']:

@@ -72,6 +72,8 @@ resources:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
+    featureFlags:
+      containerFlowV2: true
     sdl:
       sourceAnalysisPool:
         name: JEG-windows2022-x64-release
@@ -94,45 +96,11 @@ extends:
                   registry: $(INTERNAL_ACR_REGISTRY)
                   tag: $(version)-$(distro)
 
-              - bash: |
-                  REGISTRIES=$(INTERNAL_ACR_REGISTRY):$(version)-$(distro)
-                  if [[ "$(distro)" == "azurelinux" ]]; then
-                    REGISTRIES+=";$(INTERNAL_ACR_REGISTRY):$(version)-mariner"
-                  fi
-                  echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
-                displayName: Set REGISTRIES variable
-
-              - task: AzureCLI@2
-                retryCountOnTaskFailure: 2
-                inputs:
-                  azureSubscription: "JEG-Infrastructure"
-                  scriptType: "bash"
-                  scriptLocation: "scriptPath"
-                  scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
-                  ${{ if eq(parameters.dryrun, true) }}:
-                    arguments: >
-                      --image             $(image)
-                      --tag               $(tag)
-                      --package           $(package)
-                      --distribution      $(distro)
-                      --registries        $(REGISTRIES)
-                      --installer-image   $(installer_image)
-                      --installer-tag     $(installer_tag)
-                      --base-image        $(base_image)
-                      --base-tag          $(base_tag)
-                      --dryrun
-                  ${{ else }}:
-                    arguments: >
-                      --image             $(image)
-                      --tag               $(tag)
-                      --package           $(package)
-                      --distribution      $(distro)
-                      --registries        $(REGISTRIES)
-                      --installer-image   $(installer_image)
-                      --installer-tag     $(installer_tag)
-                      --base-image        $(base_image)
-                      --base-tag          $(base_tag)
-                displayName: build container image
+              - template: /.devops/templates/build-image.yml@self
+                parameters:
+                  acr_registry: $(INTERNAL_ACR_REGISTRY)
+                  version: $(version)
+                  distro: $(distro)
 
               - template: /.devops/templates/annotate-image.yml@self
                 parameters:
@@ -142,112 +110,145 @@ extends:
                   package: ${{ parameters.az_package }}
                   dryrun: ${{ parameters.dryrun }}
 
+      # TODO: Re-enable the below section once internal testing looks proper.
+      # - stage: validate_and_publish
+      #   displayName: "Validate & Publish"
+      #   dependsOn: build_internal
+      #   jobs:
 
-      - stage: validate_and_publish
-        displayName: "Validate & Publish"
-        dependsOn: build_internal
-        jobs:
+      #     - job: wait_for_validation
+      #       displayName: wait for validation
+      #       pool: server
+      #       steps:
+      #         - task: ManualValidation@0
+      #           timeoutInMinutes: 4320 # Three days
+      #           inputs:
+      #             instructions: "please validate the build configuration, artifacts, tests, and resume"
+      #             onTimeout: "resume"
 
-          - job: wait_for_validation
-            displayName: wait for validation
-            pool: server
-            steps:
-              - task: ManualValidation@0
-                timeoutInMinutes: 4320 # Three days
-                inputs:
-                  instructions: "please validate the build configuration, artifacts, tests, and resume"
-                  onTimeout: "resume"
+      #     - job: build_public
+      #       dependsOn: wait_for_validation
+      #       pool:
+      #         name: JEG-azurelinux-x64-release
+      #         os: linux
+      #       strategy:
+      #         matrix: ${{ parameters.jobs }}
+      #       variables:
+      #         ACR_NAME: msopenjdk
+      #       steps:
+      #         - template: /.devops/templates/prepare-annotation.yml@self
+      #           parameters:
+      #             registry: $(ACR_REGISTRY)
+      #             tag: $(version)-$(distro)
 
-          - job: build_public
-            dependsOn: wait_for_validation
-            pool:
-              name: JEG-azurelinux-x64-release
-              os: linux
-            strategy:
-              matrix: ${{ parameters.jobs }}
-            variables:
-              ACR_NAME: msopenjdk
-            steps:
-              - template: /.devops/templates/prepare-annotation.yml@self
-                parameters:
-                  registry: $(ACR_REGISTRY)
-                  tag: $(version)-$(distro)
+              # - template: /.devops/templates/build-image.yml@self
+              #   parameters:
+              #     acr_registry: $(INTERNAL_ACR_REGISTRY)
+              #     version: $(version)
+              #     distro: $(distro)
 
-              - bash: |
-                  REGISTRIES=$(ACR_REGISTRY):$(version)-$(distro)
-                  if [[ "$(distro)" == "azurelinux" ]]; then
-                    REGISTRIES+=";$(ACR_REGISTRY):$(version)-mariner"
-                  fi
-                  echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
-                displayName: Set REGISTRIES variable
 
-              - task: AzureCLI@2
-                retryCountOnTaskFailure: 2
-                inputs:
-                  azureSubscription: "JEG-Infrastructure"
-                  scriptType: "bash"
-                  scriptLocation: "scriptPath"
-                  scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
-                  ${{ if eq(parameters.dryrun, true) }}:
-                    arguments: >
-                      --image             $(image)
-                      --tag               $(tag)
-                      --package           $(package)
-                      --distribution      $(distro)
-                      --registries        $(REGISTRIES)
-                      --installer-image   $(installer_image)
-                      --installer-tag     $(installer_tag)
-                      --base-image        $(base_image)
-                      --base-tag          $(base_tag)
-                      --dryrun
-                  ${{ else }}:
-                    arguments: >
-                      --image             $(image)
-                      --tag               $(tag)
-                      --package           $(package)
-                      --distribution      $(distro)
-                      --registries        $(REGISTRIES)
-                      --installer-image   $(installer_image)
-                      --installer-tag     $(installer_tag)
-                      --base-image        $(base_image)
-                      --base-tag          $(base_tag)
-                displayName: build container image
+              # - template: /.devops/templates/annotate-image.yml@self
+              #   parameters:
+              #     registry: $(ACR_REGISTRY)
+              #     organization: ${{ parameters.organization }}
+              #     feed: ${{ parameters.feed }}
+              #     package: ${{ parameters.az_package }}
+              #     dryrun: ${{ parameters.dryrun }}
 
-              - template: /.devops/templates/annotate-image.yml@self
-                parameters:
-                  registry: $(ACR_REGISTRY)
-                  organization: ${{ parameters.organization }}
-                  feed: ${{ parameters.feed }}
-                  package: ${{ parameters.az_package }}
-                  dryrun: ${{ parameters.dryrun }}
+              # - task: PythonScript@0
+              #   displayName: Set build tag
+              #   condition: ne(${{ parameters.dryrun }}, true) # images are not built when running in dryrun mode.
+              #   inputs:
+              #     scriptSource: 'inline'
+              #     script: |
+              #       # 15 is used since that will include sha prefix + eight digits of the hash value
+              #       tag = "$(containerImageDigest)"[:15]
+              #       tag = tag.replace(":", "_")
 
-              - task: PythonScript@0
-                displayName: Set build tag
-                condition: ne(${{ parameters.dryrun }}, true) # images are not built when running in dryrun mode.
-                inputs:
-                  scriptSource: 'inline'
-                  script: |
-                    # 15 is used since that will include sha prefix + eight digits of the hash value
-                    tag = "$(containerImageDigest)"[:15]
-                    tag = tag.replace(":", "_")
+              #       print(f"##vso[build.addbuildtag]{tag}")
 
-                    print(f"##vso[build.addbuildtag]{tag}")
+              # - ${{ if ne(parameters.dryrun, true) }}:
+              #   - task: AzureCLI@2
+              #     displayName: Sign OCI images
+              #     env:
+              #       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+              #     inputs:
+              #       azureSubscription: "JEG-Infrastructure"
+              #       scriptType: "bash"
+              #       scriptLocation: "inlineScript"
+              #       inlineScript: |
+              #         az pipelines run \
+              #           --branch main \
+              #           --org ${{ parameters.organization }} \
+              #           --project $(OPENJDK_PROJECT) \
+              #           --id $(OPENJDK_SIGNING_ID) \
+              #           --parameters image_repository="$(ACR_REGISTRY)" \
+              #             reference="$(containerImageDigest)" \
+              #             reference_type="container_digest"
 
-              - ${{ if ne(parameters.dryrun, true) }}:
-                - task: AzureCLI@2
-                  displayName: Trigger signing
-                  env:
-                    AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
-                  inputs:
-                    azureSubscription: "JEG-Infrastructure"
-                    scriptType: "bash"
-                    scriptLocation: "inlineScript"
-                    inlineScript: |
-                      az pipelines run \
-                        --branch main \
-                        --org ${{ parameters.organization }} \
-                        --project $(OPENJDK_PROJECT) \
-                        --id $(OPENJDK_SIGNING_ID) \
-                        --parameters image_repository="$(ACR_REGISTRY)" \
-                          reference="$(containerImageDigest)" \
-                          reference_type="container_digest"
+# Scrap/dead code. Remove when ready...
+
+# - task: AzureCLI@2
+#   retryCountOnTaskFailure: 2
+#   inputs:
+#     azureSubscription: "JEG-Infrastructure"
+#     scriptType: "bash"
+#     scriptLocation: "scriptPath"
+#     scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
+#     ${{ if eq(parameters.dryrun, true) }}:
+#       arguments: >
+#         --image             $(image)
+#         --tag               $(tag)
+#         --package           $(package)
+#         --distribution      $(distro)
+#         --registries        $(REGISTRIES)
+#         --installer-image   $(installer_image)
+#         --installer-tag     $(installer_tag)
+#         --base-image        $(base_image)
+#         --base-tag          $(base_tag)
+#         --dryrun
+#     ${{ else }}:
+#       arguments: >
+#         --image             $(image)
+#         --tag               $(tag)
+#         --package           $(package)
+#         --distribution      $(distro)
+#         --registries        $(REGISTRIES)
+#         --installer-image   $(installer_image)
+#         --installer-tag     $(installer_tag)
+#         --base-image        $(base_image)
+#         --base-tag          $(base_tag)
+#   displayName: build container image
+
+# - task: AzureCLI@2
+#   retryCountOnTaskFailure: 2
+#   inputs:
+#     azureSubscription: "JEG-Infrastructure"
+#     scriptType: "bash"
+#     scriptLocation: "scriptPath"
+#     scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
+#     ${{ if eq(parameters.dryrun, true) }}:
+#       arguments: >
+#         --image             $(image)
+#         --tag               $(tag)
+#         --package           $(package)
+#         --distribution      $(distro)
+#         --registries        $(REGISTRIES)
+#         --installer-image   $(installer_image)
+#         --installer-tag     $(installer_tag)
+#         --base-image        $(base_image)
+#         --base-tag          $(base_tag)
+#         --dryrun
+#     ${{ else }}:
+#       arguments: >
+#         --image             $(image)
+#         --tag               $(tag)
+#         --package           $(package)
+#         --distribution      $(distro)
+#         --registries        $(REGISTRIES)
+#         --installer-image   $(installer_image)
+#         --installer-tag     $(installer_tag)
+#         --base-image        $(base_image)
+#         --base-tag          $(base_tag)
+#   displayName: build container image

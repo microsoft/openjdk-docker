@@ -7,6 +7,17 @@ parameters:
     type: string
 
 steps:
+
+  - task: AzureCLI@2
+    displayName: Azure CLI ACR login
+    inputs:
+      azureSubscription: "JEG-Infrastructure"
+      scriptType: "bash"
+      scriptLocation: "inlineScript"
+      inlineScript: |
+        az acr login -n junipercontainerregistry
+        az acr login -n "$(ACR_NAME)"
+
   - bash: |
       PRIMARY_IMAGE="${{ parameters.acr_registry }}:${{ parameters.version }}-${{ parameters.distro }}"
       REMOTE_IMAGES="$PRIMARY_IMAGE"
@@ -16,6 +27,8 @@ steps:
       echo "##vso[task.setvariable variable=PRIMARY_IMAGE]$PRIMARY_IMAGE"
       echo "##vso[task.setvariable variable=REMOTE_IMAGES]$REMOTE_IMAGES"
     displayName: Set image variables
+
+  
 
   - task: 1ES.BuildContainerImage@1
     displayName: 1ES Build container

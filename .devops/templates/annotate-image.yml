@@ -7,9 +7,6 @@ parameters:
     type: string
   - name: package
     type: string
-  - name: dryrun
-    type: boolean
-    default: false
 
 steps:
   - task: AzureCLI@2
@@ -35,15 +32,9 @@ steps:
       scriptType: "bash"
       scriptLocation: "scriptPath"
       scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
-      ${{ if eq(parameters.dryrun, true) }}:
-        arguments: >
-          --registry ${{ parameters.registry }}
-          --manifest $(imageDigestAmd64)
-          --debug
-      ${{ else }}:
-        arguments: >
-          --registry ${{ parameters.registry }}
-          --manifest $(imageDigestAmd64)
+      arguments: >
+        --registry ${{ parameters.registry }}
+        --manifest $(imageDigestAmd64)
 
   - task: AzureCLI@2
     displayName: Annotate previous arm64 as EOL
@@ -53,12 +44,6 @@ steps:
       scriptType: "bash"
       scriptLocation: "scriptPath"
       scriptPath: $(Build.SourcesDirectory)/scripts/image-annotation.sh
-      ${{ if eq(parameters.dryrun, true) }}:
-        arguments: >
-          --registry ${{ parameters.registry }}
-          --manifest $(imageDigestArm64)
-          --debug
-      ${{ else }}:
-        arguments: >
-          --registry ${{ parameters.registry }}
-          --manifest $(imageDigestArm64)
+      arguments: >
+        --registry ${{ parameters.registry }}
+        --manifest $(imageDigestArm64)

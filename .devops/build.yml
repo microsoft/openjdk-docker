@@ -24,10 +24,6 @@ parameters:
   - name: az_package
     type: string
     displayName: "Oras package name"
-  - name: dryrun
-    displayName: "Execute a dry run?"
-    type: boolean
-    default: false
   - name: jobs
     type: object
     default:
@@ -108,7 +104,6 @@ extends:
                   organization: ${{ parameters.organization }}
                   feed: ${{ parameters.feed }}
                   package: ${{ parameters.az_package }}
-                  dryrun: ${{ parameters.dryrun }}
 
       # TODO: Re-enable the below section once internal testing looks proper.
       # - stage: validate_and_publish
@@ -154,11 +149,9 @@ extends:
               #     organization: ${{ parameters.organization }}
               #     feed: ${{ parameters.feed }}
               #     package: ${{ parameters.az_package }}
-              #     dryrun: ${{ parameters.dryrun }}
 
               # - task: PythonScript@0
               #   displayName: Set build tag
-              #   condition: ne(${{ parameters.dryrun }}, true) # images are not built when running in dryrun mode.
               #   inputs:
               #     scriptSource: 'inline'
               #     script: |
@@ -168,7 +161,6 @@ extends:
 
               #       print(f"##vso[build.addbuildtag]{tag}")
 
-              # - ${{ if ne(parameters.dryrun, true) }}:
               #   - task: AzureCLI@2
               #     displayName: Sign OCI images
               #     env:
@@ -187,68 +179,3 @@ extends:
               #             reference="$(containerImageDigest)" \
               #             reference_type="container_digest"
 
-# Scrap/dead code. Remove when ready...
-
-# - task: AzureCLI@2
-#   retryCountOnTaskFailure: 2
-#   inputs:
-#     azureSubscription: "JEG-Infrastructure"
-#     scriptType: "bash"
-#     scriptLocation: "scriptPath"
-#     scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
-#     ${{ if eq(parameters.dryrun, true) }}:
-#       arguments: >
-#         --image             $(image)
-#         --tag               $(tag)
-#         --package           $(package)
-#         --distribution      $(distro)
-#         --registries        $(REGISTRIES)
-#         --installer-image   $(installer_image)
-#         --installer-tag     $(installer_tag)
-#         --base-image        $(base_image)
-#         --base-tag          $(base_tag)
-#         --dryrun
-#     ${{ else }}:
-#       arguments: >
-#         --image             $(image)
-#         --tag               $(tag)
-#         --package           $(package)
-#         --distribution      $(distro)
-#         --registries        $(REGISTRIES)
-#         --installer-image   $(installer_image)
-#         --installer-tag     $(installer_tag)
-#         --base-image        $(base_image)
-#         --base-tag          $(base_tag)
-#   displayName: build container image
-
-# - task: AzureCLI@2
-#   retryCountOnTaskFailure: 2
-#   inputs:
-#     azureSubscription: "JEG-Infrastructure"
-#     scriptType: "bash"
-#     scriptLocation: "scriptPath"
-#     scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
-#     ${{ if eq(parameters.dryrun, true) }}:
-#       arguments: >
-#         --image             $(image)
-#         --tag               $(tag)
-#         --package           $(package)
-#         --distribution      $(distro)
-#         --registries        $(REGISTRIES)
-#         --installer-image   $(installer_image)
-#         --installer-tag     $(installer_tag)
-#         --base-image        $(base_image)
-#         --base-tag          $(base_tag)
-#         --dryrun
-#     ${{ else }}:
-#       arguments: >
-#         --image             $(image)
-#         --tag               $(tag)
-#         --package           $(package)
-#         --distribution      $(distro)
-#         --registries        $(REGISTRIES)
-#         --installer-image   $(installer_image)
-#         --installer-tag     $(installer_tag)
-#         --base-image        $(base_image)
-#         --base-tag          $(base_tag)
-#   displayName: build container image

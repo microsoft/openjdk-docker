@@ -8,6 +8,8 @@ parameters:
 
 steps:
 
+
+
   - task: AzureCLI@2
     displayName: Azure CLI ACR login
     inputs:
@@ -17,6 +19,24 @@ steps:
       inlineScript: |
         az acr login -n junipercontainerregistry
         az acr login -n "$(ACR_NAME)"
+
+  - bash: |
+      echo "DOTNET VERSION BEFORE INSTALL"
+      dotnet --info
+    displayName: Debug .NET version before install
+
+  - task: UseDotNet@2
+    displayName: Install .NET 8 SDK
+    inputs:
+      packageType: sdk
+      version: '8.x'
+      includePreviewVersions: false
+      installationPath: $(Agent.ToolsDirectory)/dotnet
+
+  - bash: |
+      echo "DOTNET VERSION AFTER INSTALL"
+      dotnet --info
+    displayName: Debug .NET version after install
 
   - bash: |
       PRIMARY_IMAGE="${{ parameters.acr_registry }}:${{ parameters.version }}-${{ parameters.distro }}"

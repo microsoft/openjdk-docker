@@ -57,7 +57,7 @@ steps:
       image: $(PRIMARY_IMAGE)
       dockerfile: docker/${{ parameters.distro }}/Dockerfile.msopenjdk-${{ parameters.version }}-jdk
       enableNetwork: true
-      # useBuildKit: true
+      useBuildKit: true
       context: docker/${{ parameters.distro }}
       ${{ if eq(parameters.distro, 'distroless') }}:
         buildArguments: >

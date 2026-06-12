@@ -152,6 +152,7 @@ extends:
 
               # - task: PythonScript@0
               #   displayName: Set build tag
+              #     condition: succeeded()
               #   inputs:
               #     scriptSource: 'inline'
               #     script: |
@@ -163,6 +164,7 @@ extends:
 
               #   - task: AzureCLI@2
               #     displayName: Sign OCI images
+              #     condition: succeeded()
               #     env:
               #       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
               #     inputs:

@@ -24,6 +24,7 @@ steps:
       echo "DOTNET VERSION BEFORE INSTALL"
       dotnet --info
     displayName: Debug .NET version before install
+    continueOnError: true
 
   - task: UseDotNet@2
     displayName: Install .NET 8 SDK
@@ -37,6 +38,7 @@ steps:
       echo "DOTNET VERSION AFTER INSTALL"
       dotnet --info
     displayName: Debug .NET version after install
+    continueOnError: true
 
   - bash: |
       PRIMARY_IMAGE="${{ parameters.acr_registry }}:${{ parameters.version }}-${{ parameters.distro }}"

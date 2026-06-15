@@ -33,16 +33,16 @@ steps:
         arm64_digest = ""
         manifest = json.loads(os.environ.get('MANIFEST', '{}'))
 
-        print("##vso[task.logissue type=debug]PREPARE-ANNOTATION-DEBUG: manifest payload received")
-        print(f"##vso[task.logissue type=debug]PREPARE-ANNOTATION-DEBUG: manifest type={type(manifest).__name__}")
-        print(f"##vso[task.logissue type=debug]PREPARE-ANNOTATION-DEBUG: manifest keys={list(manifest.keys()) if isinstance(manifest, dict) else 'N/A'}")
+        print("##[debug]PREPARE-ANNOTATION-DEBUG: manifest payload received")
+        print(f"##vso[debug]PREPARE-ANNOTATION-DEBUG: manifest type={type(manifest).__name__}")
+        print(f"##vso[debug]PREPARE-ANNOTATION-DEBUG: manifest keys={list(manifest.keys()) if isinstance(manifest, dict) else 'N/A'}")
 
         if not manifest:
             print("##vso[task.logissue type=error]Container image manifest is empty or null!")
             exit(1)
 
         descriptors = manifest.get('manifests', [])
-        print(f"##vso[task.logissue type=debug]PREPARE-ANNOTATION-DEBUG: descriptor count={len(descriptors)}")
+        print(f"##vso[debug]PREPARE-ANNOTATION-DEBUG: descriptor count={len(descriptors)}")
 
         for index, descriptor in enumerate(descriptors):
             platform = descriptor.get('platform', {})
@@ -50,7 +50,7 @@ steps:
             digest = descriptor.get('digest', 'missing')
             media_type = descriptor.get('mediaType', 'unknown')
             print(
-                f"##vso[task.logissue type=debug]PREPARE-ANNOTATION-DEBUG: descriptor[{index}] "
+                f"##vso[debug]PREPARE-ANNOTATION-DEBUG: descriptor[{index}] "
                 f"arch={architecture} digest={digest} mediaType={media_type}"
             )
 
@@ -59,8 +59,8 @@ steps:
             elif architecture == 'arm64':
                 arm64_digest = digest
 
-        print(f"##vso[task.logissue type=debug]PREPARE-ANNOTATION-DEBUG: resolved amd64_digest={amd64_digest}")
-        print(f"##vso[task.logissue type=debug]PREPARE-ANNOTATION-DEBUG: resolved arm64_digest={arm64_digest}")
+        print(f"##vso[debug]PREPARE-ANNOTATION-DEBUG: resolved amd64_digest={amd64_digest}")
+        print(f"##vso[debug]PREPARE-ANNOTATION-DEBUG: resolved arm64_digest={arm64_digest}")
 
         if not amd64_digest or not arm64_digest:
             print(f"##vso[task.logissue type=warning]Missing one of amd64_digest: {amd64_digest} or arm64_digest: {arm64_digest}.")

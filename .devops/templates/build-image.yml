@@ -8,8 +8,6 @@ parameters:
 
 steps:
 
-
-
   - task: AzureCLI@2
     displayName: Azure CLI ACR login
     inputs:
@@ -43,16 +41,29 @@ steps:
   - bash: |
       PRIMARY_IMAGE="${{ parameters.acr_registry }}:${{ parameters.version }}-${{ parameters.distro }}"
       REMOTE_IMAGES="$PRIMARY_IMAGE"
+
       if [[ "${{ parameters.distro }}" == "azurelinux" ]]; then
         REMOTE_IMAGES+=",${{ parameters.acr_registry }}:${{ parameters.version }}-mariner"
       fi
+      
       echo "##vso[task.setvariable variable=PRIMARY_IMAGE]$PRIMARY_IMAGE"
       echo "##vso[task.setvariable variable=REMOTE_IMAGES]$REMOTE_IMAGES"
     displayName: Set image variables
-  
+
+  - bash: |
+      if [[ "$(architecture)" == "x64" ]]; then
+        BUILD_ARCH="amd64"
+      else
+        BUILD_ARCH="arm64"
+      fi
+
+      echo "Resolved build architecture: $BUILD_ARCH"
+      echo "##vso[task.setvariable variable=BUILD_ARCH;isOutput=true]$BUILD_ARCH"
+    displayName: Resolve build platform
+    name: resolve_build_platform
 
   - task: 1ES.BuildContainerImage@1
-    displayName: 1ES Build container
+    displayName: 1ES Build container for $(architecture)
     inputs:
       image: $(PRIMARY_IMAGE)
       dockerfile: docker/${{ parameters.distro }}/Dockerfile.msopenjdk-${{ parameters.version }}-jdk
@@ -61,7 +72,7 @@ steps:
       context: docker/${{ parameters.distro }}
       ${{ if eq(parameters.distro, 'distroless') }}:
         buildArguments: >
-          --platform linux/amd64,linux/arm64
+          --platform linux/$(resolve_build_platform.BUILD_ARCH)
           --build-arg INSTALLER_IMAGE=$(installer_image)
           --build-arg INSTALLER_TAG=$(installer_tag)
           --build-arg BASE_IMAGE=$(base_image)
@@ -69,7 +80,7 @@ steps:
           --build-arg package=$(package)
       ${{ else }}:
         buildArguments: >
-          --platform linux/amd64,linux/arm64
+          --platform linux/$(resolve_build_platform.BUILD_ARCH)
           --build-arg IMAGE=$(image)
           --build-arg TAG=$(tag)
           --build-arg package=$(package)

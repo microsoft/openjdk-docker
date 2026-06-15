@@ -57,7 +57,6 @@ parameters:
         package: msopenjdk-21
         image: "image-repository"
         tag: "3.0"
-
 resources:
   repositories:
     - repository: 1ESPipelineTemplates
@@ -81,11 +80,18 @@ extends:
           ACR_NAME: msopenjdk
         jobs:
           - job: build_internal
+            displayName: Build Internal ($(architecture))
             pool:
-              name: JEG-azurelinux-x64-release
+              name: JEG-azurelinux-$(architecture)-release
               os: linux
             strategy:
-              matrix: ${{ parameters.jobs }}
+              matrix:
+                ${{ each job in parameters.jobs }}:
+                  ${{ each arch in ['x64', 'aarch64'] }}:
+                    ${{ job.key }}_${{ arch }}:
+                      ${{ each pair in job.value }}:
+                        ${{ pair.key }}: ${{ pair.value }}
+                      architecture: ${{ arch }}
             steps:
               - template: /.devops/templates/prepare-annotation.yml@self
                 parameters:

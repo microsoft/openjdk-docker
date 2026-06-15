@@ -24,6 +24,11 @@ parameters:
   - name: az_package
     type: string
     displayName: "Oras package name"
+  - name: architectures
+    type: object
+    default:
+      - x64
+      - aarch64
   - name: jobs
     type: object
     default:
@@ -86,7 +91,7 @@ extends:
             strategy:
               matrix:
                 ${{ each job in parameters.jobs }}:
-                  ${{ each arch in ['x64', 'aarch64'] }}:
+                  ${{ each arch in parameters.architectures }}:
                     ${{ job.key }}_${{ arch }}:
                       ${{ each pair in job.value }}:
                         ${{ pair.key }}: ${{ pair.value }}

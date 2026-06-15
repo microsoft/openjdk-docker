@@ -5,6 +5,8 @@ parameters:
     type: string
   - name: distro
     type: string
+  - name: arch
+    type: string
 
 steps:
 
@@ -51,7 +53,7 @@ steps:
     displayName: Set image variables
 
   - bash: |
-      if [[ "$(architecture)" == "x64" ]]; then
+      if [[ "${{ parameters.arch }}" == "x64" ]]; then
         BUILD_ARCH="amd64"
       else
         BUILD_ARCH="arm64"
@@ -62,7 +64,7 @@ steps:
     displayName: Resolve build platform
 
   - task: 1ES.BuildContainerImage@1
-    displayName: 1ES Build container for $(architecture)
+    displayName: 1ES Build container for ${{ parameters.arch }}
     inputs:
       image: $(PRIMARY_IMAGE)
       dockerfile: docker/${{ parameters.distro }}/Dockerfile.msopenjdk-${{ parameters.version }}-jdk

@@ -57,6 +57,7 @@ parameters:
         package: msopenjdk-21
         image: "image-repository"
         tag: "3.0"
+
 resources:
   repositories:
     - repository: 1ESPipelineTemplates
@@ -67,8 +68,6 @@ resources:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
-    featureFlags:
-      containerFlowV2: true
     sdl:
       sourceAnalysisPool:
         name: JEG-windows2022-x64-release

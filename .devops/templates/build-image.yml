@@ -58,9 +58,8 @@ steps:
       fi
 
       echo "Resolved build architecture: $BUILD_ARCH"
-      echo "##vso[task.setvariable variable=BUILD_ARCH;isOutput=true]$BUILD_ARCH"
+      echo "##vso[task.setvariable variable=BUILD_ARCH]$BUILD_ARCH"
     displayName: Resolve build platform
-    name: resolve_build_platform
 
   - task: 1ES.BuildContainerImage@1
     displayName: 1ES Build container for $(architecture)
@@ -72,7 +71,7 @@ steps:
       context: docker/${{ parameters.distro }}
       ${{ if eq(parameters.distro, 'distroless') }}:
         buildArguments: >
-          --platform linux/$(resolve_build_platform.BUILD_ARCH)
+          --platform linux/$(BUILD_ARCH)
           --build-arg INSTALLER_IMAGE=$(installer_image)
           --build-arg INSTALLER_TAG=$(installer_tag)
           --build-arg BASE_IMAGE=$(base_image)
@@ -80,7 +79,7 @@ steps:
           --build-arg package=$(package)
       ${{ else }}:
         buildArguments: >
-          --platform linux/$(resolve_build_platform.BUILD_ARCH)
+          --platform linux/$(BUILD_ARCH)
           --build-arg IMAGE=$(image)
           --build-arg TAG=$(tag)
           --build-arg package=$(package)

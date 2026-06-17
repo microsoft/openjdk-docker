@@ -1,5 +1,10 @@
 #!/bin/bash
-az artifacts universal download --organization $ORGANIZATION --feed $FEED --name $NAME --version "${ORAS_VERSION}" --path .
+az artifacts universal download \
+  --organization $ORGANIZATION \
+  --feed $FEED \
+  --name $NAME \
+  --version "${ORAS_VERSION}" \
+  --path .
 
 if [[ $? -ne 0 ]]; then
   echo "Failed to download oras_${ORAS_VERSION}_*.tar.gz"

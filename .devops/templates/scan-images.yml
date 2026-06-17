@@ -12,9 +12,11 @@ steps:
         --output "./trivy-report.json" \
         "${{ parameters.image }}"
       
-      if [[ $? -eq 0 ]]; then
+      TRIVY_STATUS=$?
+      
+      if [[ $TRIVY_STATUS -eq 0 ]]; then
         RUN_COPA="false"
-      elif [[ $STATUS -eq 1 ]]; then
+      elif [[ $TRIVY_STATUS -eq 1 ]]; then
         RUN_COPA="true"
       else
         RUN_COPA="false"
@@ -34,10 +36,15 @@ steps:
     condition: and(succeeded(), eq(variables['RUN_COPA'], 'true'))
 
   - bash: |
+      IMAGE_TAG="${{ parameters.image }}"
+      IMAGE_TAG="${IMAGE_TAG##*:}"
+
+      echo "[DEBUG] Image tag -> $IMAGE_TAG"
+
       copa patch \
         --image "${{ parameters.image }}" \
         --report "./trivy-report.json" \
-        --tag "${{ parameters.image }}" \
+        --tag "$IMAGE_TAG" \
         --push \
         --ignore-errors
     displayName: Run copa

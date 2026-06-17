@@ -104,7 +104,7 @@ extends:
 
               - template: /.devops/templates/scan-images.yml@self
                 parameters:
-                  image: REPLACE_ME
+                  image: $(INTERNAL_ACR_REGISTRY):$(version)-$(distro)
 
               - template: /.devops/templates/annotate-image.yml@self
                 parameters:

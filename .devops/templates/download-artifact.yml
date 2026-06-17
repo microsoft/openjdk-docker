@@ -7,9 +7,6 @@ parameters:
     type: string
   - name: version
     type: string
-  - name: displayName
-    type: string
-    default: Download artifact
 
 steps:
   - task: AzureCLI@2
@@ -37,4 +34,4 @@ steps:
       VERSION: ${{ parameters.version }}
 
   - bash: tar xf ${{ parameters.package }}_${{ parameters.version }}_linux_amd64.tar.gz
-    displayName: Extract ${{ package }}
+    displayName: Extract ${{ parameters.package }}

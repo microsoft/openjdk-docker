@@ -1,0 +1,40 @@
+steps:
+  - bash: |
+      REGISTRIES=$(INTERNAL_ACR_REGISTRY):$(version)-$(distro)
+      if [[ "$(distro)" == "azurelinux" ]]; then
+        REGISTRIES+=";$(INTERNAL_ACR_REGISTRY):$(version)-mariner"
+      fi
+      echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
+    displayName: Set REGISTRIES variable
+
+  - task: AzureCLI@2
+    retryCountOnTaskFailure: 2
+    inputs:
+      azureSubscription: "JEG-Infrastructure"
+      scriptType: "bash"
+      scriptLocation: "scriptPath"
+      scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
+      ${{ if eq(parameters.dryrun, true) }}:
+        arguments: >
+          --image             $(image)
+          --tag               $(tag)
+          --package           $(package)
+          --distribution      $(distro)
+          --registries        $(REGISTRIES)
+          --installer-image   $(installer_image)
+          --installer-tag     $(installer_tag)
+          --base-image        $(base_image)
+          --base-tag          $(base_tag)
+          --dryrun
+      ${{ else }}:
+        arguments: >
+          --image             $(image)
+          --tag               $(tag)
+          --package           $(package)
+          --distribution      $(distro)
+          --registries        $(REGISTRIES)
+          --installer-image   $(installer_image)
+          --installer-tag     $(installer_tag)
+          --base-image        $(base_image)
+          --base-tag          $(base_tag)
+    displayName: build container image

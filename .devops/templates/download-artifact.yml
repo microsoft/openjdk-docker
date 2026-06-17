@@ -1,0 +1,40 @@
+parameters:
+  - name: organization
+    type: string
+  - name: feed
+    type: string
+  - name: package
+    type: string
+  - name: version
+    type: string
+  - name: displayName
+    type: string
+    default: Download artifact
+
+steps:
+  - task: AzureCLI@2
+    displayName: Download ${{ parameters.package }} ${{ parameters.version }}
+    condition: and(succeeded(), eq(variables['hasExistingImages'], 'true'))
+    inputs:
+      azureSubscription: "JEG-Infrastructure"
+      scriptType: "bash"
+      scriptLocation: "inlineScript"
+      inlineScript: |
+        az artifacts universal download \
+          --organization "$ORGANIZATION" \
+          --feed "$FEED" \
+          --name "${{ parameters.package }}" \
+          --version "${{ parameters.version }}" \
+          --path .
+
+        echo "[DEBUG] Listing directory for debug"
+        ls -la .
+    env:
+      AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+      ORGANIZATION: ${{ parameters.organization }}
+      FEED: ${{ parameters.feed }}
+      PACKAGE: ${{ parameters.package }}
+      VERSION: ${{ parameters.version }}
+
+  - bash: tar xf ${{ parameters.package }}_${{ parameters.version }}_linux_amd64.tar.gz
+    displayName: Extract ${{ package }}

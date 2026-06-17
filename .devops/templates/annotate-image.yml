@@ -9,20 +9,19 @@ parameters:
     type: string
 
 steps:
-  - task: AzureCLI@2
-    displayName: Download ORAS
-    condition: and(succeeded(), eq(variables['hasExistingImages'], 'true'))
-    inputs:
-      azureSubscription: "JEG-Infrastructure"
-      scriptType: "bash"
-      scriptLocation: "scriptPath"
-      scriptPath: $(Build.SourcesDirectory)/scripts/install-oras.sh
-    env:
-      AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
-      ORAS_VERSION: 1.1.0
-      ORGANIZATION: ${{ parameters.organization }}
-      FEED: ${{ parameters.feed }}
-      NAME: ${{ parameters.package }}
+  - template: /.devops/templates/download-artifact.yml@self
+    parameters:
+      displayName: Download ORAS
+      organization: ${{ parameters.organization }}
+      feed: ${{ parameters.feed }}
+      package: ${{ parameters.package }}
+      version: 1.1.0
+      downloadPath: $(Pipeline.Workspace)/oras-download
+
+  - template: /.devops/templates/install-artifacts.yml@self
+    parameters:
+      displayName: Install ORAS
+      binaryName: oras
 
   - task: AzureCLI@2
     displayName: Annotate previous amd64 as EOL

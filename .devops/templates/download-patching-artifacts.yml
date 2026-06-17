@@ -1,0 +1,24 @@
+parameters:
+  - name: organization
+    type: string
+  - name: feed
+    type: string
+
+steps:
+  - template: /.devops/templates/download-artifact.yml@self
+    parameters:
+      organization: ${{ parameters.organization }}
+      feed: ${{ parameters.feed }}
+      package: trivy
+      version: $(TRIVY_VERSION)
+      displayName: Download Trivy artifact
+      downloadPath: $(Pipeline.Workspace)
+
+  - template: /.devops/templates/download-artifact.yml@self
+    parameters:
+      organization: ${{ parameters.organization }}
+      feed: ${{ parameters.feed }}
+      package: copa
+      version: $(COPA_VERSION)
+      displayName: Download Copa artifact
+      downloadPath: $(Pipeline.Workspace)

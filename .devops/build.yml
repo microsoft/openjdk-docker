@@ -24,11 +24,6 @@ parameters:
   - name: az_package
     type: string
     displayName: "Oras package name"
-  - name: architectures
-    type: object
-    default:
-      - x64
-      - aarch64
   - name: jobs
     type: object
     default:
@@ -83,33 +78,40 @@ extends:
         variables:
           ACR_NAME: msopenjdk
         jobs:
-          - ${{ each arch in parameters.architectures }}:
-            - job: build_internal_${{ arch }}
-              displayName: Build Internal (${{ arch }})
-              pool:
-                name: JEG-azurelinux-${{ arch }}-release
-                os: linux
-              strategy:
-                matrix: ${{ parameters.jobs }}
-              steps:
-                - template: /.devops/templates/prepare-annotation.yml@self
-                  parameters:
-                    registry: $(INTERNAL_ACR_REGISTRY)
-                    tag: $(version)-$(distro)
+          - job: build_internal
+            displayName: Build Internal
+            pool:
+              name: JEG-azurelinux-x64-release
+              os: linux
+            strategy:
+              matrix: ${{ parameters.jobs }}
+            steps:
+              - template: /.devops/templates/download-patching-artifacts.yml@self
+                parameters:
+                  organization: ${{ parameters.organization }}
+                  feed: ${{ parameters.feed }}
 
-                - template: /.devops/templates/build-image.yml@self
-                  parameters:
-                    acr_registry: $(INTERNAL_ACR_REGISTRY)
-                    version: $(version)
-                    distro: $(distro)
-                    arch: ${{ arch }}
+              - template: /.devops/templates/prepare-annotation.yml@self
+                parameters:
+                  registry: $(INTERNAL_ACR_REGISTRY)
+                  tag: $(version)-$(distro)
 
-                - template: /.devops/templates/annotate-image.yml@self
-                  parameters:
-                    registry: $(INTERNAL_ACR_REGISTRY)
-                    organization: ${{ parameters.organization }}
-                    feed: ${{ parameters.feed }}
-                    package: ${{ parameters.az_package }}
+              - template: /.devops/templates/build-images.yml@self
+                parameters:
+                  acr_registry: $(INTERNAL_ACR_REGISTRY)
+                  version: $(version)
+                  distro: $(distro)
+
+              - template: /.devops/templates/scan-images.yml@self
+                parameters:
+                  image: REPLACE_ME
+
+              - template: /.devops/templates/annotate-image.yml@self
+                parameters:
+                  registry: $(INTERNAL_ACR_REGISTRY)
+                  organization: ${{ parameters.organization }}
+                  feed: ${{ parameters.feed }}
+                  package: ${{ parameters.az_package }}
 
       # TODO: Re-enable the below section once internal testing looks proper.
       # - stage: validate_and_publish

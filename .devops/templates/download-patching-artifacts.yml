@@ -9,12 +9,12 @@ steps:
     parameters:
       organization: ${{ parameters.organization }}
       feed: ${{ parameters.feed }}
-      package: trivy
+      package: trivy-linux-x64
       version: $(TRIVY_VERSION)
 
   - template: /.devops/templates/download-artifact.yml@self
     parameters:
       organization: ${{ parameters.organization }}
       feed: ${{ parameters.feed }}
-      package: copa
+      package: copa-linux-x64
       version: $(COPA_VERSION)

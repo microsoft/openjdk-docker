@@ -21,9 +21,6 @@ parameters:
     type: string
   - name: feed
     type: string
-  - name: az_package
-    type: string
-    displayName: "Oras package name"
   - name: jobs
     type: object
     default:
@@ -50,13 +47,14 @@ parameters:
         package: msopenjdk-17
         image: "image-repository"
         tag: "image-tag"
-      azurelinux_21:
-        hasExistingImages: true
-        distro: azurelinux
-        version: 21
-        package: msopenjdk-21
-        image: "image-repository"
-        tag: "3.0"
+  - name: test_image
+    type: string
+    displayName: Test image
+    default: ' '
+  - name: dryrun
+    type: boolean
+    displayName: Execute a dryrun
+    default: false
 
 resources:
   repositories:
@@ -98,20 +96,21 @@ extends:
 
               - template: /.devops/templates/build-images.yml@self
                 parameters:
-                  acr_registry: $(INTERNAL_ACR_REGISTRY)
-                  version: $(version)
-                  distro: $(distro)
+                  dryrun: ${{ parameters.dryrun }}
 
               - template: /.devops/templates/scan-images.yml@self
                 parameters:
-                  image: $(INTERNAL_ACR_REGISTRY):$(version)-$(distro)
+                  ${{ if eq(parameters.dryrun, true) }}:
+                    image: ${{ parameters.test_image }}
+                  ${{ else }}:
+                    image: $(INTERNAL_ACR_REGISTRY):$(version)-$(distro)
+                  tag: $(version)-$(distro)
 
               - template: /.devops/templates/annotate-image.yml@self
                 parameters:
                   registry: $(INTERNAL_ACR_REGISTRY)
                   organization: ${{ parameters.organization }}
                   feed: ${{ parameters.feed }}
-                  package: ${{ parameters.az_package }}
 
       # TODO: Re-enable the below section once internal testing looks proper.
       # - stage: validate_and_publish

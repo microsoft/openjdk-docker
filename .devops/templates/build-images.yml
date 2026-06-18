@@ -1,3 +1,9 @@
+parameters:
+  - name: dryrun
+    type: boolean
+    default: false
+  
+
 steps:
   - bash: |
       REGISTRIES=$(INTERNAL_ACR_REGISTRY):$(version)-$(distro)

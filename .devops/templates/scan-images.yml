@@ -1,13 +1,12 @@
 parameters:
   - name: image
     type: string
+  - name: tag
+    type: string
 
 steps:
   - bash: |
-      set -o pipefail
-      ls -la .
-
-      ./trivy image \
+      trivy image \
         --vuln-type os \
         --ignore-unfixed \
         --exit-code 1 \
@@ -15,9 +14,6 @@ steps:
         --scanners vuln \
         --output "./trivy-report.json" \
         "${{ parameters.image }}"
-
-      echo "[DEBUG] Debug report"
-      cat ./trivy-report.json
       
       TRIVY_STATUS=$?
       
@@ -31,31 +27,16 @@ steps:
         exit 1
       fi
       echo "##vso[task.setvariable variable=RUN_COPA]$RUN_COPA"
-    displayName: Scan container image
-    condition: succeeded()
+    displayName: Scan image
+    condition: and(succeeded(), ne('${{ parameters.image }}', ' '))
     workingDirectory: $(Pipeline.Workspace)
 
   - bash: |
-      REPORT_PATH="$(Pipeline.workspace)/trivy-report.json"
-      if [[ -z "$REPORT_PATH" || ! -f "$REPORT_PATH" ]]; then
-        echo "##vso[task.logissue type=error]No Trivy report was found at $REPORT_PATH"
-        exit 1
-      fi
-    displayName: Verify trivy report
-    condition: and(succeeded(), eq(variables['RUN_COPA'], 'true'))
-
-  - bash: |
-      IMAGE_TAG="${{ parameters.image }}"
-      IMAGE_TAG="${IMAGE_TAG##*:}"
-
-      echo "[DEBUG] Image tag -> $IMAGE_TAG"
-
-      ./copa patch \
-        --image "${{ parameters.image }}" \
-        --report "./trivy-report.json" \
-        --tag "$IMAGE_TAG" \
-        --push \
-        --ignore-errors
+      copa patch \
+        --image ${{ parameters.image }} \
+        --report ./trivy-report.json \
+        --tag ${{ parameters.tag }} \
+        --push
     displayName: Run copa
-    condition: and(succeeded(), eq(variables['RUN_COPA'], 'true'))
+    condition: and(succeeded(), ne('${{ parameters.image }}', ' '), eq(variables['RUN_COPA'], 'true'))
     workingDirectory: $(Pipeline.Workspace)

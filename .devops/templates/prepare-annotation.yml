@@ -8,7 +8,7 @@ steps:
 
   - task: AzureCLI@2
     displayName: Gather container image manifests
-    condition: eq(variables['hasExistingImages'], 'true')
+    condition: and(succeeded(), eq(variables['hasExistingImages'], 'true'))
     inputs:
       azureSubscription: "JEG-Infrastructure"
       scriptType: "bash"
@@ -20,7 +20,7 @@ steps:
 
   - task: PythonScript@0
     displayName: Output image digest variables
-    condition: eq(variables['hasExistingImages'], 'true')
+    condition: and(succeeded(), eq(variables['hasExistingImages'], 'true'))
     env:
       manifest: $(manifest)
     inputs:

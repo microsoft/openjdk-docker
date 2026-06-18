@@ -33,5 +33,15 @@ steps:
       PACKAGE: ${{ parameters.package }}
       VERSION: ${{ parameters.version }}
 
-  - bash: tar xf ${{ parameters.package }}_${{ parameters.version }}_linux_amd64.tar.gz
+  - bash: |
+      normalized_version="${{ parameters.version }}"
+
+      if [[ "$normalized_version" =~ ^(.+)-([0-9]+)$ ]]; then
+        normalized_version="${BASH_REMATCH[1]}"
+      fi
+  
+      echo "##vso[task.setvariable variable=PACKAGE_VERSION]$normalized_version"
+    displayName: Normalize package version
+
+  - bash: tar xf "${{ parameters.package }}_$(PACKAGE_VERSION)_linux_amd64.tar.gz"
     displayName: Extract ${{ parameters.package }}

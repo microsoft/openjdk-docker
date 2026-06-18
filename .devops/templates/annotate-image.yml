@@ -12,7 +12,7 @@ steps:
 
   - task: AzureCLI@2
     displayName: Download ORAS
-    condition: eq(variables['hasExistingImages'], 'true')
+    condition: and(succeeded(), eq(variables['hasExistingImages'], 'true'))
     inputs:
       azureSubscription: "JEG-Infrastructure"
       scriptType: "bash"

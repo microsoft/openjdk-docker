@@ -12,8 +12,12 @@ steps:
         --ignore-unfixed \
         --exit-code 1 \
         --format json \
+        --scanners vuln \
         --output "./trivy-report.json" \
         "${{ parameters.image }}"
+
+      echo "[DEBUG] Debug report"
+      cat ./trivy-report.json
       
       TRIVY_STATUS=$?
       

@@ -7,22 +7,6 @@ parameters:
     type: string
 
 steps:
-
-  # - task: AzureCLI@2
-  #   displayName: Download ORAS
-  #   condition: and(succeeded(), eq(variables['hasExistingImages'], 'true'))
-  #   inputs:
-  #     azureSubscription: "JEG-Infrastructure"
-  #     scriptType: "bash"
-  #     scriptLocation: "scriptPath"
-  #     scriptPath: $(Build.SourcesDirectory)/scripts/install-oras.sh
-  #   env:
-  #     AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
-  #     ORAS_VERSION: $(ORAS_VERSION)
-  #     ORGANIZATION: ${{ parameters.organization }}
-  #     FEED: ${{ parameters.feed }}
-  #     NAME: ${{ parameters.package }}
-
   - template: /.devops/templates/download-artifact.yml@self
     parameters:
       organization: ${{ parameters.organization }}

@@ -4,7 +4,10 @@ parameters:
 
 steps:
   - bash: |
-      trivy image \
+      set -o pipefail
+      ls -la .
+
+      ./trivy image \
         --vuln-type os \
         --ignore-unfixed \
         --exit-code 1 \
@@ -21,10 +24,12 @@ steps:
       else
         RUN_COPA="false"
         echo "##vso[task.logissue type=error]Trivy scan failed"
+        exit 1
       fi
       echo "##vso[task.setvariable variable=RUN_COPA]$RUN_COPA"
     displayName: Scan container image
     condition: succeeded()
+    workingDirectory: $(Pipeline.Workspace)
 
   - bash: |
       REPORT_PATH="$(Pipeline.workspace)/trivy-report.json"
@@ -41,7 +46,7 @@ steps:
 
       echo "[DEBUG] Image tag -> $IMAGE_TAG"
 
-      copa patch \
+      ./copa patch \
         --image "${{ parameters.image }}" \
         --report "./trivy-report.json" \
         --tag "$IMAGE_TAG" \
@@ -49,3 +54,4 @@ steps:
         --ignore-errors
     displayName: Run copa
     condition: and(succeeded(), eq(variables['RUN_COPA'], 'true'))
+    workingDirectory: $(Pipeline.Workspace)

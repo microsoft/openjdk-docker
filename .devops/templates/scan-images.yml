@@ -26,12 +26,15 @@ steps:
         echo "##vso[task.logissue type=error]Trivy scan failed"
         exit 1
       fi
+      ls -la .
       echo "##vso[task.setvariable variable=RUN_COPA]$RUN_COPA"
     displayName: Trivy scan image
     condition: and(succeeded(), ne('${{ parameters.image }}', ' '))
     workingDirectory: $(Pipeline.Workspace)
 
   - bash: |
+      ls -la .
+      
       copa patch \
         --image ${{ parameters.image }} \
         --report ./trivy-report.json \

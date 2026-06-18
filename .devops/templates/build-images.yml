@@ -43,4 +43,4 @@ steps:
           --installer-tag     $(installer_tag)
           --base-image        $(base_image)
           --base-tag          $(base_tag)
-    displayName: build container image
+    displayName: Build image

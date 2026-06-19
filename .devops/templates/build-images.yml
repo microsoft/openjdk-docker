@@ -1,46 +1,39 @@
 parameters:
-  - name: dryrun
-    type: boolean
-    default: false
-  
+  - name: registry
+    type: string
 
 steps:
   - bash: |
-      REGISTRIES=$(INTERNAL_ACR_REGISTRY):$(version)-$(distro)
+      REGISTRIES=${{ parameters.registry }}:$(version)-$(distro)
       if [[ "$(distro)" == "azurelinux" ]]; then
-        REGISTRIES+=";$(INTERNAL_ACR_REGISTRY):$(version)-mariner"
+        REGISTRIES+=",${{ parameters.registry }}:$(version)-mariner"
       fi
       echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
     displayName: Set REGISTRIES variable
 
-  - task: AzureCLI@2
+  - bash: |
+      BUILD_ARGS="--platform linux/amd64,linux/arm64 --build-arg package=$(package)"
+      if [[ "$(distro)" == "distroless" ]]; then
+        BUILD_ARGS="$BUILD_ARGS --build-arg INSTALLER_IMAGE=$(installer_image) --build-arg INSTALLER_TAG=$(installer_tag) --build-arg BASE_IMAGE=$(base_image) --build-arg BASE_TAG=$(base_tag)"
+      else
+        BUILD_ARGS="$BUILD_ARGS --build-arg IMAGE=$(image) --build-arg TAG=$(tag)"
+      fi
+      echo "##vso[task.setvariable variable=BUILD_ARGS]$BUILD_ARGS"
+    displayName: Set BUILD_ARGS variable
+
+  - task: 1ES.BuildContainerImage@1
     retryCountOnTaskFailure: 2
     inputs:
-      azureSubscription: "JEG-Infrastructure"
-      scriptType: "bash"
-      scriptLocation: "scriptPath"
-      scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
-      ${{ if eq(parameters.dryrun, true) }}:
-        arguments: >
-          --image             $(image)
-          --tag               $(tag)
-          --package           $(package)
-          --distribution      $(distro)
-          --registries        $(REGISTRIES)
-          --installer-image   $(installer_image)
-          --installer-tag     $(installer_tag)
-          --base-image        $(base_image)
-          --base-tag          $(base_tag)
-          --dryrun
-      ${{ else }}:
-        arguments: >
-          --image             $(image)
-          --tag               $(tag)
-          --package           $(package)
-          --distribution      $(distro)
-          --registries        $(REGISTRIES)
-          --installer-image   $(installer_image)
-          --installer-tag     $(installer_tag)
-          --base-image        $(base_image)
-          --base-tag          $(base_tag)
+      image: ${{ parameters.registry }}:$(version)-$(distro)
+      context: $(Build.SourcesDirectory)
+      dockerfile: $(Build.SourcesDirectory)/docker/$(distro)/Dockerfile.$(package)-jdk
+      enableNetwork: true
+      useBuildKit: true
+      buildArguments: $(BUILD_ARGS)
     displayName: Build image
+
+  - task: 1ES.PushContainerImage@1
+    inputs:
+      image: ${{ parameters.registry }}:$(version)-$(distro)
+      remoteImage: $(REGISTRIES)
+    displayName: Publish image

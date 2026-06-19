@@ -66,6 +66,8 @@ resources:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
+    featureFlags:
+      containerFlowV2: true
     sdl:
       sourceAnalysisPool:
         name: JEG-windows2022-x64-release
@@ -84,10 +86,6 @@ extends:
             strategy:
               matrix: ${{ parameters.jobs }}
             steps:
-              - template: /.devops/templates/download-patching-artifacts.yml@self
-                parameters:
-                  organization: ${{ parameters.organization }}
-                  feed: ${{ parameters.feed }}
 
               - template: /.devops/templates/prepare-annotation.yml@self
                 parameters:
@@ -96,15 +94,7 @@ extends:
 
               - template: /.devops/templates/build-images.yml@self
                 parameters:
-                  dryrun: ${{ parameters.dryrun }}
-
-              - template: /.devops/templates/scan-images.yml@self
-                parameters:
-                  ${{ if eq(parameters.dryrun, true) }}:
-                    image: ${{ parameters.test_image }}
-                  ${{ else }}:
-                    image: $(INTERNAL_ACR_REGISTRY):$(version)-$(distro)
-                  tag: $(version)-$(distro)
+                  registry: $(INTERNAL_ACR_REGISTRY)
 
               - template: /.devops/templates/annotate-image.yml@self
                 parameters:
@@ -188,3 +178,16 @@ extends:
               #             reference="$(containerImageDigest)" \
               #             reference_type="container_digest"
 
+# TODO: REMOVED DEAD CODE BELOW HERE WHEN READY
+    # - template: /.devops/templates/scan-images.yml@self
+    #   parameters:
+    #     ${{ if eq(parameters.dryrun, true) }}:
+    #       image: ${{ parameters.test_image }}
+    #     ${{ else }}:
+    #       image: $(INTERNAL_ACR_REGISTRY):$(version)-$(distro)
+    #     tag: $(version)-$(distro)
+
+    # - template: /.devops/templates/download-patching-artifacts.yml@self
+    #   parameters:
+    #     organization: ${{ parameters.organization }}
+    #     feed: ${{ parameters.feed }}

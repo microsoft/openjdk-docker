@@ -7,14 +7,31 @@ permissions:
   contents: read
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      temurin: ${{ steps.load.outputs.temurin }}
+      msopenjdk: ${{ steps.load.outputs.msopenjdk }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Load versions from versions.json
+        id: load
+        run: |
+          {
+            echo "temurin=$(jq -c '.temurin | to_entries | map({major: .key, expected: .value})' versions.json)"
+            echo "msopenjdk=$(jq -c '.msopenjdk | to_entries | map({major: .key, expected: .value})' versions.json)"
+          } >> "$GITHUB_OUTPUT"
+
   validate_temurin:
+    needs: prepare
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         distros: ["azurelinux", "distroless"]
         jdkvendor: ["temurin"]
-        jdkversion: [{ major: "8", expected: "1.8.0_472" }]
+        jdkversion: ${{ fromJson(needs.prepare.outputs.temurin) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -27,19 +44,14 @@ jobs:
             ${{ matrix.jdkversion.expected }}
 
   validate_msopenjdk:
+    needs: prepare
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         distros: ["azurelinux", "distroless", "ubuntu"]
         jdkvendor: ["msopenjdk"]
-        jdkversion:
-          [
-            { major: "11", expected: "11.0.31" },
-            { major: "17", expected: "17.0.19" },
-            { major: "21", expected: "21.0.11" },
-            { major: "25", expected: "25.0.3" }
-          ]
+        jdkversion: ${{ fromJson(needs.prepare.outputs.msopenjdk) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -52,19 +64,14 @@ jobs:
             ${{ matrix.jdkversion.expected }}
 
   validate_msopenjdk_aarch64:
+    needs: prepare
     runs-on: ["self-hosted", "1ES.Pool=JEG-linux-arm64-openjdk-docker"]
     strategy:
       fail-fast: false
       matrix:
         distros: ["azurelinux", "distroless", "ubuntu"]
         jdkvendor: ["msopenjdk"]
-        jdkversion:
-          [
-            { major: "11", expected: "11.0.31" },
-            { major: "17", expected: "17.0.19" },
-            { major: "21", expected: "21.0.11" },
-            { major: "25", expected: "25.0.3" }
-          ]
+        jdkversion: ${{ fromJson(needs.prepare.outputs.msopenjdk) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 

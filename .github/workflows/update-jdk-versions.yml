@@ -2,9 +2,10 @@ name: Update JDK Versions
 
 on:
   schedule:
-    # Monday, Wednesday and Friday at 12:00 AM ET. GitHub Actions cron is UTC
-    # only and does not observe DST, so this is pinned to 05:00 UTC (midnight EST).
-    - cron: "0 5 * * 1,3,5"
+    # Tuesdays and Thursdays at 12:00 AM PT, so version-bump PRs land before the
+    # automated Monday/Wednesday/Friday image builds. GitHub Actions cron is UTC
+    # only and does not observe DST, so this is pinned to 08:00 UTC (midnight PST).
+    - cron: "0 8 * * 2,4"
   workflow_dispatch:
     inputs:
       mode:

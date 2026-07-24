@@ -102,6 +102,49 @@ extends:
                   echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
                 displayName: Set REGISTRIES variable
 
+              # TEMPORARY: collect QEMU/binfmt state of the build agent to diagnose the
+              # arm64 emulated "libc-bin ... exit status 139" (SIGSEGV) failure. Remove
+              # once the emulator is updated. Never fails the build (always()/exit 0).
+              - task: AzureCLI@2
+                displayName: "QEMU/binfmt diagnostics (temporary)"
+                condition: always()
+                inputs:
+                  azureSubscription: "JEG-Infrastructure"
+                  scriptType: "bash"
+                  scriptLocation: "inlineScript"
+                  inlineScript: |
+                    set +e
+                    echo "===== HOST ====="
+                    uname -a
+                    (source /etc/os-release && echo "OS: $PRETTY_NAME")
+                    echo "===== binfmt_misc registrations (host kernel) ====="
+                    ls -la /proc/sys/fs/binfmt_misc/ 2>/dev/null
+                    for f in /proc/sys/fs/binfmt_misc/qemu-*; do
+                      [ -e "$f" ] || continue
+                      echo "-- $f --"; cat "$f"
+                    done
+                    echo "===== host qemu binaries + versions ====="
+                    ls -la /usr/bin/qemu-*-static /usr/bin/qemu-*  2>/dev/null | grep -i qemu || echo "no qemu binaries in /usr/bin"
+                    for b in /usr/bin/qemu-aarch64-static /usr/bin/qemu-aarch64; do
+                      [ -x "$b" ] && { echo "-- $b --"; "$b" --version 2>/dev/null | head -2; }
+                    done
+                    echo "===== binfmt.d configs ====="
+                    ls -la /etc/binfmt.d /usr/lib/binfmt.d 2>/dev/null
+                    cat /etc/binfmt.d/* /usr/lib/binfmt.d/* 2>/dev/null
+                    echo "===== installed qemu packages ====="
+                    (rpm -qa 2>/dev/null | grep -i qemu) || (dpkg -l 2>/dev/null | grep -i qemu) || echo "none found"
+                    echo "===== docker / buildx ====="
+                    docker version --format 'server={{.Server.Version}}' 2>/dev/null
+                    docker buildx version 2>/dev/null
+                    echo "===== qemu bundled inside mirrored moby/buildkit image ====="
+                    az acr login -n junipercontainerregistry >/dev/null 2>&1
+                    docker run --rm --entrypoint sh junipercontainerregistry.azurecr.io/mirror/moby/buildkit -c '
+                      ls -la /usr/bin/ 2>/dev/null | grep -i qemu || echo "no qemu bundled in buildkit image";
+                      for b in /usr/bin/qemu-aarch64 /usr/bin/qemu-aarch64-static; do [ -x "$b" ] && { echo "-- $b --"; "$b" --version 2>/dev/null | head -1; }; done
+                    ' 2>/dev/null || echo "could not inspect buildkit image"
+                    echo "===== END DIAGNOSTICS ====="
+                    exit 0
+
               - task: AzureCLI@2
                 retryCountOnTaskFailure: 2
                 inputs:

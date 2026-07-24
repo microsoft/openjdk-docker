@@ -130,17 +130,50 @@ extends:
                 workingDirectory: $(Pipeline.Workspace)/repo
 
               # Determine whether the script changed anything and expose the result
-              # as an output variable (changed=true/false) for later steps.
+              # as an output variable (changed=true/false) for later steps. When
+              # versions changed, render a clean "vendor major: old -> new" summary
+              # (comparing committed vs updated versions.json) instead of a raw diff,
+              # and attach it to the run summary.
               - bash: |
                   set -euo pipefail
                   if git diff --quiet -- versions.json; then
                     echo "No JDK version changes detected."
                     echo "##vso[task.setvariable variable=changed;isOutput=true]false"
-                  else
-                    echo "Detected JDK version changes:"
-                    git --no-pager diff -- versions.json
-                    echo "##vso[task.setvariable variable=changed;isOutput=true]true"
+                    exit 0
                   fi
+
+                  # Build a human-readable summary of the changed versions.
+                  summary="$(jq -rn \
+                    --slurpfile old <(git show HEAD:versions.json) \
+                    --slurpfile new versions.json '
+                      ($old[0]) as $o | ($new[0]) as $n
+                      | [ $n | to_entries[] as $vendor | $vendor.value | to_entries[] as $major
+                          | { vendor: $vendor.key, major: $major.key,
+                              new: $major.value, old: ($o[$vendor.key][$major.key]) } ]
+                      | map(select(.new != .old))
+                      | .[] | "  \(.vendor) \(.major): \(.old // "(new)") -> \(.new)"
+                  ')"
+
+                  echo "JDK version changes detected:"
+                  if [ -n "$summary" ]; then
+                    echo "$summary"
+                  else
+                    # Fallback (e.g. formatting-only change): show the raw diff.
+                    git --no-pager diff -- versions.json
+                  fi
+
+                  # Attach the summary to the AzDO run (equivalent of a step summary).
+                  summary_md="$(Agent.TempDirectory)/version-changes.md"
+                  {
+                    echo "### Detected JDK version changes"
+                    echo ""
+                    echo '```'
+                    [ -n "$summary" ] && echo "$summary" || git --no-pager diff -- versions.json
+                    echo '```'
+                  } > "$summary_md"
+                  echo "##vso[task.uploadsummary]$summary_md"
+
+                  echo "##vso[task.setvariable variable=changed;isOutput=true]true"
                 name: diff
                 displayName: Detect changes
                 workingDirectory: $(Pipeline.Workspace)/repo

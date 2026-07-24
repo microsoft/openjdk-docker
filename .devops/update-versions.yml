@@ -119,12 +119,17 @@ extends:
                   echo "Configured GitHub App credentials for github.com/microsoft/*"
                 displayName: Configure GitHub App credentials for microsoft/*
 
-              # Configure the git identity used for the version-bump commit. Push
-              # authorization comes from the microsoft/* credential configured above.
+              # Configure the git identity used for the version-bump commit, and
+              # remove any per-repo auth header left by the self checkout so it does
+              # not stack with the global microsoft/* GitHub App credential (two
+              # Authorization headers on one request causes "Duplicate header").
               - bash: |
-                  set -euo pipefail
+                  set -uo pipefail
                   git config user.name "Java Platform Infrastructure"
                   git config user.email "javaplatinfra@microsoft.com"
+                  for key in $(git config --local --name-only --get-regexp '^http\..*\.extraheader$' || true); do
+                    git config --local --unset-all "$key" || true
+                  done
                 displayName: Configure git identity
                 workingDirectory: $(Pipeline.Workspace)/openjdk-docker
 

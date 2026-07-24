@@ -84,7 +84,7 @@ extends:
         jobs:
           - job: build_internal
             pool:
-              name: JEG-azurelinux-x64-release
+              name: JEG-ubuntu22.04-x64-release
               os: linux
             strategy:
               matrix: ${{ parameters.jobs }}
@@ -145,48 +145,42 @@ extends:
                     echo "===== END DIAGNOSTICS ====="
                     exit 0
 
-              # TEMPORARY: register a modern QEMU aarch64 emulator on the host BEFORE the
-              # buildx builder is created, to validate the fix for the intermittent arm64
-              # "libc-bin ... exit status 139" (SIGSEGV) segfault caused by the old emulator
-              # the buildkit builder otherwise registers. buildkit defers to an already
-              # registered emulator, so this should make the arm64 build reliable. Uses the
-              # AzureLinux repo on packages.microsoft.com (already reachable) - no Docker Hub
-              # / mirror needed. Once proven, this moves to the agent image
-              # (linux-install-basic-tools) and is removed here.
+              # TEMPORARY: ensure a fixed QEMU aarch64 emulator is registered on the Ubuntu
+              # 22.04 agent BEFORE the buildx builder is created, to fix the arm64
+              # "libc-bin ... exit status 139" (SIGSEGV) segfault. Root cause: a QEMU ELF-loader
+              # regression (bug #1913 / LP #2072564) present in QEMU 8.1.1..9.1.x that crashes
+              # ldconfig.real when emulating aarch64. Ubuntu jammy ships qemu-user-static 6.2,
+              # which PREDATES the regression and registers with the F (fix_binary) flag, so
+              # buildkit defers to it. This step just ensures it is present/registered and
+              # prints the state. Once proven, this moves to the agent image and is removed here.
               - task: AzureCLI@2
-                displayName: "Register modern QEMU (temporary validation)"
+                displayName: "Ensure fixed QEMU (temporary validation)"
                 condition: always()
                 inputs:
                   azureSubscription: "JEG-Infrastructure"
                   scriptType: "bash"
                   scriptLocation: "inlineScript"
                   inlineScript: |
-                    set -e
+                    set +e
                     if [[ "$(uname -m)" != "x86_64" ]]; then
                       echo "Host is $(uname -m), not x86_64 - nothing to emulate. Skipping."
                       exit 0
                     fi
                     echo "Host binfmt BEFORE:"
                     cat /proc/sys/fs/binfmt_misc/qemu-aarch64 2>/dev/null || echo "  (qemu-aarch64 not registered)"
-                    echo "Installing modern qemu-user-static from AzureLinux repo (packages.microsoft.com)"
-                    sudo tdnf install -y qemu-user-static
-                    /usr/bin/qemu-aarch64-static --version | head -1
-                    # Standard systemd binfmt.d config. The magic/mask is just the ELF header
-                    # signature for a little-endian aarch64 executable (e_machine 0xb7 = AARCH64);
-                    # it is the same line used by upstream qemu-binfmt-conf.sh / docker binfmt.
-                    # Written ONCE here; systemd-binfmt (the OS tool) registers it. F = fix_binary
-                    # (pin interpreter so it works inside the buildkit build container).
-                    echo "Writing /etc/binfmt.d/qemu-aarch64.conf and registering via systemd-binfmt"
-                    sudo mkdir -p /etc/binfmt.d
-                    sudo tee /etc/binfmt.d/qemu-aarch64.conf >/dev/null <<'EOF'
-                    :qemu-aarch64:M::\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\xb7\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-aarch64-static:F
-                    EOF
-                    # Prefer the OS tool; if systemd-binfmt is unavailable, feed the same
-                    # single-source config file straight to the kernel (identical line format).
-                    sudo systemctl restart systemd-binfmt.service 2>/dev/null \
-                      || grep -v '^#' /etc/binfmt.d/qemu-aarch64.conf | sudo tee /proc/sys/fs/binfmt_misc/register >/dev/null
-                    echo "Host binfmt AFTER (expect interpreter=/usr/bin/qemu-aarch64-static, flags with F):"
-                    cat /proc/sys/fs/binfmt_misc/qemu-aarch64
+                    # Best-effort: install/register qemu-user-static (6.2 on jammy). No-op if the
+                    # agent image already bakes it. Repoint apt to the Azure Ubuntu mirror first,
+                    # since agents cannot reach archive.ubuntu.com (same blackhole that broke the
+                    # image builds); azure.archive.ubuntu.com is reachable from Azure agents.
+                    sudo sed -i 's|http://archive.ubuntu.com/ubuntu|http://azure.archive.ubuntu.com/ubuntu|g; s|http://security.ubuntu.com/ubuntu|http://azure.archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list 2>/dev/null
+                    sudo apt-get update -qq 2>/dev/null
+                    sudo apt-get install -y -qq qemu-user-static binfmt-support 2>/dev/null
+                    sudo systemctl restart systemd-binfmt.service 2>/dev/null
+                    echo "qemu-aarch64-static version:"
+                    /usr/bin/qemu-aarch64-static --version 2>/dev/null | head -1 || echo "  (qemu-aarch64-static not found on host)"
+                    echo "Host binfmt AFTER (expect a registration with flags containing F):"
+                    cat /proc/sys/fs/binfmt_misc/qemu-aarch64 2>/dev/null || echo "  (qemu-aarch64 STILL not registered)"
+                    exit 0
 
               - task: AzureCLI@2
                 retryCountOnTaskFailure: 2
@@ -247,7 +241,7 @@ extends:
           - job: build_public
             dependsOn: wait_for_validation
             pool:
-              name: JEG-azurelinux-x64-release
+              name: JEG-ubuntu22.04-x64-release
               os: linux
             strategy:
               matrix: ${{ parameters.jobs }}

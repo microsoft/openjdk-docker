@@ -28,14 +28,16 @@ schedules:
     always: true
 
 parameters:
-  # dry-run only prints the detected changes; create-pull-request opens/updates a PR.
+  # create-pull-request opens/updates a PR; dry-run only prints the detected
+  # changes. Defaults to create-pull-request so scheduled runs (which always use
+  # the default) open the PR; pick dry-run manually for testing.
   - name: mode
     displayName: "Run mode"
     type: string
-    default: dry-run
+    default: create-pull-request
     values:
-      - dry-run
       - create-pull-request
+      - dry-run
 
 resources:
   repositories:

@@ -10,7 +10,7 @@
 # ms_openjdk_token_src repository resource is checked out with persistCredentials
 # to obtain a short-lived OAuth token, which is then scoped to github.com/microsoft/*.
 
-name: "UpdateJdkVersions-$(Date:yyyyMMdd)$(Rev:.r)"
+name: "$(Date:yyyyMMdd)$(Rev:.r)"
 
 trigger: none
 pr: none

@@ -13,7 +13,8 @@ LABEL "Support"="Microsoft OpenJDK Support <openjdk-support@microsoft.com>"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN     apt-get -qq update && \
+RUN     sed -i 's|http://archive.ubuntu.com/ubuntu|http://azure.archive.ubuntu.com/ubuntu|g; s|http://security.ubuntu.com/ubuntu|http://azure.archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list && \
+        apt-get -qq update && \
         apt-get -qq upgrade && \
         apt-get -qq install --no-install-recommends tzdata ca-certificates fontconfig locales apt-transport-https wget binutils && \
         echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \

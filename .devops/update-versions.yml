@@ -1,0 +1,197 @@
+# update-versions.yml
+#
+# Azure DevOps equivalent of the "Update JDK Versions" GitHub Actions workflow.
+# It refreshes versions.json from the upstream release sources and opens (or
+# refreshes) a pull request on github.com/microsoft/openjdk-docker when a newer
+# patch version is found.
+#
+# Authentication: git pushes and the PR REST call are authenticated with the
+# GitHub App service connection (Github-Java-Engineering), not a PAT. The
+# ms_openjdk_token_src repository resource is checked out with persistCredentials
+# to obtain a short-lived OAuth token, which is then scoped to github.com/microsoft/*.
+
+name: "UpdateJdkVersions-$(Date:yyyyMMdd)$(Rev:.r)"
+
+trigger: none
+pr: none
+
+schedules:
+  # Tuesdays and Thursdays at 12:00 AM PT so version-bump PRs land before the
+  # automated Monday/Wednesday/Friday image builds. Azure DevOps cron is UTC
+  # only and does not observe DST, so this is pinned to 08:00 UTC (midnight PST).
+  # always: true runs the pipeline even though the source branch has not changed.
+  - cron: "0 8 * * 2,4"
+    displayName: "Tue/Thu JDK version check"
+    branches:
+      include:
+        - main
+    always: true
+
+parameters:
+  # dry-run only prints the detected changes; create-pull-request opens/updates a PR.
+  - name: mode
+    displayName: "Run mode"
+    type: string
+    default: dry-run
+    values:
+      - dry-run
+      - create-pull-request
+
+resources:
+  repositories:
+    - repository: 1ESPipelineTemplates
+      type: git
+      name: 1ESPipelineTemplates/1ESPipelineTemplates
+      ref: refs/tags/release
+
+    # Token source for GitHub App auth (Github-Java-Engineering service connection).
+    - repository: ms_openjdk_token_src
+      type: github
+      endpoint: Github-Java-Engineering
+      name: microsoft/openjdk-adoptium-marketplace-data
+
+variables:
+  repoSlug: microsoft/openjdk-docker
+  targetBranch: main
+  bumpBranch: auto/update-jdk-versions
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    sdl:
+      sourceAnalysisPool:
+        name: JEG-windows-x64-release
+        os: windows
+      sourceRepositoriesToScan:
+        exclude:
+          - repository: ms_openjdk_token_src
+
+    pool:
+      name: JEG-pipeline-support
+      os: linux
+
+    stages:
+      - stage: update_versions
+        displayName: Update JDK versions
+        jobs:
+          - job: update_versions
+            displayName: Update versions.json and open PR
+            steps:
+              # Obtain a short-lived GitHub App OAuth token via the token-source
+              # repo and scope it to github.com/microsoft/* for all git operations.
+              - checkout: ms_openjdk_token_src
+                persistCredentials: true
+                path: ms-openjdk-token-src
+                fetchDepth: 1
+                fetchTags: false
+                displayName: Checkout microsoft repo to obtain GitHub App token
+
+              - bash: |
+                  set -uo pipefail
+                  repo_dir="$(Pipeline.Workspace)/ms-openjdk-token-src"
+
+                  # persistCredentials stores the OAuth token as an http extraheader;
+                  # the exact key name is agent-dependent, so discover it.
+                  key=$(git -C "$repo_dir" config --local --name-only --get-regexp '^http\..*\.extraheader$' \
+                          | grep -i 'github.com' | head -n1)
+
+                  if [ -z "${key}" ]; then
+                    echo "ERROR: Could not find a github.com extraheader in ${repo_dir} git config." >&2
+                    git -C "$repo_dir" config --local --name-only --get-regexp '^http\.' >&2 || true
+                    exit 1
+                  fi
+
+                  extraheader=$(git -C "$repo_dir" config --local --get "${key}")
+                  if [ -z "${extraheader}" ]; then
+                    echo "ERROR: Found key '${key}' but its value was empty." >&2
+                    exit 1
+                  fi
+
+                  git config --global "http.https://github.com/microsoft/.extraheader" "${extraheader}"
+                  echo "Configured GitHub App credentials for github.com/microsoft/*"
+                displayName: Configure GitHub App credentials for microsoft/*
+
+              # Clone the target repo fresh (authenticated via the microsoft/* creds).
+              - bash: |
+                  set -euo pipefail
+                  git clone "https://github.com/$(repoSlug).git" repo
+                  git -C repo config user.name "Java Platform Infrastructure"
+                  git -C repo config user.email "javaplatinfra@microsoft.com"
+                displayName: Clone openjdk-docker
+                workingDirectory: $(Pipeline.Workspace)
+
+              # Rewrites versions.json in place with the latest patch versions from the
+              # upstream sources (Microsoft download page for msopenjdk, Adoptium API
+              # for temurin). No-op if everything is already current.
+              - bash: |
+                  set -euo pipefail
+                  ./scripts/update-versions.sh versions.json
+                displayName: Update versions.json from upstream release sources
+                workingDirectory: $(Pipeline.Workspace)/repo
+
+              # Determine whether the script changed anything and expose the result
+              # as an output variable (changed=true/false) for later steps.
+              - bash: |
+                  set -euo pipefail
+                  if git diff --quiet -- versions.json; then
+                    echo "No JDK version changes detected."
+                    echo "##vso[task.setvariable variable=changed;isOutput=true]false"
+                  else
+                    echo "Detected JDK version changes:"
+                    git --no-pager diff -- versions.json
+                    echo "##vso[task.setvariable variable=changed;isOutput=true]true"
+                  fi
+                name: diff
+                displayName: Detect changes
+                workingDirectory: $(Pipeline.Workspace)/repo
+
+              # Manual dry-run: changes were found but the user asked not to open a
+              # PR, so just report what would have happened.
+              - bash: echo "Changes detected but skipping pull request creation (mode=dry-run)."
+                displayName: Dry run (no pull request created)
+                condition: and(eq(variables['diff.changed'], 'true'), eq('${{ parameters.mode }}', 'dry-run'))
+
+              # Open (or refresh) the version-bump PR. Skipped in dry-run mode.
+              - bash: |
+                  set -euo pipefail
+
+                  # Reuse the GitHub App credential scoped to microsoft/* for the
+                  # PR REST call (the git push is authenticated via the same creds).
+                  auth_header="$(git config --global --get 'http.https://github.com/microsoft/.extraheader' || true)"
+                  if [ -z "$auth_header" ]; then
+                    echo "##vso[task.logissue type=error]Missing GitHub App credentials; auth step must run first."
+                    exit 1
+                  fi
+
+                  # Reuse the same branch every run: -C resets it to the current commit
+                  # so an existing (stale) branch is force-updated with the latest versions.
+                  git switch -C "$(bumpBranch)"
+                  git add versions.json
+                  git commit -m "Update JDK versions from upstream release sources"
+                  git push -f origin "HEAD:refs/heads/$(bumpBranch)"
+
+                  api="https://api.github.com/repos/$(repoSlug)"
+                  repo="$(repoSlug)"
+                  owner="${repo%%/*}"
+
+                  # Check if there is already an open PR for this branch. If none is
+                  # open, create one; if one exists, the force-push updated it.
+                  open_count="$(curl -fsSL -H "$auth_header" -H "Accept: application/vnd.github+json" \
+                    "$api/pulls?state=open&head=$owner:$(bumpBranch)" | jq 'length')"
+
+                  if [ "$open_count" = "0" ]; then
+                    body="Automated update of versions.json from upstream release sources: the Microsoft Build of OpenJDK download page (msopenjdk) and the Adoptium API (temurin). Generated by the Update JDK Versions pipeline."
+                    payload="$(jq -n \
+                      --arg title "Update JDK versions" \
+                      --arg head "$(bumpBranch)" \
+                      --arg base "$(targetBranch)" \
+                      --arg body "$body" \
+                      '{title: $title, head: $head, base: $base, body: $body}')"
+                    curl -fsSL -X POST -H "$auth_header" -H "Accept: application/vnd.github+json" \
+                      "$api/pulls" -d "$payload" | jq -r '"Created PR: " + .html_url'
+                  else
+                    echo "An open PR already exists for $(bumpBranch); updated it with a force-push."
+                  fi
+                displayName: Create or update pull request
+                workingDirectory: $(Pipeline.Workspace)/repo
+                condition: and(eq(variables['diff.changed'], 'true'), ne('${{ parameters.mode }}', 'dry-run'))

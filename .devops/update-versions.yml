@@ -77,8 +77,16 @@ extends:
           - job: update_versions
             displayName: Update versions.json and open PR
             steps:
+              # Check out this repo (self) so the scripts and versions.json used at
+              # runtime come from the branch the pipeline runs on - not from a fresh
+              # clone of main (which may not yet contain new scripts).
+              - checkout: self
+                path: openjdk-docker
+                displayName: Checkout openjdk-docker (self)
+
               # Obtain a short-lived GitHub App OAuth token via the token-source
-              # repo and scope it to github.com/microsoft/* for all git operations.
+              # repo and scope it to github.com/microsoft/* for all git operations
+              # (this is what authorizes the push and PR creation against this repo).
               - checkout: ms_openjdk_token_src
                 persistCredentials: true
                 path: ms-openjdk-token-src
@@ -111,14 +119,14 @@ extends:
                   echo "Configured GitHub App credentials for github.com/microsoft/*"
                 displayName: Configure GitHub App credentials for microsoft/*
 
-              # Clone the target repo fresh (authenticated via the microsoft/* creds).
+              # Configure the git identity used for the version-bump commit. Push
+              # authorization comes from the microsoft/* credential configured above.
               - bash: |
                   set -euo pipefail
-                  git clone "https://github.com/$(repoSlug).git" repo
-                  git -C repo config user.name "Java Platform Infrastructure"
-                  git -C repo config user.email "javaplatinfra@microsoft.com"
-                displayName: Clone openjdk-docker
-                workingDirectory: $(Pipeline.Workspace)
+                  git config user.name "Java Platform Infrastructure"
+                  git config user.email "javaplatinfra@microsoft.com"
+                displayName: Configure git identity
+                workingDirectory: $(Pipeline.Workspace)/openjdk-docker
 
               # Rewrites versions.json in place with the latest patch versions from the
               # upstream sources (Microsoft download page for msopenjdk, Adoptium API
@@ -127,7 +135,7 @@ extends:
                   set -euo pipefail
                   ./scripts/update-versions.sh versions.json
                 displayName: Update versions.json from upstream release sources
-                workingDirectory: $(Pipeline.Workspace)/repo
+                workingDirectory: $(Pipeline.Workspace)/openjdk-docker
 
               # Determine whether the script changed anything and expose the result
               # as an output variable (changed=true/false) for later steps. When
@@ -159,7 +167,7 @@ extends:
                   echo "##vso[task.setvariable variable=changed;isOutput=true]true"
                 name: diff
                 displayName: Detect changes
-                workingDirectory: $(Pipeline.Workspace)/repo
+                workingDirectory: $(Pipeline.Workspace)/openjdk-docker
 
               # Manual dry-run: changes were found but the user asked not to open a
               # PR, so just report what would have happened.
@@ -180,5 +188,5 @@ extends:
                   GH_AUTH_HEADER="$auth_header" \
                     ./scripts/open-version-pr.sh "$(repoSlug)" "$(targetBranch)" "$(bumpBranch)"
                 displayName: Create or update pull request
-                workingDirectory: $(Pipeline.Workspace)/repo
+                workingDirectory: $(Pipeline.Workspace)/openjdk-docker
                 condition: and(eq(variables['diff.changed'], 'true'), ne('${{ parameters.mode }}', 'dry-run'))

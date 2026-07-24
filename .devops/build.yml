@@ -84,7 +84,7 @@ extends:
         jobs:
           - job: build_internal
             pool:
-              name: JEG-azurelinux-x64-release
+              name: JEG-ubuntu22.04-x64-release
               os: linux
             strategy:
               matrix: ${{ parameters.jobs }}
@@ -161,7 +161,7 @@ extends:
           - job: build_public
             dependsOn: wait_for_validation
             pool:
-              name: JEG-azurelinux-x64-release
+              name: JEG-ubuntu22.04-x64-release
               os: linux
             strategy:
               matrix: ${{ parameters.jobs }}

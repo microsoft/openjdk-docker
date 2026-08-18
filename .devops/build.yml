@@ -83,15 +83,37 @@ extends:
           # Internal stage: images are pushed to the internal registry for validation.
           # isPublic is left at false so the build is not tagged and signing is not triggered,
           # even when this is a real (non-dryrun) run.
-          - template: /.devops/templates/build-images.yml@self
-            parameters:
-              jobPrefix: build_internal
-              registry: $(INTERNAL_ACR_REGISTRY)
-              jobs: ${{ parameters.jobs }}
-              organization: ${{ parameters.organization }}
-              feed: ${{ parameters.feed }}
-              az_package: ${{ parameters.az_package }}
-              dryrun: ${{ parameters.dryrun }}
+          #
+          # The matrix is expanded here rather than inside build-images.yml because passing the
+          # object through a `type: object` template parameter re-parses its scalars, which
+          # renders a tag such as '3.0' as "3".
+          - ${{ each entry in parameters.jobs }}:
+              - template: /.devops/templates/build-images.yml@self
+                parameters:
+                  jobPrefix: build_internal
+                  jobKey: ${{ entry.key }}
+                  registry: $(INTERNAL_ACR_REGISTRY)
+                  organization: ${{ parameters.organization }}
+                  feed: ${{ parameters.feed }}
+                  az_package: ${{ parameters.az_package }}
+                  dryrun: ${{ parameters.dryrun }}
+                  distro: ${{ entry.value.distro }}
+                  version: ${{ entry.value.version }}
+                  package: ${{ entry.value.package }}
+                  ${{ if entry.value.hasExistingImages }}:
+                    hasExistingImages: ${{ entry.value.hasExistingImages }}
+                  ${{ if entry.value.image }}:
+                    image: ${{ entry.value.image }}
+                  ${{ if entry.value.tag }}:
+                    tag: ${{ entry.value.tag }}
+                  ${{ if entry.value.installer_image }}:
+                    installer_image: ${{ entry.value.installer_image }}
+                  ${{ if entry.value.installer_tag }}:
+                    installer_tag: ${{ entry.value.installer_tag }}
+                  ${{ if entry.value.base_image }}:
+                    base_image: ${{ entry.value.base_image }}
+                  ${{ if entry.value.base_tag }}:
+                    base_tag: ${{ entry.value.base_tag }}
 
       - stage: validate_and_publish
         displayName: "Validate & Publish"
@@ -111,14 +133,32 @@ extends:
           # Public stage: once validation is approved the images are rebuilt and pushed to the
           # public registry. isPublic triggers the build tag and the signing pipeline, which
           # dryrun still suppresses.
-          - template: /.devops/templates/build-images.yml@self
-            parameters:
-              jobPrefix: build_public
-              registry: $(ACR_REGISTRY)
-              jobs: ${{ parameters.jobs }}
-              organization: ${{ parameters.organization }}
-              feed: ${{ parameters.feed }}
-              az_package: ${{ parameters.az_package }}
-              dryrun: ${{ parameters.dryrun }}
-              dependsOn: [wait_for_validation]
-              isPublic: true
+          - ${{ each entry in parameters.jobs }}:
+              - template: /.devops/templates/build-images.yml@self
+                parameters:
+                  jobPrefix: build_public
+                  jobKey: ${{ entry.key }}
+                  registry: $(ACR_REGISTRY)
+                  organization: ${{ parameters.organization }}
+                  feed: ${{ parameters.feed }}
+                  az_package: ${{ parameters.az_package }}
+                  dryrun: ${{ parameters.dryrun }}
+                  dependsOn: [wait_for_validation]
+                  isPublic: true
+                  distro: ${{ entry.value.distro }}
+                  version: ${{ entry.value.version }}
+                  package: ${{ entry.value.package }}
+                  ${{ if entry.value.hasExistingImages }}:
+                    hasExistingImages: ${{ entry.value.hasExistingImages }}
+                  ${{ if entry.value.image }}:
+                    image: ${{ entry.value.image }}
+                  ${{ if entry.value.tag }}:
+                    tag: ${{ entry.value.tag }}
+                  ${{ if entry.value.installer_image }}:
+                    installer_image: ${{ entry.value.installer_image }}
+                  ${{ if entry.value.installer_tag }}:
+                    installer_tag: ${{ entry.value.installer_tag }}
+                  ${{ if entry.value.base_image }}:
+                    base_image: ${{ entry.value.base_image }}
+                  ${{ if entry.value.base_tag }}:
+                    base_tag: ${{ entry.value.base_tag }}

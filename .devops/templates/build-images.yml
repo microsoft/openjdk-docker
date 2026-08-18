@@ -1,11 +1,16 @@
 # build-images.yml
 #
-# Builds and publishes every image described by the `jobs` matrix.
+# Builds and publishes a single image described by one entry of the `jobs` matrix.
 #
-# Each image produces three jobs: one native amd64 build, one native arm64 build, and a
+# The image produces three jobs: one native amd64 build, one native arm64 build, and a
 # manifest job that merges the two architecture digests into a multi-architecture manifest
 # list. The architectures are built on their own native agents rather than emulating arm64
 # on an x64 agent.
+#
+# The caller loops over the `jobs` matrix and passes each field of an entry individually as
+# a `type: string` parameter. The matrix object is deliberately not passed through as a
+# `type: object` parameter: binding an object to an object-typed parameter re-parses its
+# scalars, which turns a tag such as '3.0' into the number 3.0 and renders it as "3".
 #
 # The template is expanded once per stage (internal and public), so `dryrun` and `isPublic`
 # control two independent things:
@@ -26,13 +31,19 @@
 #
 # required parameters:
 #   jobPrefix: str                 # Prefix for generated job names. Must be unique per stage. Example: build_internal
+#   jobKey: str                    # Key of the `jobs` matrix entry. Makes the job names unique. Example: azurelinux_21
 #   registry: str                  # Container repository images are pushed to. Example: $(ACR_REGISTRY)
-#   jobs: object                   # Matrix of images to build. See the `jobs` parameter in build.yml.
 #   organization: str              # AzDO organization used for the ORAS feed and the signing pipeline.
 #   feed: str                      # Artifact feed hosting the ORAS package.
 #   az_package: str                # Name of the ORAS package in `feed`.
+#   distro: str                    # Distribution directory under docker/. Example: azurelinux
+#   version: str                   # JDK major version. Example: 21
+#   package: str                   # Package installed in the image. Example: msopenjdk-21
 #
 # optional parameters:
+#   hasExistingImages: str         # "true" when a previous image exists to annotate as EOL.
+#   image / tag: str               # Base image for non-distroless builds.
+#   installer_image / installer_tag / base_image / base_tag: str   # Distroless builds only.
 #   dryrun: bool                   # Echo commands instead of pushing/signing. Default: false
 #   dependsOn: object              # Jobs the per-architecture builds wait on. Default: []
 #   isPublic: bool                 # Tag the build and trigger image signing. Default: false
@@ -41,17 +52,44 @@
 parameters:
   - name: jobPrefix
     type: string
+  - name: jobKey
+    type: string
   - name: registry
     displayName: "Container repository the images are pushed to"
     type: string
-  - name: jobs
-    type: object
   - name: organization
     type: string
   - name: feed
     type: string
   - name: az_package
     type: string
+  - name: distro
+    type: string
+  - name: version
+    type: string
+  - name: package
+    type: string
+  - name: hasExistingImages
+    type: string
+    default: "false"
+  - name: image
+    type: string
+    default: none
+  - name: tag
+    type: string
+    default: none
+  - name: installer_image
+    type: string
+    default: none
+  - name: installer_tag
+    type: string
+    default: none
+  - name: base_image
+    type: string
+    default: none
+  - name: base_tag
+    type: string
+    default: none
   - name: dryrun
     displayName: "Echo the build commands instead of pushing images or triggering signing"
     type: boolean
@@ -65,149 +103,156 @@ parameters:
     default: false
 
 jobs:
-  - ${{ each entry in parameters.jobs }}:
-      # Each architecture is built natively on its own agent and pushed to the repository
-      # by digest. The multi-architecture manifest list is assembled afterwards.
-      - ${{ each arch in split('amd64,arm64', ',') }}:
-          - job: ${{ parameters.jobPrefix }}_${{ entry.key }}_${{ arch }}
-            displayName: "build ${{ entry.key }} (${{ arch }})"
-            dependsOn: ${{ parameters.dependsOn }}
-            pool:
-              ${{ if eq(arch, 'amd64') }}:
-                name: JEG-ubuntu22.04-x64-release
-              ${{ else }}:
-                name: JEG-test-pool
-              os: linux
-            variables:
-              - template: /.devops/templates/image-variables.yml@self
-                parameters:
-                  job: ${{ entry.value }}
-            steps:
-              - task: AzureCLI@2
-                name: build_image
-                retryCountOnTaskFailure: 2
-                inputs:
-                  azureSubscription: "JEG-Infrastructure"
-                  scriptType: "bash"
-                  scriptLocation: "scriptPath"
-                  scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
-                  ${{ if eq(parameters.dryrun, true) }}:
-                    arguments: >
-                      --image             $(image)
-                      --tag               $(tag)
-                      --package           $(package)
-                      --distribution      $(distro)
-                      --repository        ${{ parameters.registry }}
-                      --platform          linux/${{ arch }}
-                      --push-by-digest
-                      --installer-image   $(installer_image)
-                      --installer-tag     $(installer_tag)
-                      --base-image        $(base_image)
-                      --base-tag          $(base_tag)
-                      --dryrun
-                  ${{ else }}:
-                    arguments: >
-                      --image             $(image)
-                      --tag               $(tag)
-                      --package           $(package)
-                      --distribution      $(distro)
-                      --repository        ${{ parameters.registry }}
-                      --platform          linux/${{ arch }}
-                      --push-by-digest
-                      --installer-image   $(installer_image)
-                      --installer-tag     $(installer_tag)
-                      --base-image        $(base_image)
-                      --base-tag          $(base_tag)
-                displayName: build container image (${{ arch }})
-
-      - job: ${{ parameters.jobPrefix }}_${{ entry.key }}_manifest
-        displayName: "publish ${{ entry.key }} manifest"
-        dependsOn:
-          - ${{ parameters.jobPrefix }}_${{ entry.key }}_amd64
-          - ${{ parameters.jobPrefix }}_${{ entry.key }}_arm64
+  # Each architecture is built natively on its own agent and pushed to the repository
+  # by digest. The multi-architecture manifest list is assembled afterwards.
+  - ${{ each arch in split('amd64,arm64', ',') }}:
+      - job: ${{ parameters.jobPrefix }}_${{ parameters.jobKey }}_${{ arch }}
+        displayName: "build ${{ parameters.jobKey }} (${{ arch }})"
+        dependsOn: ${{ parameters.dependsOn }}
         pool:
-          name: JEG-ubuntu22.04-x64-release
+          ${{ if eq(arch, 'amd64') }}:
+            name: JEG-ubuntu22.04-x64-release
+          ${{ else }}:
+            name: JEG-test-pool
           os: linux
         variables:
-          - template: /.devops/templates/image-variables.yml@self
-            parameters:
-              job: ${{ entry.value }}
-          - name: amd64Digest
-            value: $[ dependencies.${{ parameters.jobPrefix }}_${{ entry.key }}_amd64.outputs['build_image.containerImageDigest'] ]
-          - name: arm64Digest
-            value: $[ dependencies.${{ parameters.jobPrefix }}_${{ entry.key }}_arm64.outputs['build_image.containerImageDigest'] ]
+          # ACR_NAME is read from the environment by build-image.sh, and hasExistingImages is
+          # read via variables['hasExistingImages'] by the annotation step templates, so both
+          # have to be job variables. Everything else is resolved at compile time.
+          - name: ACR_NAME
+            value: msopenjdk
+          - name: hasExistingImages
+            value: ${{ parameters.hasExistingImages }}
         steps:
-          - template: /.devops/templates/prepare-annotation.yml@self
-            parameters:
-              registry: ${{ parameters.registry }}
-              tag: $(version)-$(distro)
-
-          - bash: |
-              REGISTRIES=${{ parameters.registry }}:$(version)-$(distro)
-              if [[ "$(distro)" == "azurelinux" ]]; then
-                REGISTRIES+=";${{ parameters.registry }}:$(version)-mariner"
-              fi
-              echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
-            displayName: Set REGISTRIES variable
-
           - task: AzureCLI@2
+            name: build_image
             retryCountOnTaskFailure: 2
             inputs:
               azureSubscription: "JEG-Infrastructure"
               scriptType: "bash"
               scriptLocation: "scriptPath"
-              scriptPath: $(Build.SourcesDirectory)/scripts/create-manifest.sh
+              scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
               ${{ if eq(parameters.dryrun, true) }}:
                 arguments: >
-                  --repository    ${{ parameters.registry }}
-                  --registries    $(REGISTRIES)
-                  --amd64-digest  $(amd64Digest)
-                  --arm64-digest  $(arm64Digest)
+                  --image             ${{ parameters.image }}
+                  --tag               ${{ parameters.tag }}
+                  --package           ${{ parameters.package }}
+                  --distribution      ${{ parameters.distro }}
+                  --repository        ${{ parameters.registry }}
+                  --platform          linux/${{ arch }}
+                  --push-by-digest
+                  --installer-image   ${{ parameters.installer_image }}
+                  --installer-tag     ${{ parameters.installer_tag }}
+                  --base-image        ${{ parameters.base_image }}
+                  --base-tag          ${{ parameters.base_tag }}
                   --dryrun
               ${{ else }}:
                 arguments: >
-                  --repository    ${{ parameters.registry }}
-                  --registries    $(REGISTRIES)
-                  --amd64-digest  $(amd64Digest)
-                  --arm64-digest  $(arm64Digest)
-            displayName: create multi-architecture manifest
+                  --image             ${{ parameters.image }}
+                  --tag               ${{ parameters.tag }}
+                  --package           ${{ parameters.package }}
+                  --distribution      ${{ parameters.distro }}
+                  --repository        ${{ parameters.registry }}
+                  --platform          linux/${{ arch }}
+                  --push-by-digest
+                  --installer-image   ${{ parameters.installer_image }}
+                  --installer-tag     ${{ parameters.installer_tag }}
+                  --base-image        ${{ parameters.base_image }}
+                  --base-tag          ${{ parameters.base_tag }}
+            displayName: build container image (${{ arch }})
 
-          - template: /.devops/templates/annotate-image.yml@self
-            parameters:
-              registry: ${{ parameters.registry }}
-              organization: ${{ parameters.organization }}
-              feed: ${{ parameters.feed }}
-              package: ${{ parameters.az_package }}
-              dryrun: ${{ parameters.dryrun }}
+  - job: ${{ parameters.jobPrefix }}_${{ parameters.jobKey }}_manifest
+    displayName: "publish ${{ parameters.jobKey }} manifest"
+    dependsOn:
+      - ${{ parameters.jobPrefix }}_${{ parameters.jobKey }}_amd64
+      - ${{ parameters.jobPrefix }}_${{ parameters.jobKey }}_arm64
+    pool:
+      name: JEG-ubuntu22.04-x64-release
+      os: linux
+    variables:
+      # ACR_NAME is read from the environment by create-manifest.sh and image-annotation.sh,
+      # and hasExistingImages is read via variables['hasExistingImages'] by the annotation
+      # step templates, so both have to be job variables.
+      - name: ACR_NAME
+        value: msopenjdk
+      - name: hasExistingImages
+        value: ${{ parameters.hasExistingImages }}
+      - name: amd64Digest
+        value: $[ dependencies.${{ parameters.jobPrefix }}_${{ parameters.jobKey }}_amd64.outputs['build_image.containerImageDigest'] ]
+      - name: arm64Digest
+        value: $[ dependencies.${{ parameters.jobPrefix }}_${{ parameters.jobKey }}_arm64.outputs['build_image.containerImageDigest'] ]
+    steps:
+      - template: /.devops/templates/prepare-annotation.yml@self
+        parameters:
+          registry: ${{ parameters.registry }}
+          tag: ${{ parameters.version }}-${{ parameters.distro }}
 
-          - ${{ if eq(parameters.isPublic, true) }}:
-              - task: PythonScript@0
-                displayName: Set build tag
-                condition: ne(${{ parameters.dryrun }}, true) # images are not built when running in dryrun mode.
+      - bash: |
+          REGISTRIES=${{ parameters.registry }}:${{ parameters.version }}-${{ parameters.distro }}
+          if [[ "${{ parameters.distro }}" == "azurelinux" ]]; then
+            REGISTRIES+=";${{ parameters.registry }}:${{ parameters.version }}-mariner"
+          fi
+          echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
+        displayName: Set REGISTRIES variable
+
+      - task: AzureCLI@2
+        retryCountOnTaskFailure: 2
+        inputs:
+          azureSubscription: "JEG-Infrastructure"
+          scriptType: "bash"
+          scriptLocation: "scriptPath"
+          scriptPath: $(Build.SourcesDirectory)/scripts/create-manifest.sh
+          ${{ if eq(parameters.dryrun, true) }}:
+            arguments: >
+              --repository    ${{ parameters.registry }}
+              --registries    $(REGISTRIES)
+              --amd64-digest  $(amd64Digest)
+              --arm64-digest  $(arm64Digest)
+              --dryrun
+          ${{ else }}:
+            arguments: >
+              --repository    ${{ parameters.registry }}
+              --registries    $(REGISTRIES)
+              --amd64-digest  $(amd64Digest)
+              --arm64-digest  $(arm64Digest)
+        displayName: create multi-architecture manifest
+
+      - template: /.devops/templates/annotate-image.yml@self
+        parameters:
+          registry: ${{ parameters.registry }}
+          organization: ${{ parameters.organization }}
+          feed: ${{ parameters.feed }}
+          package: ${{ parameters.az_package }}
+          dryrun: ${{ parameters.dryrun }}
+
+      - ${{ if eq(parameters.isPublic, true) }}:
+          - task: PythonScript@0
+            displayName: Set build tag
+            condition: ne(${{ parameters.dryrun }}, true) # images are not built when running in dryrun mode.
+            inputs:
+              scriptSource: 'inline'
+              script: |
+                # 15 is used since that will include sha prefix + eight digits of the hash value
+                tag = "$(containerImageDigest)"[:15]
+                tag = tag.replace(":", "_")
+
+                print(f"##vso[build.addbuildtag]{tag}")
+
+          - ${{ if ne(parameters.dryrun, true) }}:
+              - task: AzureCLI@2
+                displayName: Trigger signing
+                env:
+                  AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
                 inputs:
-                  scriptSource: 'inline'
-                  script: |
-                    # 15 is used since that will include sha prefix + eight digits of the hash value
-                    tag = "$(containerImageDigest)"[:15]
-                    tag = tag.replace(":", "_")
-
-                    print(f"##vso[build.addbuildtag]{tag}")
-
-              - ${{ if ne(parameters.dryrun, true) }}:
-                  - task: AzureCLI@2
-                    displayName: Trigger signing
-                    env:
-                      AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
-                    inputs:
-                      azureSubscription: "JEG-Infrastructure"
-                      scriptType: "bash"
-                      scriptLocation: "inlineScript"
-                      inlineScript: |
-                        az pipelines run \
-                          --branch main \
-                          --org ${{ parameters.organization }} \
-                          --project $(OPENJDK_PROJECT) \
-                          --id $(OPENJDK_SIGNING_ID) \
-                          --parameters image_repository="${{ parameters.registry }}" \
-                            reference="$(containerImageDigest)" \
-                            reference_type="container_digest"
+                  azureSubscription: "JEG-Infrastructure"
+                  scriptType: "bash"
+                  scriptLocation: "inlineScript"
+                  inlineScript: |
+                    az pipelines run \
+                      --branch main \
+                      --org ${{ parameters.organization }} \
+                      --project $(OPENJDK_PROJECT) \
+                      --id $(OPENJDK_SIGNING_ID) \
+                      --parameters image_repository="${{ parameters.registry }}" \
+                        reference="$(containerImageDigest)" \
+                        reference_type="container_digest"

@@ -1,0 +1,37 @@
+# image-variables.yml
+#
+# Expands a single entry of the `jobs` matrix into job variables. Values that only some
+# distributions use (installer/base images) default to "none" so the argument list passed to
+# build-image.sh keeps a stable shape.
+#
+# required parameters:
+#   job: object                    # A single value from the `jobs` matrix in build.yml.
+#
+
+parameters:
+  - name: job
+    type: object
+
+variables:
+  - name: ACR_NAME
+    value: msopenjdk
+  - name: hasExistingImages
+    value: ${{ parameters.job.hasExistingImages }}
+  - name: distro
+    value: ${{ parameters.job.distro }}
+  - name: version
+    value: ${{ parameters.job.version }}
+  - name: package
+    value: ${{ parameters.job.package }}
+  - name: image
+    value: ${{ coalesce(parameters.job.image, 'none') }}
+  - name: tag
+    value: ${{ coalesce(parameters.job.tag, 'none') }}
+  - name: installer_image
+    value: ${{ coalesce(parameters.job.installer_image, 'none') }}
+  - name: installer_tag
+    value: ${{ coalesce(parameters.job.installer_tag, 'none') }}
+  - name: base_image
+    value: ${{ coalesce(parameters.job.base_image, 'none') }}
+  - name: base_tag
+    value: ${{ coalesce(parameters.job.base_tag, 'none') }}

@@ -80,6 +80,28 @@ extends:
       - stage: build_internal
         displayName: Build Internal
         jobs:
+          # Rename the run after the images it actually builds, so the runs list reads
+          # "2026.8.15012341 (azurelinux 8, distroless 11, ...)" instead of a bare number.
+          # The matrix is fanned out into env vars because ${{ each }} cannot be used inside
+          # a script body, only at a YAML node level such as a mapping key.
+          - job: set_run_name
+            displayName: set run name
+            pool:
+              name: JEG-pipeline-support
+              os: linux
+            steps:
+              - bash: |
+                  set -euo pipefail
+                  IMAGES=$(printenv | grep '^RUN_NAME_IMAGE_' | cut -d= -f2- | sort -u -V | paste -sd, - | sed 's/,/, /g') || true
+                  BASE="${BUILD_BUILDNUMBER%% (*}"
+                  if [[ -n "$IMAGES" ]]; then
+                    echo "##vso[build.updatebuildnumber]$BASE ($IMAGES)"
+                  fi
+                displayName: Set run name
+                env:
+                  ${{ each entry in parameters.jobs }}:
+                    RUN_NAME_IMAGE_${{ entry.key }}: ${{ entry.value.distro }} ${{ entry.value.version }}
+
           # Internal stage: images are pushed to the internal registry for validation.
           # isPublic is left at false so the build is not tagged and signing is not triggered,
           # even when this is a real (non-dryrun) run.

@@ -107,7 +107,7 @@ jobs:
   # by digest. The multi-architecture manifest list is assembled afterwards.
   - ${{ each arch in split('amd64,arm64', ',') }}:
       - job: ${{ parameters.jobPrefix }}_${{ parameters.jobKey }}_${{ arch }}
-        displayName: "build ${{ parameters.jobKey }} (${{ arch }})"
+        displayName: "build ${{ parameters.distro }} ${{ parameters.version }} (${{ arch }})"
         dependsOn: ${{ parameters.dependsOn }}
         pool:
           ${{ if eq(arch, 'amd64') }}:
@@ -162,7 +162,7 @@ jobs:
             displayName: build container image (${{ arch }})
 
   - job: ${{ parameters.jobPrefix }}_${{ parameters.jobKey }}_manifest
-    displayName: "publish ${{ parameters.jobKey }} manifest"
+    displayName: "publish ${{ parameters.distro }} ${{ parameters.version }} manifest"
     dependsOn:
       - ${{ parameters.jobPrefix }}_${{ parameters.jobKey }}_amd64
       - ${{ parameters.jobPrefix }}_${{ parameters.jobKey }}_arm64

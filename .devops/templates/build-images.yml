@@ -111,7 +111,7 @@ jobs:
         dependsOn: ${{ parameters.dependsOn }}
         pool:
           ${{ if eq(arch, 'amd64') }}:
-            name: JEG-ubuntu22.04-x64-release
+            name: JEG-test-pool-x64
           ${{ else }}:
             name: JEG-test-pool
           os: linux

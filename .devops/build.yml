@@ -37,7 +37,7 @@ parameters:
         version: 8
         package: temurin-8
         image: "image-repository"
-        tag: "3.0"
+        image_tag: "3.0"
       distroless_11:
         hasExistingImages: true
         distro: distroless
@@ -53,14 +53,14 @@ parameters:
         version: 17
         package: msopenjdk-17
         image: "image-repository"
-        tag: "image-tag"
+        image_tag: "image-tag"
       azurelinux_21:
         hasExistingImages: true
         distro: azurelinux
         version: 21
         package: msopenjdk-21
         image: "image-repository"
-        tag: "3.0"
+        image_tag: "3.0"
 
 resources:
   repositories:
@@ -85,7 +85,7 @@ extends:
           # The matrix is fanned out into env vars because ${{ each }} cannot be used inside
           # a script body, only at a YAML node level such as a mapping key.
           - job: set_run_name
-            displayName: set run name
+            displayName: Set run title
             pool:
               name: JEG-pipeline-support
               os: linux
@@ -97,7 +97,7 @@ extends:
                   if [[ -n "$IMAGES" ]]; then
                     echo "##vso[build.updatebuildnumber]$BASE ($IMAGES)"
                   fi
-                displayName: Set run name
+                displayName: Set run title
                 env:
                   ${{ each entry in parameters.jobs }}:
                     RUN_NAME_IMAGE_${{ entry.key }}: ${{ entry.value.distro }} ${{ entry.value.version }}
@@ -126,8 +126,8 @@ extends:
                     hasExistingImages: ${{ entry.value.hasExistingImages }}
                   ${{ if entry.value.image }}:
                     image: ${{ entry.value.image }}
-                  ${{ if entry.value.tag }}:
-                    tag: ${{ entry.value.tag }}
+                  ${{ if entry.value.image_tag }}:
+                    image_tag: ${{ entry.value.image_tag }}
                   ${{ if entry.value.installer_image }}:
                     installer_image: ${{ entry.value.installer_image }}
                   ${{ if entry.value.installer_tag }}:
@@ -174,8 +174,8 @@ extends:
                     hasExistingImages: ${{ entry.value.hasExistingImages }}
                   ${{ if entry.value.image }}:
                     image: ${{ entry.value.image }}
-                  ${{ if entry.value.tag }}:
-                    tag: ${{ entry.value.tag }}
+                  ${{ if entry.value.image_tag }}:
+                    image_tag: ${{ entry.value.image_tag }}
                   ${{ if entry.value.installer_image }}:
                     installer_image: ${{ entry.value.installer_image }}
                   ${{ if entry.value.installer_tag }}:

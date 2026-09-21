@@ -42,7 +42,7 @@
 #
 # optional parameters:
 #   hasExistingImages: str         # "true" when a previous image exists to annotate as EOL.
-#   image / tag: str               # Base image for non-distroless builds.
+#   image / image_tag: str         # Base image for non-distroless builds.
 #   installer_image / installer_tag / base_image / base_tag: str   # Distroless builds only.
 #   dryrun: bool                   # Echo commands instead of pushing/signing. Default: false
 #   dependsOn: object              # Jobs the per-architecture builds wait on. Default: []
@@ -75,9 +75,10 @@ parameters:
   - name: image
     type: string
     default: none
-  - name: tag
+  - name: image_tag
     type: string
     default: none
+  # The installer and base image parameters below are used only for distroless builds.
   - name: installer_image
     type: string
     default: none
@@ -135,7 +136,7 @@ jobs:
               ${{ if eq(parameters.dryrun, true) }}:
                 arguments: >
                   --image             ${{ parameters.image }}
-                  --tag               ${{ parameters.tag }}
+                  --tag               ${{ parameters.image_tag }}
                   --package           ${{ parameters.package }}
                   --distribution      ${{ parameters.distro }}
                   --repository        ${{ parameters.registry }}
@@ -149,7 +150,7 @@ jobs:
               ${{ else }}:
                 arguments: >
                   --image             ${{ parameters.image }}
-                  --tag               ${{ parameters.tag }}
+                  --tag               ${{ parameters.image_tag }}
                   --package           ${{ parameters.package }}
                   --distribution      ${{ parameters.distro }}
                   --repository        ${{ parameters.registry }}

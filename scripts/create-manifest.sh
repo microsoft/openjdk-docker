@@ -1,9 +1,15 @@
 #!/bin/bash
 
+set -euo pipefail
+
 # Assembles a multi-architecture manifest list from images that were built natively on
 # each architecture and pushed to the repository by digest.
 
 dryRun=false
+registryTags=""
+repository=""
+amd64Digest=""
+arm64Digest=""
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in

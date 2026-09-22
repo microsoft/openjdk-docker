@@ -112,9 +112,9 @@ jobs:
         dependsOn: ${{ parameters.dependsOn }}
         pool:
           ${{ if eq(arch, 'amd64') }}:
-            name: JEG-test-pool-x64
+            name: JEG-azurelinux-x64-release
           ${{ else }}:
-            name: JEG-test-pool
+            name: JEG-azurelinux-aarch64-release
           os: linux
         variables:
           # ACR_NAME is read from the environment by build-image.sh, and hasExistingImages is

@@ -37,7 +37,7 @@ parameters:
         version: 8
         package: temurin-8
         image: "image-repository"
-        tag: "3.0"
+        image_tag: "3.0"
       distroless_11:
         hasExistingImages: true
         distro: distroless
@@ -53,14 +53,14 @@ parameters:
         version: 17
         package: msopenjdk-17
         image: "image-repository"
-        tag: "image-tag"
+        image_tag: "image-tag"
       azurelinux_21:
         hasExistingImages: true
         distro: azurelinux
         version: 21
         package: msopenjdk-21
         image: "image-repository"
-        tag: "3.0"
+        image_tag: "3.0"
 
 resources:
   repositories:
@@ -79,69 +79,63 @@ extends:
     stages:
       - stage: build_internal
         displayName: Build Internal
-        variables:
-          ACR_NAME: msopenjdk
         jobs:
-          - job: build_internal
+          # Rename the run after the images it actually builds, so the runs list reads
+          # "2026.8.15012341 (azurelinux 8, distroless 11, ...)" instead of a bare number.
+          # The matrix is fanned out into env vars because ${{ each }} cannot be used inside
+          # a script body, only at a YAML node level such as a mapping key.
+          - job: set_run_name
+            displayName: Set run title
             pool:
-              name: JEG-ubuntu22.04-x64-release
+              name: JEG-pipeline-support
               os: linux
-            strategy:
-              matrix: ${{ parameters.jobs }}
             steps:
-              - template: /.devops/templates/prepare-annotation.yml@self
-                parameters:
-                  registry: $(INTERNAL_ACR_REGISTRY)
-                  tag: $(version)-$(distro)
-
               - bash: |
-                  REGISTRIES=$(INTERNAL_ACR_REGISTRY):$(version)-$(distro)
-                  if [[ "$(distro)" == "azurelinux" ]]; then
-                    REGISTRIES+=";$(INTERNAL_ACR_REGISTRY):$(version)-mariner"
+                  set -euo pipefail
+                  IMAGES=$(printenv | grep '^RUN_NAME_IMAGE_' | cut -d= -f2- | sort -u -V | paste -sd, - | sed 's/,/, /g') || true
+                  BASE="${BUILD_BUILDNUMBER%% (*}"
+                  if [[ -n "$IMAGES" ]]; then
+                    echo "##vso[build.updatebuildnumber]$BASE ($IMAGES)"
                   fi
-                  echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
-                displayName: Set REGISTRIES variable
+                displayName: Set run title
+                env:
+                  ${{ each entry in parameters.jobs }}:
+                    RUN_NAME_IMAGE_${{ entry.key }}: ${{ entry.value.distro }} ${{ entry.value.version }}
 
-              - task: AzureCLI@2
-                retryCountOnTaskFailure: 2
-                inputs:
-                  azureSubscription: "JEG-Infrastructure"
-                  scriptType: "bash"
-                  scriptLocation: "scriptPath"
-                  scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
-                  ${{ if eq(parameters.dryrun, true) }}:
-                    arguments: >
-                      --image             $(image)
-                      --tag               $(tag)
-                      --package           $(package)
-                      --distribution      $(distro)
-                      --registries        $(REGISTRIES)
-                      --installer-image   $(installer_image)
-                      --installer-tag     $(installer_tag)
-                      --base-image        $(base_image)
-                      --base-tag          $(base_tag)
-                      --dryrun
-                  ${{ else }}:
-                    arguments: >
-                      --image             $(image)
-                      --tag               $(tag)
-                      --package           $(package)
-                      --distribution      $(distro)
-                      --registries        $(REGISTRIES)
-                      --installer-image   $(installer_image)
-                      --installer-tag     $(installer_tag)
-                      --base-image        $(base_image)
-                      --base-tag          $(base_tag)
-                displayName: build container image
-
-              - template: /.devops/templates/annotate-image.yml@self
+          # Internal stage: images are pushed to the internal registry for validation.
+          # isPublic is left at false so the build is not tagged and signing is not triggered,
+          # even when this is a real (non-dryrun) run.
+          #
+          # The matrix is expanded here rather than inside build-images.yml because passing the
+          # object through a `type: object` template parameter re-parses its scalars, which
+          # renders a tag such as '3.0' as "3".
+          - ${{ each entry in parameters.jobs }}:
+              - template: /.devops/templates/build-images.yml@self
                 parameters:
+                  jobPrefix: build_internal
+                  jobKey: ${{ entry.key }}
                   registry: $(INTERNAL_ACR_REGISTRY)
                   organization: ${{ parameters.organization }}
                   feed: ${{ parameters.feed }}
-                  package: ${{ parameters.az_package }}
+                  az_package: ${{ parameters.az_package }}
                   dryrun: ${{ parameters.dryrun }}
-
+                  distro: ${{ entry.value.distro }}
+                  version: ${{ entry.value.version }}
+                  package: ${{ entry.value.package }}
+                  ${{ if entry.value.hasExistingImages }}:
+                    hasExistingImages: ${{ entry.value.hasExistingImages }}
+                  ${{ if entry.value.image }}:
+                    image: ${{ entry.value.image }}
+                  ${{ if entry.value.image_tag }}:
+                    image_tag: ${{ entry.value.image_tag }}
+                  ${{ if entry.value.installer_image }}:
+                    installer_image: ${{ entry.value.installer_image }}
+                  ${{ if entry.value.installer_tag }}:
+                    installer_tag: ${{ entry.value.installer_tag }}
+                  ${{ if entry.value.base_image }}:
+                    base_image: ${{ entry.value.base_image }}
+                  ${{ if entry.value.base_tag }}:
+                    base_tag: ${{ entry.value.base_tag }}
 
       - stage: validate_and_publish
         displayName: "Validate & Publish"
@@ -158,96 +152,35 @@ extends:
                   instructions: "please validate the build configuration, artifacts, tests, and resume"
                   onTimeout: "resume"
 
-          - job: build_public
-            dependsOn: wait_for_validation
-            pool:
-              name: JEG-ubuntu22.04-x64-release
-              os: linux
-            strategy:
-              matrix: ${{ parameters.jobs }}
-            variables:
-              ACR_NAME: msopenjdk
-            steps:
-              - template: /.devops/templates/prepare-annotation.yml@self
+          # Public stage: once validation is approved the images are rebuilt and pushed to the
+          # public registry. isPublic triggers the build tag and the signing pipeline, which
+          # dryrun still suppresses.
+          - ${{ each entry in parameters.jobs }}:
+              - template: /.devops/templates/build-images.yml@self
                 parameters:
-                  registry: $(ACR_REGISTRY)
-                  tag: $(version)-$(distro)
-
-              - bash: |
-                  REGISTRIES=$(ACR_REGISTRY):$(version)-$(distro)
-                  if [[ "$(distro)" == "azurelinux" ]]; then
-                    REGISTRIES+=";$(ACR_REGISTRY):$(version)-mariner"
-                  fi
-                  echo "##vso[task.setvariable variable=REGISTRIES]$REGISTRIES"
-                displayName: Set REGISTRIES variable
-
-              - task: AzureCLI@2
-                retryCountOnTaskFailure: 2
-                inputs:
-                  azureSubscription: "JEG-Infrastructure"
-                  scriptType: "bash"
-                  scriptLocation: "scriptPath"
-                  scriptPath: $(Build.SourcesDirectory)/scripts/build-image.sh
-                  ${{ if eq(parameters.dryrun, true) }}:
-                    arguments: >
-                      --image             $(image)
-                      --tag               $(tag)
-                      --package           $(package)
-                      --distribution      $(distro)
-                      --registries        $(REGISTRIES)
-                      --installer-image   $(installer_image)
-                      --installer-tag     $(installer_tag)
-                      --base-image        $(base_image)
-                      --base-tag          $(base_tag)
-                      --dryrun
-                  ${{ else }}:
-                    arguments: >
-                      --image             $(image)
-                      --tag               $(tag)
-                      --package           $(package)
-                      --distribution      $(distro)
-                      --registries        $(REGISTRIES)
-                      --installer-image   $(installer_image)
-                      --installer-tag     $(installer_tag)
-                      --base-image        $(base_image)
-                      --base-tag          $(base_tag)
-                displayName: build container image
-
-              - template: /.devops/templates/annotate-image.yml@self
-                parameters:
+                  jobPrefix: build_public
+                  jobKey: ${{ entry.key }}
                   registry: $(ACR_REGISTRY)
                   organization: ${{ parameters.organization }}
                   feed: ${{ parameters.feed }}
-                  package: ${{ parameters.az_package }}
+                  az_package: ${{ parameters.az_package }}
                   dryrun: ${{ parameters.dryrun }}
-
-              - task: PythonScript@0
-                displayName: Set build tag
-                condition: ne(${{ parameters.dryrun }}, true) # images are not built when running in dryrun mode.
-                inputs:
-                  scriptSource: 'inline'
-                  script: |
-                    # 15 is used since that will include sha prefix + eight digits of the hash value
-                    tag = "$(containerImageDigest)"[:15]
-                    tag = tag.replace(":", "_")
-
-                    print(f"##vso[build.addbuildtag]{tag}")
-
-              - ${{ if ne(parameters.dryrun, true) }}:
-                - task: AzureCLI@2
-                  displayName: Trigger signing
-                  env:
-                    AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
-                  inputs:
-                    azureSubscription: "JEG-Infrastructure"
-                    scriptType: "bash"
-                    scriptLocation: "inlineScript"
-                    inlineScript: |
-                      az pipelines run \
-                        --branch main \
-                        --org ${{ parameters.organization }} \
-                        --project $(OPENJDK_PROJECT) \
-                        --id $(OPENJDK_SIGNING_ID) \
-                        --parameters image_repository="$(ACR_REGISTRY)" \
-                          reference="$(containerImageDigest)" \
-                          reference_type="container_digest"
+                  dependsOn: [wait_for_validation]
+                  isPublic: true
+                  distro: ${{ entry.value.distro }}
+                  version: ${{ entry.value.version }}
+                  package: ${{ entry.value.package }}
+                  ${{ if entry.value.hasExistingImages }}:
+                    hasExistingImages: ${{ entry.value.hasExistingImages }}
+                  ${{ if entry.value.image }}:
+                    image: ${{ entry.value.image }}
+                  ${{ if entry.value.image_tag }}:
+                    image_tag: ${{ entry.value.image_tag }}
+                  ${{ if entry.value.installer_image }}:
+                    installer_image: ${{ entry.value.installer_image }}
+                  ${{ if entry.value.installer_tag }}:
+                    installer_tag: ${{ entry.value.installer_tag }}
+                  ${{ if entry.value.base_image }}:
+                    base_image: ${{ entry.value.base_image }}
+                  ${{ if entry.value.base_tag }}:
+                    base_tag: ${{ entry.value.base_tag }}
